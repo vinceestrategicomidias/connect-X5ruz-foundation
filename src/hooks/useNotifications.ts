@@ -10,7 +10,7 @@ export type NotificationType =
   | "nps_recebido"
   | "alerta_performance"
   | "ideia_aprovada"
-  | "feedback_ia";
+  | "feedback_thali";
 
 export interface Notification {
   id: string;
@@ -94,9 +94,9 @@ const notificationTemplates: Omit<Notification, "id" | "timestamp">[] = [
     acao: "abrir_painel_nps",
   },
   {
-    type: "feedback_ia",
-    title: "Sugestão da IA",
-    description: "A IA recomenda priorizar atendimentos com mais de 15 minutos na fila.",
+    type: "feedback_thali",
+    title: "Sugestão da Thalí",
+    description: "A Thalí recomenda priorizar atendimentos com mais de 15 minutos na fila.",
     read: false,
     acao: "abrir_painel_feedback",
   },
