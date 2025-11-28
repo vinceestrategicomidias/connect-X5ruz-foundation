@@ -83,7 +83,7 @@ export const PerfilPacienteSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-[420px] p-0">
+      <SheetContent className="w-full sm:max-w-[420px] p-0" side="right">
         <ScrollArea className="h-full">
           <div className="p-6">
             <SheetHeader className="mb-6">
