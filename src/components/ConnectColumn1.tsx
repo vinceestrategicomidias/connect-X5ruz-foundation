@@ -8,14 +8,20 @@ import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSetores } from "@/hooks/useSetores";
 
 export const ConnectColumn1 = () => {
+  const { atendenteLogado } = useAtendenteContext();
+  const { data: setores } = useSetores();
+  
+  const nomeSetor = setores?.find(s => s.id === atendenteLogado?.setor_id)?.nome || "Atendimento";
+  
   return (
     <div className="w-80 border-r border-border bg-card flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <h2 className="text-lg font-display font-semibold text-foreground">
-          Fluxo de Atendimento
+          Setor: {nomeSetor}
         </h2>
       </div>
 
