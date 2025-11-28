@@ -6,12 +6,15 @@ interface DemoModeContextType {
   demoProfile: CargoTipo | null;
   setDemoProfile: (profile: CargoTipo | null) => void;
   resetDemo: () => void;
+  notificationSimulationEnabled: boolean;
+  setNotificationSimulationEnabled: (enabled: boolean) => void;
 }
 
 const DemoModeContext = createContext<DemoModeContextType | undefined>(undefined);
 
 export const DemoModeProvider = ({ children }: { children: ReactNode }) => {
   const [demoProfile, setDemoProfile] = useState<CargoTipo | null>(null);
+  const [notificationSimulationEnabled, setNotificationSimulationEnabled] = useState(true);
 
   const isDemoMode = demoProfile !== null;
 
@@ -26,6 +29,8 @@ export const DemoModeProvider = ({ children }: { children: ReactNode }) => {
         demoProfile,
         setDemoProfile,
         resetDemo,
+        notificationSimulationEnabled,
+        setNotificationSimulationEnabled,
       }}
     >
       {children}
