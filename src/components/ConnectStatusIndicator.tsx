@@ -38,11 +38,11 @@ export const ConnectStatusIndicator = ({
   return (
     <div className="flex items-center gap-1.5">
       <div
-        className="w-2 h-2 rounded-full"
+        className={`w-2 h-2 rounded-full ${mostrarAlerta ? 'animate-pulse-alert' : ''}`}
         style={{ backgroundColor: getStatusColor() }}
       />
       {mostrarAlerta && (
-        <AlertCircle className="w-3 h-3 text-[#EF4444]" />
+        <AlertCircle className="w-3 h-3 text-[#EF4444] animate-pulse-alert" />
       )}
     </div>
   );
