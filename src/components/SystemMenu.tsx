@@ -24,6 +24,7 @@ import { ApiLogsViewer } from "./ApiLogsViewer";
 import { ApiDocsPanel } from "./ApiDocsPanel";
 import { IAConfigPanel } from "./IAConfigPanel";
 import { IAAlertasPanel } from "./IAAlertasPanel";
+import { FigurinhasManagement } from "./FigurinhasManagement";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
 import { useUnidades, useCriarUnidade } from "@/hooks/useUnidades";
@@ -584,9 +585,10 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
             </div>
             
             <Tabs defaultValue="config" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="config">Configurações</TabsTrigger>
                 <TabsTrigger value="alertas">Alertas da Thalí</TabsTrigger>
+                <TabsTrigger value="figurinhas">Figurinhas</TabsTrigger>
                 <TabsTrigger value="mensageria">Mensageria</TabsTrigger>
               </TabsList>
 
@@ -596,6 +598,10 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
 
               <TabsContent value="alertas">
                 <IAAlertasPanel />
+              </TabsContent>
+
+              <TabsContent value="figurinhas">
+                <FigurinhasManagement />
               </TabsContent>
 
               <TabsContent value="mensageria">
