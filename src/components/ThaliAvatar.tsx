@@ -32,12 +32,14 @@ export const ThaliAvatar = ({
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
     const loadAvatars = async () => {
       try {
-        // Buscar avatares existentes
+        // Buscar avatares existentes ordenados por data (mais recente primeiro)
         const { data: files } = await supabase.storage
           .from('thali-avatar')
-          .list();
+          .list('', { sortBy: { column: 'created_at', order: 'desc' } });
 
         if (files && files.length > 0) {
           const urls: Record<string, string> = {};
@@ -46,17 +48,22 @@ export const ThaliAvatar = ({
             const expressionMatch = file.name.match(/thali-avatar-(\w+)-/);
             if (expressionMatch) {
               const expr = expressionMatch[1];
-              const { data: publicData } = supabase.storage
-                .from('thali-avatar')
-                .getPublicUrl(file.name);
-              urls[expr] = publicData.publicUrl;
+              // Só adicionar se ainda não temos essa expressão (pega a mais recente)
+              if (!urls[expr]) {
+                const { data: publicData } = supabase.storage
+                  .from('thali-avatar')
+                  .getPublicUrl(file.name);
+                urls[expr] = publicData.publicUrl;
+              }
             }
           }
 
-          // Se temos pelo menos o neutral, usar
+          // Se temos pelo menos uma expressão, usar
           if (Object.keys(urls).length > 0) {
-            setAvatarUrls(prev => ({ ...prev, ...urls }));
-            setLoading(false);
+            if (isMounted) {
+              setAvatarUrls(prev => ({ ...prev, ...urls }));
+              setLoading(false);
+            }
             return;
           }
         }
@@ -65,20 +72,29 @@ export const ThaliAvatar = ({
         console.log("Gerando expressões da Thalí...");
         const { data, error } = await supabase.functions.invoke('generate-thali-expressions');
         
-        if (!error && data?.expressions) {
+        if (!error && data?.expressions && isMounted) {
           setAvatarUrls(prev => ({ ...prev, ...data.expressions }));
         }
       } catch (error) {
         console.error("Erro ao carregar avatares da Thalí:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     loadAvatars();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const currentAvatarUrl = avatarUrls[expression] || avatarUrls.neutral;
+  // Fallback inteligente: expressão solicitada > neutral > qualquer disponível
+  const currentAvatarUrl = avatarUrls[expression] 
+    || avatarUrls.neutral 
+    || Object.values(avatarUrls).find(url => url !== null);
 
   if (loading || !currentAvatarUrl) {
     // Fallback SVG enquanto carrega
