@@ -2,14 +2,27 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export type ThaliExpression = "neutral" | "pensativa" | "alertando" | "feliz";
+
 interface ThaliAvatarProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   processing?: boolean;
+  expression?: ThaliExpression;
 }
 
-export const ThaliAvatar = ({ size = "md", className, processing = false }: ThaliAvatarProps) => {
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+export const ThaliAvatar = ({ 
+  size = "md", 
+  className, 
+  processing = false,
+  expression = "neutral"
+}: ThaliAvatarProps) => {
+  const [avatarUrls, setAvatarUrls] = useState<Record<ThaliExpression, string | null>>({
+    neutral: null,
+    pensativa: null,
+    alertando: null,
+    feliz: null,
+  });
   const [loading, setLoading] = useState(true);
 
   const sizeClasses = {
@@ -19,37 +32,55 @@ export const ThaliAvatar = ({ size = "md", className, processing = false }: Thal
   };
 
   useEffect(() => {
-    const loadAvatar = async () => {
+    const loadAvatars = async () => {
       try {
-        // Buscar avatar existente ou gerar novo
+        // Buscar avatares existentes
         const { data: files } = await supabase.storage
           .from('thali-avatar')
           .list();
 
         if (files && files.length > 0) {
-          // Usar avatar existente
-          const { data: publicData } = supabase.storage
-            .from('thali-avatar')
-            .getPublicUrl(files[0].name);
-          setAvatarUrl(publicData.publicUrl);
-        } else {
-          // Gerar novo avatar
-          const { data, error } = await supabase.functions.invoke('generate-thali-avatar');
-          if (!error && data?.avatarUrl) {
-            setAvatarUrl(data.avatarUrl);
+          const urls: Record<string, string> = {};
+          
+          for (const file of files) {
+            const expressionMatch = file.name.match(/thali-avatar-(\w+)-/);
+            if (expressionMatch) {
+              const expr = expressionMatch[1];
+              const { data: publicData } = supabase.storage
+                .from('thali-avatar')
+                .getPublicUrl(file.name);
+              urls[expr] = publicData.publicUrl;
+            }
+          }
+
+          // Se temos pelo menos o neutral, usar
+          if (Object.keys(urls).length > 0) {
+            setAvatarUrls(prev => ({ ...prev, ...urls }));
+            setLoading(false);
+            return;
           }
         }
+
+        // Gerar expressões se não existirem
+        console.log("Gerando expressões da Thalí...");
+        const { data, error } = await supabase.functions.invoke('generate-thali-expressions');
+        
+        if (!error && data?.expressions) {
+          setAvatarUrls(prev => ({ ...prev, ...data.expressions }));
+        }
       } catch (error) {
-        console.error("Erro ao carregar avatar da Thalí:", error);
+        console.error("Erro ao carregar avatares da Thalí:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadAvatar();
+    loadAvatars();
   }, []);
 
-  if (loading || !avatarUrl) {
+  const currentAvatarUrl = avatarUrls[expression] || avatarUrls.neutral;
+
+  if (loading || !currentAvatarUrl) {
     // Fallback SVG enquanto carrega
     return (
       <div
@@ -94,8 +125,8 @@ export const ThaliAvatar = ({ size = "md", className, processing = false }: Thal
       )}
     >
       <img
-        src={avatarUrl}
-        alt="Thalí - Assistente Inteligente"
+        src={currentAvatarUrl}
+        alt={`Thalí - ${expression}`}
         className="w-full h-full object-cover"
       />
     </div>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { UserCheck, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ThaliAvatar } from "./ThaliAvatar";
+import { ThaliAvatar, type ThaliExpression } from "./ThaliAvatar";
 
 interface Analise {
   intencao_principal: string;
@@ -64,11 +64,23 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
     }
   };
 
+  const getExpressionByUrgency = (nivel: string): ThaliExpression => {
+    switch (nivel) {
+      case "critica":
+      case "alta":
+        return "alertando";
+      case "baixa":
+        return "feliz";
+      default:
+        return "neutral";
+    }
+  };
+
   if (loading) {
     return (
       <Card className="border-primary/20">
         <CardContent className="pt-6 flex items-center justify-center gap-2">
-          <ThaliAvatar size="sm" processing={true} />
+          <ThaliAvatar size="sm" expression="pensativa" processing={true} />
           <span className="text-sm">Thalí analisando mensagem...</span>
         </CardContent>
       </Card>
@@ -81,7 +93,7 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <ThaliAvatar size="sm" />
+          <ThaliAvatar size="sm" expression={getExpressionByUrgency(analise.nivel_urgencia || "media")} />
           Análise da Thalí - Pré-atendimento
         </CardTitle>
       </CardHeader>

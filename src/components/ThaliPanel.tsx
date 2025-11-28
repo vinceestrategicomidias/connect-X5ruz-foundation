@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { usePacienteContext } from "@/contexts/PacienteContext";
-import { ThaliAvatar } from "./ThaliAvatar";
+import { ThaliAvatar, type ThaliExpression } from "./ThaliAvatar";
 
 interface ThaliPanelProps {
   open: boolean;
@@ -39,6 +39,23 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
   const { pacienteSelecionado } = usePacienteContext();
   const [loading, setLoading] = useState(false);
   const [analise, setAnalise] = useState<AnaliseContexto | null>(null);
+  
+  // Determinar expressão baseada no sentimento
+  const getExpression = (): ThaliExpression => {
+    if (loading) return "pensativa";
+    if (!analise) return "neutral";
+    
+    switch (analise.sentimento) {
+      case "muito_negativo":
+      case "negativo":
+        return "alertando";
+      case "muito_positivo":
+      case "positivo":
+        return "feliz";
+      default:
+        return "neutral";
+    }
+  };
 
   useEffect(() => {
     if (open && pacienteSelecionado) {
@@ -134,7 +151,7 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4 bg-gradient-to-r from-primary/10 to-primary/5">
             <div className="flex items-center gap-3">
-              <ThaliAvatar size="md" />
+              <ThaliAvatar size="md" expression={getExpression()} />
               <div>
                 <h2 className="text-lg font-semibold">Thalí</h2>
                 <p className="text-xs text-muted-foreground">Assistente Inteligente</p>
@@ -155,7 +172,7 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
                 </div>
                 {loading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <ThaliAvatar size="sm" processing={true} />
+                    <ThaliAvatar size="sm" expression="pensativa" processing={true} />
                     <span>Analisando...</span>
                   </div>
                 ) : (

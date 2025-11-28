@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ThaliAvatar } from "./ThaliAvatar";
+import { ThaliAvatar, type ThaliExpression } from "./ThaliAvatar";
 
 interface Sugestao {
   texto: string;
@@ -55,11 +55,22 @@ export const IASugestoesRespostas = ({ conversaId, onUsarSugestao }: IASugestoes
     }
   };
 
+  const getExpressionByTipo = (tipo: string): ThaliExpression => {
+    switch (tipo) {
+      case 'empatica':
+        return 'feliz';
+      case 'procedimento':
+        return 'neutral';
+      default:
+        return 'neutral';
+    }
+  };
+
   return (
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ThaliAvatar size="sm" />
+          <ThaliAvatar size="sm" expression={loading ? "pensativa" : "neutral"} processing={loading} />
           <h3 className="font-semibold">Sugestões da Thalí</h3>
         </div>
         <Button
