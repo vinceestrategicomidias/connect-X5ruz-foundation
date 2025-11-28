@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Eye, EyeOff, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Login() {
   const [senha, setSenha] = useState("123456");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -121,6 +123,7 @@ export default function Login() {
           <div className="flex justify-end">
             <button
               type="button"
+              onClick={() => setForgotPasswordOpen(true)}
               className="text-sm text-primary hover:underline"
             >
               Esqueci minha senha
@@ -153,6 +156,11 @@ export default function Login() {
             </div>
           </div>
         </div>
+
+        <ForgotPasswordDialog 
+          open={forgotPasswordOpen} 
+          onOpenChange={setForgotPasswordOpen}
+        />
       </Card>
     </div>
   );
