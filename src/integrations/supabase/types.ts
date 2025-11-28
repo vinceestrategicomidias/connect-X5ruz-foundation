@@ -25,6 +25,7 @@ export type Database = {
           nome_arquivo: string
           tamanho_bytes: number | null
           tipo: string
+          transcricao: string | null
           url_storage: string
         }
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           nome_arquivo: string
           tamanho_bytes?: number | null
           tipo: string
+          transcricao?: string | null
           url_storage: string
         }
         Update: {
@@ -49,6 +51,7 @@ export type Database = {
           nome_arquivo?: string
           tamanho_bytes?: number | null
           tipo?: string
+          transcricao?: string | null
           url_storage?: string
         }
         Relationships: [

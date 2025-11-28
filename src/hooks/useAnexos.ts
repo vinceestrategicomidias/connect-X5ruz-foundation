@@ -16,6 +16,7 @@ interface AnexoMetadata {
   tamanhoBytes: number;
   mimeType: string;
   duracaoSegundos?: number;
+  transcricao?: string | null;
 }
 
 export const useUploadAnexo = () => {
@@ -98,6 +99,29 @@ export const useAnexosByMensagem = (mensagemId: string | null) => {
       return data;
     },
     enabled: !!mensagemId,
+  });
+};
+
+export const useUpdateAnexoTranscricao = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ anexoId, transcricao }: { anexoId: string; transcricao: string }) => {
+      const { error } = await supabase
+        .from('anexos_mensagens')
+        .update({ transcricao })
+        .eq('id', anexoId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['anexos'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao salvar transcrição");
+    },
   });
 };
 

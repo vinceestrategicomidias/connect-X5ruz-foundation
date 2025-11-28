@@ -27,16 +27,18 @@ export const ConnectMessageBubblePatient = ({
         <div className="space-y-2">
           {anexos && anexos.length > 0 && (
             <div className="space-y-2">
-              {anexos.map((anexo) => (
-                <MessageAttachment
-                  key={anexo.id}
-                  tipo={anexo.tipo}
-                  nomeArquivo={anexo.nome_arquivo}
-                  urlStorage={anexo.url_storage}
-                  tamanhoBytes={anexo.tamanho_bytes || 0}
-                  mimeType={anexo.mime_type || ''}
-                />
-              ))}
+          {anexos.map((anexo) => (
+            <MessageAttachment
+              key={anexo.id}
+              id={anexo.id}
+              tipo={anexo.tipo}
+              nomeArquivo={anexo.nome_arquivo}
+              urlStorage={anexo.url_storage}
+              tamanhoBytes={anexo.tamanho_bytes || 0}
+              mimeType={anexo.mime_type || ''}
+              transcricao={anexo.transcricao}
+            />
+          ))}
             </div>
           )}
           {content && (
@@ -67,11 +69,13 @@ export const ConnectMessageBubbleAttendant = ({
               {anexos.map((anexo) => (
                 <MessageAttachment
                   key={anexo.id}
+                  id={anexo.id}
                   tipo={anexo.tipo}
                   nomeArquivo={anexo.nome_arquivo}
                   urlStorage={anexo.url_storage}
                   tamanhoBytes={anexo.tamanho_bytes || 0}
                   mimeType={anexo.mime_type || ''}
+                  transcricao={anexo.transcricao}
                 />
               ))}
             </div>
