@@ -126,7 +126,7 @@ export const useNotifications = () => {
 
   // Load initial demo notifications
   useEffect(() => {
-    if (!userId || initialLoaded) return;
+    if (!userId) return;
 
     const loadInitialNotifications = async () => {
       // Check if there are existing notifications
@@ -149,13 +149,18 @@ export const useNotifications = () => {
           acao: notif.acao,
         }));
 
-        await supabase.from("notificacoes").insert(notificationsToInsert);
+        const { error } = await supabase.from("notificacoes").insert(notificationsToInsert);
+        if (error) {
+          console.error("Erro ao inserir notificações iniciais:", error);
+        }
       }
 
       setInitialLoaded(true);
     };
 
-    loadInitialNotifications();
+    if (!initialLoaded) {
+      loadInitialNotifications();
+    }
   }, [userId, initialLoaded]);
 
   // Fetch notifications
