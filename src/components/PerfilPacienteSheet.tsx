@@ -24,13 +24,16 @@ import {
   CreditCard,
   Building,
   Tag,
+  Pencil,
 } from "lucide-react";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { Paciente } from "@/hooks/usePacientes";
 import { useDocumentosPaciente } from "@/hooks/useDocumentosPaciente";
 import { useNotasPaciente } from "@/hooks/useNotasPaciente";
 import { useHistoricoPaciente } from "@/hooks/useHistoricoPaciente";
+import { useAtualizarNomePaciente } from "@/hooks/useMutations";
 import { format } from "date-fns";
+import { EditarNomeDialog } from "./EditarNomeDialog";
 
 interface PerfilPacienteSheetProps {
   open: boolean;
@@ -59,10 +62,12 @@ export const PerfilPacienteSheet = ({
   const [activeTab, setActiveTab] = useState("dados");
   const [novaNotaTexto, setNovaNotaTexto] = useState("");
   const [novaNotaTag, setNovaNotaTag] = useState("");
+  const [editarNomeOpen, setEditarNomeOpen] = useState(false);
 
   const { documentos, isLoading: loadingDocs } = useDocumentosPaciente(paciente?.id);
   const { notas, adicionarNota, isLoading: loadingNotas } = useNotasPaciente(paciente?.id);
   const { historico, isLoading: loadingHistorico } = useHistoricoPaciente(paciente?.id);
+  const atualizarNome = useAtualizarNomePaciente();
 
   const satisfacao = getSatisfacaoIA(paciente);
 
@@ -77,6 +82,15 @@ export const PerfilPacienteSheet = ({
     
     setNovaNotaTexto("");
     setNovaNotaTag("");
+  };
+
+  const handleSalvarNome = async (novoNome: string) => {
+    if (!paciente) return;
+    
+    await atualizarNome.mutateAsync({
+      pacienteId: paciente.id,
+      novoNome,
+    });
   };
 
   if (!paciente) return null;
@@ -117,7 +131,18 @@ export const PerfilPacienteSheet = ({
                     <User className="h-4 w-4 text-muted-foreground mt-1" />
                     <div className="flex-1">
                       <Label className="text-xs text-muted-foreground">Nome</Label>
-                      <p className="text-sm font-medium">{paciente.nome}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium flex-1">{paciente.nome}</p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => setEditarNomeOpen(true)}
+                          title="Editar nome"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -307,6 +332,14 @@ export const PerfilPacienteSheet = ({
           </div>
         </ScrollArea>
       </SheetContent>
+
+      {/* Dialog para editar nome */}
+      <EditarNomeDialog
+        open={editarNomeOpen}
+        onOpenChange={setEditarNomeOpen}
+        nomeAtual={paciente.nome}
+        onSalvar={handleSalvarNome}
+      />
     </Sheet>
   );
 };

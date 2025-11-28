@@ -1,4 +1,4 @@
-import { Send, Paperclip, Mic, UserCog, Phone, MoreVertical, Smile } from "lucide-react";
+import { Send, Paperclip, Mic, UserCog, Phone, MoreVertical, Smile, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -7,7 +7,7 @@ import { ConnectStatusIndicator } from "./ConnectStatusIndicator";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConversas";
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
-import { useEnviarMensagem, useAtualizarStatusPaciente } from "@/hooks/useMutations";
+import { useEnviarMensagem, useAtualizarStatusPaciente, useAtualizarNomePaciente } from "@/hooks/useMutations";
 import { useState, useEffect, useRef } from "react";
 import { ConnectTransferDialogNew } from "./ConnectTransferDialogNew";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,7 @@ import { AudioRecorder } from "./AudioRecorder";
 import { useUploadAnexo } from "@/hooks/useAnexos";
 import { EmojiStickerPicker } from "./EmojiStickerPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { EditarNomeDialog } from "./EditarNomeDialog";
 
 export const ConnectColumn2 = () => {
   const { pacienteSelecionado } = usePacienteContext();
@@ -37,9 +38,11 @@ export const ConnectColumn2 = () => {
   const [perfilOpen, setPerfilOpen] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [editarNomeOpen, setEditarNomeOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadAnexo = useUploadAnexo();
+  const atualizarNome = useAtualizarNomePaciente();
 
   // Scroll automático para última mensagem
   useEffect(() => {
@@ -281,6 +284,15 @@ export const ConnectColumn2 = () => {
     }
   };
 
+  const handleSalvarNome = async (novoNome: string) => {
+    if (!pacienteSelecionado) return;
+    
+    await atualizarNome.mutateAsync({
+      pacienteId: pacienteSelecionado.id,
+      novoNome,
+    });
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-muted/20">
       {/* Header com Avatar e Status */}
@@ -295,17 +307,30 @@ export const ConnectColumn2 = () => {
               status={getStatusBadge()} 
               tempoNaFila={pacienteSelecionado?.tempo_na_fila || 0}
             />
-            <div>
-              <h3 className="font-medium text-sm text-foreground">
-                {pacienteSelecionado?.nome || "Selecione um paciente"}
-              </h3>
-              {mensagens && mensagens.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {new Date(mensagens[mensagens.length - 1].created_at).toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
+            <div className="flex items-center gap-2">
+              <div>
+                <h3 className="font-medium text-sm text-foreground">
+                  {pacienteSelecionado?.nome || "Selecione um paciente"}
+                </h3>
+                {mensagens && mensagens.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(mensagens[mensagens.length - 1].created_at).toLocaleTimeString('pt-BR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                )}
+              </div>
+              {pacienteSelecionado && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setEditarNomeOpen(true)}
+                  title="Editar nome do contato"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
               )}
             </div>
           </div>
@@ -478,6 +503,16 @@ export const ConnectColumn2 = () => {
         onOpenChange={setPerfilOpen}
         paciente={pacienteSelecionado}
       />
+
+      {/* Editar Nome do Paciente */}
+      {pacienteSelecionado && (
+        <EditarNomeDialog
+          open={editarNomeOpen}
+          onOpenChange={setEditarNomeOpen}
+          nomeAtual={pacienteSelecionado.nome}
+          onSalvar={handleSalvarNome}
+        />
+      )}
     </div>
   );
 };
