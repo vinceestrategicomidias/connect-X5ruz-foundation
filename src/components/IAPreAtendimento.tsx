@@ -68,7 +68,7 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
     return (
       <Card className="border-primary/20">
         <CardContent className="pt-6 flex items-center justify-center gap-2">
-          <ThaliAvatar size="sm" className="animate-pulse" />
+          <ThaliAvatar size="sm" processing={true} />
           <span className="text-sm">Thalí analisando mensagem...</span>
         </CardContent>
       </Card>

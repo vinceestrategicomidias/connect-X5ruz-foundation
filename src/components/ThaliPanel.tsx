@@ -155,7 +155,7 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
                 </div>
                 {loading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <ThaliAvatar size="sm" className="animate-pulse" />
+                    <ThaliAvatar size="sm" processing={true} />
                     <span>Analisando...</span>
                   </div>
                 ) : (
