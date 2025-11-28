@@ -232,11 +232,11 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "dashboards":
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-[#0A2647]">
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="text-2xl font-bold text-[#0A2647] truncate">
                 Dashboards de Produtividade
               </h3>
-              <select className="px-3 py-2 border border-border rounded-lg text-sm">
+              <select className="px-3 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 min-w-[160px]">
                 <option>Últimos 7 dias</option>
                 <option>Últimos 30 dias</option>
                 <option>Últimos 90 dias</option>
@@ -245,35 +245,35 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
             {/* Cards de métricas */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6 bg-gradient-to-br from-[#0A2647]/5 to-[#0A2647]/10 border-[#0A2647]/20">
-                <div className="text-4xl font-bold text-[#0A2647] mb-1">
+              <Card className="p-6 bg-gradient-to-br from-[#0A2647]/5 to-[#0A2647]/10 border-[#0A2647]/20 overflow-hidden">
+                <div className="text-4xl font-bold text-[#0A2647] mb-1 truncate">
                   {dadosEmpresaGrande.totalAtendimentos.toLocaleString()}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground line-clamp-2">
                   Total de Atendimentos
                 </p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#144272]/5 to-[#144272]/10 border-[#144272]/20">
-                <div className="text-4xl font-bold text-[#144272] mb-1">
+              <Card className="p-6 bg-gradient-to-br from-[#144272]/5 to-[#144272]/10 border-[#144272]/20 overflow-hidden">
+                <div className="text-4xl font-bold text-[#144272] mb-1 truncate">
                   {dadosEmpresaGrande.tmaSetor}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground line-clamp-2">
                   TMA - Tempo Médio Atendimento
                 </p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#205295]/5 to-[#205295]/10 border-[#205295]/20">
-                <div className="text-4xl font-bold text-[#205295] mb-1">
+              <Card className="p-6 bg-gradient-to-br from-[#205295]/5 to-[#205295]/10 border-[#205295]/20 overflow-hidden">
+                <div className="text-4xl font-bold text-[#205295] mb-1 truncate">
                   {dadosEmpresaGrande.tmeSetor}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground line-clamp-2">
                   TME - Tempo Médio Espera
                 </p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#2C74B3]/5 to-[#2C74B3]/10 border-[#2C74B3]/20">
-                <div className="text-4xl font-bold text-[#2C74B3] mb-1">
+              <Card className="p-6 bg-gradient-to-br from-[#2C74B3]/5 to-[#2C74B3]/10 border-[#2C74B3]/20 overflow-hidden">
+                <div className="text-4xl font-bold text-[#2C74B3] mb-1 truncate">
                   {dadosEmpresaGrande.taxaConclusao}%
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground line-clamp-2">
                   Taxa de Conclusão
                 </p>
               </Card>
@@ -281,114 +281,122 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
             {/* Gráficos */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="p-6">
+              <Card className="p-6 overflow-hidden">
                 <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
                   Atendimentos por Dia da Semana
                 </h4>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="dia" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="atendimentos" fill="#0A2647" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="dia" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="atendimentos" fill="#0A2647" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </Card>
 
-              <Card className="p-6">
+              <Card className="p-6 overflow-hidden">
                 <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
                   TMA e TME Diário (minutos)
                 </h4>
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="dia" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="TMA"
-                      stroke="#0A2647"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "#0A2647" }}
-                      name="TMA"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="TME"
-                      stroke="#2C74B3"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "#2C74B3" }}
-                      name="TME"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="dia" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="TMA"
+                        stroke="#0A2647"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#0A2647" }}
+                        name="TMA"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="TME"
+                        stroke="#2C74B3"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#2C74B3" }}
+                        name="TME"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </Card>
 
-              <Card className="p-6">
+              <Card className="p-6 overflow-hidden">
                 <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
                   Distribuição por Atendente
                 </h4>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis type="number" />
-                    <YAxis dataKey="nome" type="category" width={80} />
-                    <Tooltip />
-                    <Bar dataKey="atendimentos" fill="#144272" radius={[0, 8, 8, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis type="number" />
+                      <YAxis dataKey="nome" type="category" width={80} />
+                      <Tooltip />
+                      <Bar dataKey="atendimentos" fill="#144272" radius={[0, 8, 8, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </Card>
 
-              <Card className="p-6">
+              <Card className="p-6 overflow-hidden">
                 <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
                   Status de Atendimentos
                 </h4>
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie
-                      data={dadosEmpresaGrande.statusAtendimentos}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      outerRadius={90}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {dadosEmpresaGrande.statusAtendimentos.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={dadosEmpresaGrande.statusAtendimentos}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`}
+                        outerRadius={90}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {dadosEmpresaGrande.statusAtendimentos.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </Card>
             </div>
 
             {/* Horários de Pico */}
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
                 Horários de Pico (Classificação por IA)
               </h4>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 {dadosEmpresaGrande.horariosPico.map((item) => (
                   <div
                     key={item.horario}
                     className="flex justify-between items-center p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                   >
                     <span className="font-semibold text-foreground">{item.horario}h</span>
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       {item.msgs} mensagens
                     </span>
                     <span
                       className={cn(
-                        "px-3 py-1 rounded-full text-xs font-bold",
+                        "px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap",
                         item.cor
                       )}
                     >
@@ -416,9 +424,9 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               )}
             </div>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg">Setor: Pré-venda</h4>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                 <div className="p-4 border border-border rounded-lg">
                   <h5 className="font-semibold mb-2">Roteiro Particular</h5>
                   <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
@@ -475,50 +483,50 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">NPS Geral</div>
-                <div className="text-4xl font-bold text-[#0A2647]">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">NPS Geral</div>
+                <div className="text-4xl font-bold text-[#0A2647] truncate">
                   {dadosEmpresaGrande.npsGeral}
                 </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">
                   Tempo Médio Atendimento
                 </div>
-                <div className="text-4xl font-bold text-[#144272]">
+                <div className="text-4xl font-bold text-[#144272] truncate">
                   {dadosEmpresaGrande.tmaSetor}
                 </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">
                   % Transferências
                 </div>
-                <div className="text-4xl font-bold text-[#205295]">
+                <div className="text-4xl font-bold text-[#205295] truncate">
                   {dadosEmpresaGrande.porcentagemTransferencia}%
                 </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">
                   Taxa Reabertura
                 </div>
-                <div className="text-4xl font-bold text-[#2C74B3]">
+                <div className="text-4xl font-bold text-[#2C74B3] truncate">
                   {dadosEmpresaGrande.taxaReabertura}%
                 </div>
               </Card>
             </div>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg">Ranking Top 3 Atendentes</h4>
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.rankingTop3.map((atendente, idx) => (
                   <div
                     key={idx}
                     className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-muted/30 to-transparent hover:from-muted/50 transition-all"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
                       <div
                         className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg",
+                          "w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg flex-shrink-0",
                           idx === 0 && "bg-gradient-to-br from-yellow-400 to-yellow-600",
                           idx === 1 && "bg-gradient-to-br from-gray-300 to-gray-500",
                           idx === 2 && "bg-gradient-to-br from-orange-400 to-orange-600"
@@ -526,14 +534,14 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                       >
                         {idx + 1}
                       </div>
-                      <div>
-                        <div className="font-semibold text-lg">{atendente.atendente}</div>
-                        <div className="text-sm text-muted-foreground">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-lg truncate">{atendente.atendente}</div>
+                        <div className="text-sm text-muted-foreground truncate">
                           {atendente.atendimentos} atendimentos • TMA: {atendente.tempoMedio}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0 ml-4">
                       <div className="text-2xl font-bold text-[#0A2647]">
                         {atendente.nps}
                       </div>
@@ -552,25 +560,25 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             <h3 className="text-2xl font-bold text-[#0A2647]">
               Transferências - Auditoria Diária
             </h3>
-            <Card className="p-6">
-              <div className="space-y-3">
+            <Card className="p-6 overflow-hidden">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.transferencias.map((trans, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors gap-4"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="text-sm font-mono text-muted-foreground">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="text-sm font-mono text-muted-foreground flex-shrink-0">
                         {trans.hora}
                       </div>
-                      <ArrowRightLeft className="h-4 w-4 text-primary" />
-                      <div className="text-sm">
+                      <ArrowRightLeft className="h-4 w-4 text-primary flex-shrink-0" />
+                      <div className="text-sm min-w-0 flex-1 truncate">
                         <span className="font-medium">{trans.de}</span>
                         <span className="text-muted-foreground mx-1">→</span>
                         <span className="font-medium">{trans.para}</span>
                       </div>
                     </div>
-                    <div className="text-sm font-medium">{trans.paciente}</div>
+                    <div className="text-sm font-medium flex-shrink-0">{trans.paciente}</div>
                   </div>
                 ))}
               </div>
@@ -586,55 +594,55 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             </h3>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">
                   Total Respondido
                 </div>
-                <div className="text-4xl font-bold text-[#0A2647]">
+                <div className="text-4xl font-bold text-[#0A2647] truncate">
                   {dadosEmpresaGrande.nps.totalRespondido}
                 </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">
                   NPS Médio
                 </div>
-                <div className="text-4xl font-bold text-green-600">
+                <div className="text-4xl font-bold text-green-600 truncate">
                   {dadosEmpresaGrande.nps.npsMedio}
                 </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">
                   Promotores
                 </div>
-                <div className="text-4xl font-bold text-green-600">
+                <div className="text-4xl font-bold text-green-600 truncate">
                   {dadosEmpresaGrande.nps.promotores}
                 </div>
               </Card>
-              <Card className="p-6">
-                <div className="text-sm text-muted-foreground mb-1">
+              <Card className="p-6 overflow-hidden">
+                <div className="text-sm text-muted-foreground mb-1 truncate">
                   Detratores
                 </div>
-                <div className="text-4xl font-bold text-red-600">
+                <div className="text-4xl font-bold text-red-600 truncate">
                   {dadosEmpresaGrande.nps.detratores}
                 </div>
               </Card>
             </div>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg">Feedbacks Recentes</h4>
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.nps.feedbacksRecentes.map((feedback, idx) => (
                   <div
                     key={idx}
                     className="p-4 rounded-lg border border-border"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold">{feedback.atendente}</span>
-                      <span className="text-2xl font-bold text-[#0A2647]">
+                    <div className="flex items-center justify-between mb-2 gap-4">
+                      <span className="font-semibold truncate">{feedback.atendente}</span>
+                      <span className="text-2xl font-bold text-[#0A2647] flex-shrink-0">
                         {feedback.nota}/10
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground italic">
+                    <p className="text-sm text-muted-foreground italic line-clamp-2">
                       "{feedback.comentario}"
                     </p>
                   </div>
@@ -653,12 +661,12 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 Alertas Automáticos (IA)
               </h3>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
               {dadosEmpresaGrande.alertas.map((alerta, idx) => (
                 <Card
                   key={idx}
                   className={cn(
-                    "p-4 border-l-4",
+                    "p-4 border-l-4 overflow-hidden",
                     alerta.cor === "red" && "border-l-red-500 bg-red-50/50",
                     alerta.cor === "orange" && "border-l-orange-500 bg-orange-50/50",
                     alerta.cor === "yellow" && "border-l-yellow-500 bg-yellow-50/50"
@@ -666,18 +674,18 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 >
                   <div className="flex items-start gap-3">
                     <Bell className={cn(
-                      "h-5 w-5 mt-0.5",
+                      "h-5 w-5 mt-0.5 flex-shrink-0",
                       alerta.cor === "red" && "text-red-500",
                       alerta.cor === "orange" && "text-orange-500",
                       alerta.cor === "yellow" && "text-yellow-600"
                     )} />
-                    <div className="flex-1">
-                      <h4 className="font-semibold mb-1">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold mb-1 truncate">
                         {alerta.tipo}
                         {alerta.setor && ` - ${alerta.setor}`}
                         {alerta.atendente && ` - ${alerta.atendente}`}
                       </h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {alerta.detalhes}
                       </p>
                     </div>
@@ -698,42 +706,42 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </h3>
             </div>
 
-            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50">
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg">Previsões para Hoje</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">
+                <div className="min-w-0">
+                  <div className="text-sm text-muted-foreground mb-1 truncate">
                     Horário de Pico Previsto
                   </div>
-                  <div className="text-2xl font-bold text-[#0A2647]">
+                  <div className="text-2xl font-bold text-[#0A2647] truncate">
                     {dadosEmpresaGrande.preditiva.horarioPicoPrevisto}
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">
+                <div className="min-w-0">
+                  <div className="text-sm text-muted-foreground mb-1 truncate">
                     Volume Esperado Hoje
                   </div>
-                  <div className="text-2xl font-bold text-[#0A2647]">
+                  <div className="text-2xl font-bold text-[#0A2647] truncate">
                     {dadosEmpresaGrande.preditiva.volumeEsperadoHoje}
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">
+                <div className="min-w-0">
+                  <div className="text-sm text-muted-foreground mb-1 truncate">
                     Setor Mais Demandado
                   </div>
-                  <div className="text-2xl font-bold text-[#0A2647]">
+                  <div className="text-2xl font-bold text-[#0A2647] truncate">
                     {dadosEmpresaGrande.preditiva.setorMaisDemandado}
                   </div>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-yellow-500" />
                 Recomendações da IA
               </h4>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, idx) => (
                   <div
                     key={idx}
@@ -742,7 +750,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                     <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-bold text-primary">{idx + 1}</span>
                     </div>
-                    <p className="text-sm">{rec}</p>
+                    <p className="text-sm flex-1">{rec}</p>
                   </div>
                 ))}
               </div>
@@ -760,18 +768,18 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </h3>
             </div>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
                 <ThumbsUp className="h-5 w-5 text-green-600" />
                 Elogios
               </h4>
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.feedbackIA.elogios.map((elogio, idx) => (
                   <div
                     key={idx}
                     className="p-4 rounded-lg bg-green-50 border border-green-200"
                   >
-                    <div className="font-semibold text-green-900 mb-1">
+                    <div className="font-semibold text-green-900 mb-1 truncate">
                       {elogio.atendente}
                     </div>
                     <p className="text-sm text-green-800">{elogio.motivo}</p>
@@ -780,18 +788,18 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-orange-600" />
                 Oportunidades de Melhoria
               </h4>
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.feedbackIA.melhorias.map((melhoria, idx) => (
                   <div
                     key={idx}
                     className="p-4 rounded-lg bg-orange-50 border border-orange-200"
                   >
-                    <div className="font-semibold text-orange-900 mb-1">
+                    <div className="font-semibold text-orange-900 mb-1 truncate">
                       {melhoria.atendente}
                     </div>
                     <p className="text-sm text-orange-800">{melhoria.motivo}</p>
@@ -819,11 +827,11 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {dadosEmpresaGrande.indicadores.map((indicador, idx) => (
-                <Card key={idx} className="p-6">
-                  <div className="text-sm text-muted-foreground mb-1">
+                <Card key={idx} className="p-6 overflow-hidden">
+                  <div className="text-sm text-muted-foreground mb-1 truncate">
                     {indicador.nome}
                   </div>
-                  <div className="text-4xl font-bold text-[#0A2647]">
+                  <div className="text-4xl font-bold text-[#0A2647] truncate">
                     {indicador.valor}
                   </div>
                 </Card>
@@ -842,23 +850,23 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </h3>
             </div>
 
-            <Card className="p-6">
-              <div className="space-y-2">
+            <Card className="p-6 overflow-hidden">
+              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.auditoria.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors gap-4"
                   >
-                    <div className="flex items-center gap-3">
-                      <History className="h-4 w-4 text-primary" />
-                      <div>
-                        <div className="font-medium">{item.acao}</div>
-                        <div className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <History className="h-4 w-4 text-primary flex-shrink-0" />
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{item.acao}</div>
+                        <div className="text-sm text-muted-foreground truncate">
                           Por: {item.por}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right text-sm">
+                    <div className="text-right text-sm flex-shrink-0">
                       <div className="font-medium">{item.data}</div>
                       <div className="text-muted-foreground">{item.horario}</div>
                     </div>
@@ -885,36 +893,36 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </Button>
             </div>
 
-            <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
+            <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 overflow-hidden">
               <h4 className="font-semibold mb-3 text-lg flex items-center gap-2">
-                <Award className="h-5 w-5 text-yellow-600" />
-                Reconhecimento da Semana
+                <Award className="h-5 w-5 text-yellow-600 flex-shrink-0" />
+                <span className="truncate">Reconhecimento da Semana</span>
               </h4>
               <div className="p-4 bg-white rounded-lg">
-                <div className="font-bold text-lg mb-1">
+                <div className="font-bold text-lg mb-1 truncate">
                   {dadosEmpresaGrande.reconhecimentoSemana.usuario}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground line-clamp-2">
                   {dadosEmpresaGrande.reconhecimentoSemana.motivo}
                 </p>
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg">Ideias Enviadas</h4>
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.ideias.map((ideia, idx) => (
                   <div
                     key={idx}
                     className="p-4 rounded-lg border border-border hover:bg-muted/20 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="font-semibold">{ideia.usuario}</span>
                           <span
                             className={cn(
-                              "px-2 py-0.5 rounded-full text-xs font-medium",
+                              "px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
                               ideia.status === "Implementada" && "bg-green-100 text-green-700",
                               ideia.status === "Aprovada" && "bg-blue-100 text-blue-700",
                               ideia.status === "Em análise" && "bg-yellow-100 text-yellow-700"
@@ -923,7 +931,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                             {ideia.status}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground line-clamp-2">
                           {ideia.ideia}
                         </p>
                       </div>
@@ -942,38 +950,38 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] h-[90vh] p-0 gap-0">
-        <div className="flex h-full">
+      <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden">
+        <div className="flex h-full overflow-hidden">
           {/* Menu Lateral */}
-          <div className="w-64 border-r border-border bg-muted/30 flex flex-col">
-            <div className="p-6 border-b border-border">
+          <div className="w-64 border-r border-border bg-muted/30 flex flex-col flex-shrink-0">
+            <div className="p-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-2 mb-1">
-                <LayoutGrid className="h-6 w-6 text-[#0A2647]" />
-                <h2 className="text-xl font-bold text-[#0A2647]">
+                <LayoutGrid className="h-5 w-5 text-[#0A2647]" />
+                <h2 className="text-lg font-bold text-[#0A2647]">
                   Painel Estratégico
                 </h2>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] text-muted-foreground">
                 Grupo Liruz
               </p>
             </div>
 
             <ScrollArea className="flex-1">
-              <div className="p-2">
+              <div className="p-2 space-y-1">
                 {menuItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setSecaoAtiva(item.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all",
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all",
                       "hover:bg-primary/10",
                       secaoAtiva === item.id
                         ? "bg-[#0A2647] text-white shadow-md"
                         : "text-foreground"
                     )}
                   >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm font-medium">{item.label}</span>
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm font-medium truncate">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -981,18 +989,18 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
           </div>
 
           {/* Área Principal */}
-          <div className="flex-1 flex flex-col">
-            <div className="p-4 border-b border-border bg-card flex items-center justify-between">
-              <div className="flex items-center gap-2">
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+            <div className="px-6 py-4 border-b border-border bg-card flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
                 {(() => {
                   const activeItem = menuItems.find((m) => m.id === secaoAtiva);
                   if (activeItem) {
                     const IconComponent = activeItem.icon;
-                    return <IconComponent className="h-5 w-5 text-primary" />;
+                    return <IconComponent className="h-5 w-5 text-primary flex-shrink-0" />;
                   }
                   return null;
                 })()}
-                <h3 className="font-semibold text-lg">
+                <h3 className="font-semibold text-lg truncate">
                   {menuItems.find((m) => m.id === secaoAtiva)?.label}
                 </h3>
               </div>
@@ -1000,13 +1008,14 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 variant="ghost"
                 size="icon"
                 onClick={() => onOpenChange(false)}
+                className="flex-shrink-0"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
             <ScrollArea className="flex-1">
-              <div className="p-6">{renderConteudo()}</div>
+              <div className="p-6 pb-8 max-w-full">{renderConteudo()}</div>
             </ScrollArea>
           </div>
         </div>
