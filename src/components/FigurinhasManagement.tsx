@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePacotesFigurinhas, useFigurinhasByPacote, useUploadFigurinha } from "@/hooks/useFigurinhas";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Plus, Upload, Image as ImageIcon } from "lucide-react";
+import { Loader2, Plus, Upload, Image as ImageIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { GeradorFigurinhasThali } from "./GeradorFigurinhasThali";
 
 export const FigurinhasManagement = () => {
   const [selectedPacote, setSelectedPacote] = useState<string | null>(null);
@@ -63,9 +64,13 @@ export const FigurinhasManagement = () => {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="upload">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="upload">Nova Figurinha</TabsTrigger>
-            <TabsTrigger value="existing">Figurinhas Existentes</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="upload">Upload Manual</TabsTrigger>
+            <TabsTrigger value="ai">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Gerar com IA
+            </TabsTrigger>
+            <TabsTrigger value="existing">Ver Existentes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload" className="space-y-4">
@@ -148,6 +153,10 @@ export const FigurinhasManagement = () => {
                 </>
               )}
             </Button>
+          </TabsContent>
+
+          <TabsContent value="ai" className="space-y-4">
+            <GeradorFigurinhasThali />
           </TabsContent>
 
           <TabsContent value="existing">
