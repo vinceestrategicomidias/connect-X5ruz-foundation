@@ -71,6 +71,8 @@ type MenuSection =
   | "api";
 
 const menuItems = [
+  { id: "dashboard" as MenuSection, label: "Dashboard", icon: BarChart3 },
+  { id: "relatorios" as MenuSection, label: "Relatórios", icon: FileText },
   { id: "empresa" as MenuSection, label: "Empresa", icon: Building2 },
   { id: "unidades" as MenuSection, label: "Unidades", icon: Building },
   { id: "setores" as MenuSection, label: "Setores", icon: Map },
@@ -81,8 +83,6 @@ const menuItems = [
   { id: "mensageria" as MenuSection, label: "Thalí e Mensageria", icon: Bot },
   { id: "alertas" as MenuSection, label: "Alertas", icon: Bell },
   { id: "api" as MenuSection, label: "API e Webhooks", icon: Code2 },
-  { id: "relatorios" as MenuSection, label: "Relatórios", icon: FileText },
-  { id: "dashboard" as MenuSection, label: "Dashboard", icon: BarChart3 },
 ];
 
 export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
