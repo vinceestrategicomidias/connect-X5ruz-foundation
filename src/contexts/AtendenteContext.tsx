@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useDemoMode } from "./DemoModeContext";
 
 export type CargoTipo = "atendente" | "coordenacao" | "gestor";
 
@@ -23,6 +24,7 @@ const AtendenteContext = createContext<AtendenteContextType | undefined>(undefin
 
 export const AtendenteProvider = ({ children }: { children: ReactNode }) => {
   const [atendenteLogado, setAtendenteLogado] = useState<AtendenteLogado | null>(null);
+  const { isDemoMode, demoProfile } = useDemoMode();
 
   // Mock: Carregar Geovana como atendente logado por padrão
   useEffect(() => {
@@ -47,9 +49,12 @@ export const AtendenteProvider = ({ children }: { children: ReactNode }) => {
     carregarAtendente();
   }, []);
 
-  const isGestor = atendenteLogado?.cargo === "gestor";
-  const isCoordenacao = atendenteLogado?.cargo === "coordenacao" || isGestor;
-  const isAtendente = atendenteLogado?.cargo === "atendente";
+  // Usar perfil demo se modo demo estiver ativo, senão usar cargo real
+  const cargoAtual = isDemoMode && demoProfile ? demoProfile : atendenteLogado?.cargo;
+
+  const isGestor = cargoAtual === "gestor";
+  const isCoordenacao = cargoAtual === "coordenacao" || isGestor;
+  const isAtendente = cargoAtual === "atendente";
 
   return (
     <AtendenteContext.Provider
