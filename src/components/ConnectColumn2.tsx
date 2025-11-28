@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConnectAvatar } from "./ConnectAvatar";
-import { ConnectStatusBadge } from "./ConnectStatusBadge";
+import { ConnectStatusIndicator } from "./ConnectStatusIndicator";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConversas";
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
@@ -37,11 +37,24 @@ export const ConnectColumn2 = () => {
             name={pacienteSelecionado?.nome || "Selecione um paciente"} 
             image={pacienteSelecionado?.avatar || undefined}
           />
-          <div>
-            <h3 className="font-medium text-sm text-foreground">
-              {pacienteSelecionado?.nome || "Selecione um paciente"}
-            </h3>
-            <ConnectStatusBadge status={getStatusBadge()} />
+          <div className="flex items-center gap-2">
+            <ConnectStatusIndicator 
+              status={getStatusBadge()} 
+              tempoNaFila={pacienteSelecionado?.tempo_na_fila || 0}
+            />
+            <div>
+              <h3 className="font-medium text-sm text-foreground">
+                {pacienteSelecionado?.nome || "Selecione um paciente"}
+              </h3>
+              {mensagens && mensagens.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {new Date(mensagens[mensagens.length - 1].created_at).toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
