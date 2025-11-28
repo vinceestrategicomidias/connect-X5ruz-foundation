@@ -1,4 +1,4 @@
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, ArrowRightLeft, Trophy, PhoneMissed, Star, AlertTriangle, Lightbulb, Brain } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -6,23 +6,33 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 const getNotificationIcon = (type: Notification["type"]) => {
-  const icons = {
-    transferencia_recebida: "🔄",
-    reconhecimento_semana: "🏆",
-    ligacao_perdida: "📞",
-    nps_recebido: "⭐",
-    alerta_performance: "⚠️",
-    ideia_aprovada: "💡",
-  };
-  return icons[type];
+  const iconClass = "h-5 w-5";
+  
+  switch (type) {
+    case "transferencia_recebida":
+      return <ArrowRightLeft className={cn(iconClass, "text-blue-500")} />;
+    case "reconhecimento_semana":
+      return <Trophy className={cn(iconClass, "text-yellow-500")} />;
+    case "ligacao_perdida":
+      return <PhoneMissed className={cn(iconClass, "text-red-500")} />;
+    case "nps_recebido":
+      return <Star className={cn(iconClass, "text-amber-500")} />;
+    case "alerta_performance":
+      return <AlertTriangle className={cn(iconClass, "text-orange-500")} />;
+    case "ideia_aprovada":
+      return <Lightbulb className={cn(iconClass, "text-green-500")} />;
+    case "feedback_ia":
+      return <Brain className={cn(iconClass, "text-purple-500")} />;
+    default:
+      return <Bell className={cn(iconClass, "text-muted-foreground")} />;
+  }
 };
 
 const groupNotificationsByDate = (notifications: Notification[]) => {
@@ -62,35 +72,29 @@ export const NotificationsPanel = () => {
   const NotificationItem = ({ notification }: { notification: Notification }) => (
     <button
       onClick={() => handleNotificationClick(notification)}
-      className={`w-full flex items-start gap-3 p-3 hover:bg-accent/50 transition-colors text-left ${
-        !notification.read ? "bg-primary/5" : ""
-      }`}
+      className={cn(
+        "w-full flex items-start gap-3 p-3 hover:bg-accent/50 transition-colors text-left border-b border-border/50 last:border-0",
+        !notification.read && "bg-primary/5"
+      )}
     >
-      <div className="flex-shrink-0">
-        {notification.avatar ? (
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={notification.avatar} />
-            <AvatarFallback>{notification.title[0]}</AvatarFallback>
-          </Avatar>
-        ) : (
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
-            {getNotificationIcon(notification.type)}
-          </div>
-        )}
+      <div className="flex-shrink-0 mt-0.5">
+        <div className="h-9 w-9 rounded-full bg-muted/50 flex items-center justify-center">
+          {getNotificationIcon(notification.type)}
+        </div>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-foreground line-clamp-1">
+          <p className="text-sm font-semibold text-foreground line-clamp-1">
             {notification.title}
           </p>
           {!notification.read && (
-            <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-1" />
+            <div className="flex-shrink-0 w-2 h-2 rounded-full bg-red-500 mt-1" />
           )}
         </div>
-        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-tight">
           {notification.description}
         </p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
+        <p className="text-xs text-muted-foreground/60 mt-1.5">
           {formatDistanceToNow(new Date(notification.timestamp), {
             addSuffix: true,
             locale: ptBR,
@@ -111,12 +115,12 @@ export const NotificationsPanel = () => {
 
     return (
       <div>
-        <div className="px-3 py-2 bg-muted/30">
+        <div className="sticky top-0 bg-muted/50 backdrop-blur-sm px-4 py-2 z-10">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             {title}
           </p>
         </div>
-        <div className="divide-y divide-border">
+        <div>
           {notifications.map((notif) => (
             <NotificationItem key={notif.id} notification={notif} />
           ))}
@@ -137,26 +141,29 @@ export const NotificationsPanel = () => {
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] font-bold"
             >
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[380px] p-0"
+        className="w-[400px] p-0 shadow-xl"
         align="end"
         sideOffset={8}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div>
-            <h3 className="font-semibold text-foreground">Notificações</h3>
-            {unreadCount > 0 && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {unreadCount} não {unreadCount === 1 ? "lida" : "lidas"}
-              </p>
-            )}
+        <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+          <div className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            <div>
+              <h3 className="font-semibold text-foreground">Notificações</h3>
+              {unreadCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {unreadCount} não {unreadCount === 1 ? "lida" : "lidas"}
+                </p>
+              )}
+            </div>
           </div>
           {unreadCount > 0 && (
             <Button
@@ -171,19 +178,19 @@ export const NotificationsPanel = () => {
           )}
         </div>
 
-        <ScrollArea className="h-[450px]">
+        <ScrollArea className="h-[520px]">
           {notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <Bell className="h-12 w-12 text-muted-foreground/30 mb-3" />
-              <p className="text-sm font-medium text-muted-foreground">
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <Bell className="h-16 w-16 text-muted-foreground/20 mb-4" />
+              <p className="text-sm font-semibold text-muted-foreground">
                 Nenhuma notificação
               </p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
+              <p className="text-xs text-muted-foreground/60 mt-1">
                 Você está em dia com tudo!
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-border">
+            <div>
               <NotificationSection title="Hoje" notifications={today} />
               <NotificationSection title="Ontem" notifications={yesterday} />
               <NotificationSection

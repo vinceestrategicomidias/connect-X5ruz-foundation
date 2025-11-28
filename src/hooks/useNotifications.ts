@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Tables } from "@/integrations/supabase/types";
 
 export type NotificationType = 
   | "transferencia_recebida"
@@ -8,7 +9,8 @@ export type NotificationType =
   | "ligacao_perdida"
   | "nps_recebido"
   | "alerta_performance"
-  | "ideia_aprovada";
+  | "ideia_aprovada"
+  | "feedback_ia";
 
 export interface Notification {
   id: string;
@@ -17,113 +19,173 @@ export interface Notification {
   description: string;
   timestamp: string;
   read: boolean;
-  avatar?: string;
-  actionData?: any;
+  referenciaId?: string;
+  acao?: string;
 }
 
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "transferencia_recebida",
-    title: "Transferência Recebida",
-    description: "Maria Silva transferiu o paciente João Santos para você",
-    timestamp: new Date().toISOString(),
-    read: false,
-    avatar: undefined,
-  },
-  {
-    id: "2",
-    type: "reconhecimento_semana",
-    title: "Reconhecimento da Semana! 🏆",
-    description: "Parabéns! Você foi destaque pela excelente qualidade no atendimento",
-    timestamp: new Date(Date.now() - 3600000).toISOString(),
-    read: false,
-  },
-  {
-    id: "3",
-    type: "ligacao_perdida",
-    title: "Ligação Perdida",
-    description: "Ana Paula tentou ligar mas não conseguiu completar a chamada",
-    timestamp: new Date(Date.now() - 7200000).toISOString(),
-    read: true,
-  },
-];
-
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
+  // Get current user
   useEffect(() => {
-    const count = notifications.filter(n => !n.read).length;
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id || null);
+    });
+  }, []);
+
+  // Fetch notifications
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from("notificacoes")
+        .select("*")
+        .eq("usuario_destino_id", userId)
+        .order("data_hora", { ascending: false });
+
+      if (error) {
+        console.error("Erro ao buscar notificações:", error);
+        return;
+      }
+
+      if (data) {
+        const mapped = data.map((n: Tables<"notificacoes">) => ({
+          id: n.id,
+          type: n.tipo as NotificationType,
+          title: n.titulo,
+          description: n.mensagem,
+          timestamp: n.data_hora,
+          read: n.lida,
+          referenciaId: n.referencia_id || undefined,
+          acao: n.acao || undefined,
+        }));
+        setNotifications(mapped);
+      }
+    };
+
+    fetchNotifications();
+  }, [userId]);
+
+  // Subscribe to real-time notifications
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel("notificacoes_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notificacoes",
+          filter: `usuario_destino_id=eq.${userId}`,
+        },
+        (payload) => {
+          const newNotif = payload.new as Tables<"notificacoes">;
+          const notification: Notification = {
+            id: newNotif.id,
+            type: newNotif.tipo as NotificationType,
+            title: newNotif.titulo,
+            description: newNotif.mensagem,
+            timestamp: newNotif.data_hora,
+            read: newNotif.lida,
+            referenciaId: newNotif.referencia_id || undefined,
+            acao: newNotif.acao || undefined,
+          };
+
+          setNotifications((prev) => [notification, ...prev]);
+
+          // Push notification toast
+          toast({
+            title: notification.title,
+            description: notification.description,
+            duration: 5000,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
+  // Update unread count
+  useEffect(() => {
+    const count = notifications.filter((n) => !n.read).length;
     setUnreadCount(count);
   }, [notifications]);
 
-  // Simular notificações em tempo real
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Simular chegada de nova notificação aleatoriamente (5% de chance a cada 10s)
-      if (Math.random() < 0.05) {
-        const newNotification: Notification = {
-          id: `notif_${Date.now()}`,
-          type: "transferencia_recebida",
-          title: "Nova Transferência",
-          description: "Você recebeu um novo paciente transferido",
-          timestamp: new Date().toISOString(),
-          read: false,
-        };
+  const markAsRead = async (id: string) => {
+    if (!userId) return;
 
-        setNotifications(prev => [newNotification, ...prev]);
+    const { error } = await supabase
+      .from("notificacoes")
+      .update({ lida: true })
+      .eq("id", id)
+      .eq("usuario_destino_id", userId);
 
-        // Exibir toast push
-        toast({
-          title: newNotification.title,
-          description: newNotification.description,
-          duration: 5000,
-        });
-      }
-    }, 10000);
+    if (error) {
+      console.error("Erro ao marcar notificação como lida:", error);
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, []);
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from("notificacoes")
+      .update({ lida: true })
+      .eq("usuario_destino_id", userId)
+      .eq("lida", false);
+
+    if (error) {
+      console.error("Erro ao marcar todas como lidas:", error);
+      return;
+    }
+
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
 
-    switch (notification.type) {
-      case "transferencia_recebida":
-        // Abrir conversa do paciente transferido
-        console.log("Abrir conversa:", notification.actionData);
+    // Execute action based on notification type
+    switch (notification.acao) {
+      case "abrir_chat":
+        console.log("Abrir conversa:", notification.referenciaId);
+        // TODO: Navigate to chat with patient
         break;
-      case "reconhecimento_semana":
-        // Abrir painel de feedback
+      case "abrir_painel_feedback":
         console.log("Abrir painel de feedback");
+        // TODO: Open feedback panel
         break;
-      case "ligacao_perdida":
-        // Mostrar card com opções
-        console.log("Abrir detalhes da ligação perdida");
+      case "abrir_chamada":
+        console.log("Abrir detalhes da ligação:", notification.referenciaId);
+        // TODO: Open call details
         break;
-      case "nps_recebido":
-        // Abrir detalhes do NPS
-        console.log("Abrir NPS");
+      case "abrir_painel_nps":
+        console.log("Abrir NPS:", notification.referenciaId);
+        // TODO: Open NPS panel
         break;
-      case "alerta_performance":
-        // Abrir painel de alertas
+      case "abrir_alertas":
         console.log("Abrir alertas");
+        // TODO: Open alerts panel
         break;
-      case "ideia_aprovada":
-        // Abrir aba de ideias
-        console.log("Abrir ideias");
+      case "abrir_painel_ideias":
+        console.log("Abrir painel de ideias");
+        // TODO: Open ideas panel
         break;
+      default:
+        console.log("Ação não definida para:", notification.type);
     }
   };
 
