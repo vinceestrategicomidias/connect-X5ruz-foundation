@@ -7,7 +7,7 @@ import { ConnectStatusIndicator } from "./ConnectStatusIndicator";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConversas";
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
-import { useEnviarMensagem } from "@/hooks/useMutations";
+import { useEnviarMensagem, useAtualizarStatusPaciente } from "@/hooks/useMutations";
 import { useState, useEffect, useRef } from "react";
 import { ConnectTransferDialog } from "./ConnectTransferDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ export const ConnectColumn2 = () => {
   const { data: conversa } = useConversaByPaciente(pacienteSelecionado?.id || null);
   const { data: mensagens } = useMensagensByConversa(conversa?.id || null);
   const enviarMensagem = useEnviarMensagem();
+  const atualizarStatus = useAtualizarStatusPaciente();
   const [mensagemTexto, setMensagemTexto] = useState("");
   const [digitando, setDigitando] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
@@ -55,7 +56,18 @@ export const ConnectColumn2 = () => {
   }, [conversa?.id]);
 
   const handleEnviarMensagem = async () => {
-    if (!mensagemTexto.trim() || !conversa?.id) return;
+    if (!mensagemTexto.trim() || !conversa?.id || !pacienteSelecionado) return;
+
+    // Se for a primeira mensagem do atendente e o paciente está na fila, mudar status
+    const ehPrimeiraMensagemAtendente = !mensagens?.some(m => m.autor === "atendente");
+    if (ehPrimeiraMensagemAtendente && pacienteSelecionado.status === "fila") {
+      const atendenteId = "11111111-1111-1111-1111-111111111111"; // Geovana
+      await atualizarStatus.mutateAsync({
+        pacienteId: pacienteSelecionado.id,
+        novoStatus: "em_atendimento",
+        atendenteId,
+      });
+    }
 
     await enviarMensagem.mutateAsync({
       conversaId: conversa.id,
