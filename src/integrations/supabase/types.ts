@@ -49,6 +49,73 @@ export type Database = {
           },
         ]
       }
+      chamadas: {
+        Row: {
+          atendente_id: string
+          created_at: string | null
+          duracao: number | null
+          horario_fim: string | null
+          horario_inicio: string | null
+          id: string
+          numero_discado: string
+          observacoes: string | null
+          paciente_id: string | null
+          setor_origem: string | null
+          status: string
+          tipo: string
+        }
+        Insert: {
+          atendente_id: string
+          created_at?: string | null
+          duracao?: number | null
+          horario_fim?: string | null
+          horario_inicio?: string | null
+          id?: string
+          numero_discado: string
+          observacoes?: string | null
+          paciente_id?: string | null
+          setor_origem?: string | null
+          status?: string
+          tipo?: string
+        }
+        Update: {
+          atendente_id?: string
+          created_at?: string | null
+          duracao?: number | null
+          horario_fim?: string | null
+          horario_inicio?: string | null
+          id?: string
+          numero_discado?: string
+          observacoes?: string | null
+          paciente_id?: string | null
+          setor_origem?: string | null
+          status?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chamadas_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamadas_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamadas_setor_origem_fkey"
+            columns: ["setor_origem"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversas: {
         Row: {
           atendente_id: string | null
