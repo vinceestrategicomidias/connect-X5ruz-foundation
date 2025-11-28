@@ -1,29 +1,46 @@
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { usePacientes } from "@/hooks/usePacientes";
 import { ConnectPatientCard } from "./ConnectPatientCard";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
-import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { Loader2, MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetores } from "@/hooks/useSetores";
+import { NovaConversaDialog } from "./NovaConversaDialog";
 
 export const ConnectColumn1 = () => {
   const { atendenteLogado } = useAtendenteContext();
   const { data: setores } = useSetores();
+  const [novaConversaOpen, setNovaConversaOpen] = useState(false);
   
   const nomeSetor = setores?.find(s => s.id === atendenteLogado?.setor_id)?.nome || "Atendimento";
   
   return (
-    <div className="w-80 border-r border-border bg-card flex flex-col h-full">
+    <div className="w-80 border-r border-border bg-card flex flex-col h-full relative">
       {/* Header */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border flex items-center justify-between">
         <h2 className="text-lg font-display font-semibold text-foreground">
           Setor: {nomeSetor}
         </h2>
+        <Button
+          size="sm"
+          onClick={() => setNovaConversaOpen(true)}
+          className="gap-2"
+          title="Iniciar nova conversa"
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+          <span className="hidden xl:inline">Nova</span>
+        </Button>
       </div>
+
+      <NovaConversaDialog
+        open={novaConversaOpen}
+        onOpenChange={setNovaConversaOpen}
+      />
 
       {/* Tabs de Status */}
       <Tabs defaultValue="espera" className="flex-1 flex flex-col">

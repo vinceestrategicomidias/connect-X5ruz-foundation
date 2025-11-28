@@ -165,3 +165,85 @@ export const useTransferirAtendimento = () => {
     },
   });
 };
+
+export const useCriarPaciente = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      nome,
+      telefone,
+      status,
+      setor_id,
+    }: {
+      nome: string;
+      telefone: string;
+      status: "fila" | "em_atendimento" | "finalizado";
+      setor_id?: string;
+    }) => {
+      // Criar paciente
+      const { data: paciente, error: pacienteError } = await supabase
+        .from("pacientes")
+        .insert({
+          nome,
+          telefone,
+          status,
+          setor_id,
+          tempo_na_fila: 0,
+        })
+        .select()
+        .single();
+
+      if (pacienteError) throw pacienteError;
+
+      // Criar conversa automaticamente
+      const { error: conversaError } = await supabase
+        .from("conversas")
+        .insert({
+          paciente_id: paciente.id,
+        });
+
+      if (conversaError) throw conversaError;
+
+      return paciente;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pacientes"] });
+      toast.success("Contato criado com sucesso");
+    },
+    onError: () => {
+      toast.error("Erro ao criar contato");
+    },
+  });
+};
+
+export const useAtualizarNomePaciente = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      pacienteId,
+      novoNome,
+    }: {
+      pacienteId: string;
+      novoNome: string;
+    }) => {
+      const { data, error } = await supabase
+        .from("pacientes")
+        .update({ nome: novoNome })
+        .eq("id", pacienteId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pacientes"] });
+      queryClient.invalidateQueries({ queryKey: ["conversa"] });
+    },
+    onError: () => {
+      toast.error("Erro ao atualizar nome");
+    },
+  });
+};
