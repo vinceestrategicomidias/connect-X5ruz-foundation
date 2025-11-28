@@ -144,7 +144,7 @@ export const ConnectColumn2 = () => {
         conversa_id: conversa.id,
         texto: stickerName,
         autor: "atendente",
-        tipo: "figurinha",
+        tipo: "imagem",
         tipo_conteudo: "figurinha",
         figurinha_id: figurinha.id,
         horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),

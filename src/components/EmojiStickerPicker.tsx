@@ -39,6 +39,19 @@ export const EmojiStickerPicker = ({
     return () => observer.disconnect();
   }, []);
 
+  // Auto-selecionar primeiro pacote ao carregar
+  useEffect(() => {
+    if (!pacotes || selectedPacote) return;
+    
+    if (activeTab === "institucional") {
+      const institucional = pacotes.find(p => p.tipo === 'institucional');
+      if (institucional) setSelectedPacote(institucional.id);
+    } else if (activeTab === "thali") {
+      const thali = pacotes.find(p => p.tipo === 'thali');
+      if (thali) setSelectedPacote(thali.id);
+    }
+  }, [pacotes, activeTab, selectedPacote]);
+
   // Selecionar pacote correto ao mudar de aba
   const handleTabChange = (value: string) => {
     setActiveTab(value);
