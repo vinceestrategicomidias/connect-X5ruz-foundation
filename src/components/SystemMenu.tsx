@@ -10,7 +10,10 @@ import {
   BarChart3,
   Settings,
   Map,
+  UserCheck,
 } from "lucide-react";
+import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
+import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import {
   Drawer,
   DrawerContent,
@@ -31,6 +34,7 @@ type MenuSection =
   | "setores"
   | "usuarios"
   | "perfis"
+  | "validacoes"
   | "ura"
   | "mensageria"
   | "relatorios"
@@ -43,6 +47,7 @@ const menuItems = [
   { id: "setores" as MenuSection, label: "Setores", icon: Map },
   { id: "usuarios" as MenuSection, label: "Usuários", icon: Users },
   { id: "perfis" as MenuSection, label: "Perfis de Acesso", icon: ShieldCheck },
+  { id: "validacoes" as MenuSection, label: "Validações de Perfil", icon: UserCheck, requiresCoordenacao: true },
   { id: "ura" as MenuSection, label: "URA (Telefonia)", icon: Phone },
   { id: "mensageria" as MenuSection, label: "Robô e Mensageria", icon: Bot },
   { id: "relatorios" as MenuSection, label: "Relatórios", icon: FileText },
@@ -51,7 +56,9 @@ const menuItems = [
 ];
 
 export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
+  const { isCoordenacao, isGestor } = useAtendenteContext();
   const [selectedSection, setSelectedSection] = useState<MenuSection>("empresa");
+  const [validacoesOpen, setValidacoesOpen] = useState(false);
 
   const renderContent = () => {
     switch (selectedSection) {
@@ -126,6 +133,24 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
               <p className="text-center text-muted-foreground">
                 Módulo em desenvolvimento
               </p>
+            </div>
+          </div>
+        );
+
+      case "validacoes":
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Validações de Perfil</h3>
+            <p className="text-sm text-muted-foreground">
+              Aprove ou reprove alterações solicitadas pelos usuários em seus perfis.
+            </p>
+            <div className="mt-4">
+              <button
+                onClick={() => setValidacoesOpen(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Abrir Painel de Validações
+              </button>
             </div>
           </div>
         );
@@ -211,47 +236,58 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
   };
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
-      <DrawerContent className="h-screen top-0 right-0 left-auto mt-0 w-[900px] rounded-none">
-        <DrawerHeader className="border-b">
-          <DrawerTitle className="text-xl">Sistema de Gestão</DrawerTitle>
-        </DrawerHeader>
-        
-        <div className="flex h-full overflow-hidden">
-          {/* Sidebar */}
-          <div className="w-64 border-r bg-muted/20">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-1">
-                {menuItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setSelectedSection(item.id)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                        selectedSection === item.id
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </div>
+    <>
+      <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+        <DrawerContent className="h-screen top-0 right-0 left-auto mt-0 w-[900px] rounded-none">
+          <DrawerHeader className="border-b">
+            <DrawerTitle className="text-xl">Sistema de Gestão</DrawerTitle>
+          </DrawerHeader>
+          
+          <div className="flex h-full overflow-hidden">
+            {/* Sidebar */}
+            <div className="w-64 border-r bg-muted/20">
+              <ScrollArea className="h-full">
+                <div className="p-4 space-y-1">
+                  {menuItems.map((item) => {
+                    const Icon = item.icon;
+                    const requiresCoordenacao = (item as any).requiresCoordenacao;
+                    
+                    // Hide validações menu item if user is not coordenação or gestor
+                    if (requiresCoordenacao && !isCoordenacao && !isGestor) {
+                      return null;
+                    }
+                    
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setSelectedSection(item.id)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                          selectedSection === item.id
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="p-6">{renderContent()}</div>
-            </ScrollArea>
+            {/* Content */}
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="p-6">{renderContent()}</div>
+              </ScrollArea>
+            </div>
           </div>
-        </div>
-      </DrawerContent>
-    </Drawer>
+        </DrawerContent>
+      </Drawer>
+      
+      <ValidacoesPerfilPanel open={validacoesOpen} onOpenChange={setValidacoesOpen} />
+    </>
   );
 };
