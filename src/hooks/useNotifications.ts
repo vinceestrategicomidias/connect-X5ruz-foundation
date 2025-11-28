@@ -269,10 +269,10 @@ export const useNotifications = () => {
   useEffect(() => {
     if (!notificationSimulationEnabled || !userId) return;
 
-    // Simulate notifications every 1 minute (60 seconds)
+    // Simulate notifications every 3 minutes (180 seconds) for prototype
     const interval = setInterval(() => {
       addSimulatedNotification();
-    }, 60000);
+    }, 180000);
 
     return () => clearInterval(interval);
   }, [notificationSimulationEnabled, userId, addSimulatedNotification]);
