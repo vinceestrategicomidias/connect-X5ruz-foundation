@@ -6,6 +6,7 @@ import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
 import { PainelUnificado } from "./PainelUnificado";
 import { SystemMenu } from "./SystemMenu";
+import { RankingTop3 } from "./RankingTop3";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 export const ConnectNavbar = () => {
@@ -30,6 +31,9 @@ export const ConnectNavbar = () => {
           )}
         </div>
       </div>
+
+      {/* Ranking Top 3 */}
+      <RankingTop3 />
 
       {/* Actions */}
       <div className="flex items-center gap-3">
