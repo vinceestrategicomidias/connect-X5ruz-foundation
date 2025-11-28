@@ -88,22 +88,31 @@ export const RankingTop3 = () => {
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       {ranking.map((atendente) => (
         <div
           key={atendente.posicao}
           className="flex items-center gap-2 group transition-all hover:scale-105"
         >
-          <Trophy
-            className={`h-5 w-5 ${getCoresTaca(atendente.posicao)} transition-transform group-hover:rotate-12`}
-            strokeWidth={1.5}
-          />
+          <div className="relative">
+            <Trophy
+              className={`h-6 w-6 ${getCoresTaca(atendente.posicao)} transition-transform group-hover:rotate-12`}
+              strokeWidth={1.5}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[9px] font-bold text-background mt-[2px]">
+                {atendente.posicao}
+              </span>
+            </div>
+          </div>
           <div className="text-left">
             <div className="text-xs font-semibold text-foreground leading-tight">
               {atendente.nome.split(" ")[0]}
             </div>
-            <div className="text-[10px] text-muted-foreground leading-tight">
-              {atendente.atendimentos} atend.
+            <div className="flex flex-col text-[10px] text-muted-foreground leading-tight gap-0.5">
+              <span>{atendente.atendimentos} atend.</span>
+              <span>TMA: {atendente.tma}s</span>
+              <span>NPS: {atendente.nps}</span>
             </div>
           </div>
         </div>
