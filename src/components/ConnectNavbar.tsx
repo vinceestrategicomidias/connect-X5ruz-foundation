@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, LayoutDashboard, Bell } from "lucide-react";
+import { Menu, LayoutDashboard, Sun, Moon } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
@@ -8,15 +8,13 @@ import { SystemMenu } from "./SystemMenu";
 import { RankingTop3 } from "./RankingTop3";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { UserProfileMenu } from "./UserProfileMenu";
-import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
 import { DemoModeSelector } from "./DemoModeSelector";
-import { useAtendenteContext } from "@/contexts/AtendenteContext";
+import { useTheme } from "next-themes";
 
 export const ConnectNavbar = () => {
-  const { atendenteLogado, isCoordenacao, isGestor } = useAtendenteContext();
+  const { theme, setTheme } = useTheme();
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [painelOpen, setPainelOpen] = useState(false);
-  const [validacoesOpen, setValidacoesOpen] = useState(false);
 
   return (
     <nav className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
@@ -42,14 +40,6 @@ export const ConnectNavbar = () => {
       <div className="flex items-center gap-3">
         <ManualDialer />
         <SetoresManagement />
-        {(isCoordenacao || isGestor) && (
-          <ConnectIconButton
-            icon={Bell}
-            onClick={() => setValidacoesOpen(true)}
-            tooltip="Validações Pendentes"
-            variant="ghost"
-          />
-        )}
         <ConnectIconButton 
           icon={Menu}
           onClick={() => setSystemMenuOpen(true)}
@@ -61,13 +51,18 @@ export const ConnectNavbar = () => {
           tooltip="Painel Estratégico"
         />
         <NotificationsPanel />
+        <ConnectIconButton 
+          icon={theme === "dark" ? Sun : Moon}
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          tooltip="Alternar Tema"
+          variant="ghost"
+        />
         <DemoModeSelector />
         <UserProfileMenu />
       </div>
 
       <SystemMenu open={systemMenuOpen} onOpenChange={setSystemMenuOpen} />
       <PainelUnificado open={painelOpen} onOpenChange={setPainelOpen} />
-      <ValidacoesPerfilPanel open={validacoesOpen} onOpenChange={setValidacoesOpen} />
     </nav>
   );
 };
