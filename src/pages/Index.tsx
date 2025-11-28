@@ -4,6 +4,7 @@ import { ConnectColumn1 } from "@/components/ConnectColumn1";
 import { ConnectColumn2 } from "@/components/ConnectColumn2";
 import { ConnectColumn3 } from "@/components/ConnectColumn3";
 import { CallFloatingCard } from "@/components/CallFloatingCard";
+import { FloatingButtons } from "@/components/FloatingButtons";
 import { PacienteProvider } from "@/contexts/PacienteContext";
 import { AtendenteProvider } from "@/contexts/AtendenteContext";
 import { ChamadaProvider } from "@/contexts/ChamadaContext";
@@ -33,6 +34,9 @@ const Index = () => {
 
             {/* Card Flutuante de Chamada */}
             <CallFloatingCard />
+
+            {/* Botões Flutuantes: Roteiros e IA Thalí */}
+            <FloatingButtons />
           </ConnectContainer>
         </PacienteProvider>
       </ChamadaProvider>
