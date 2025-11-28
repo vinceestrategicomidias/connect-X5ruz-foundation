@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Brain, UserCheck, AlertCircle } from "lucide-react";
+import { UserCheck, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ThaliAvatar } from "./ThaliAvatar";
 
 interface Analise {
   intencao_principal: string;
@@ -66,8 +67,8 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
   if (loading) {
     return (
       <Card className="border-primary/20">
-        <CardContent className="pt-6 flex items-center justify-center">
-          <Brain className="h-5 w-5 animate-pulse text-primary mr-2" />
+        <CardContent className="pt-6 flex items-center justify-center gap-2">
+          <ThaliAvatar size="sm" className="animate-pulse" />
           <span className="text-sm">Thalí analisando mensagem...</span>
         </CardContent>
       </Card>
@@ -80,7 +81,7 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Brain className="h-5 w-5 text-primary" />
+          <ThaliAvatar size="sm" />
           Análise da Thalí - Pré-atendimento
         </CardTitle>
       </CardHeader>
@@ -142,7 +143,7 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
         )}
 
         <Button size="sm" variant="outline" className="w-full" onClick={analisarMensagem}>
-          <Brain className="h-4 w-4 mr-2" />
+          <ThaliAvatar size="sm" className="mr-2 w-4 h-4" />
           Reanalisar
         </Button>
       </CardContent>
