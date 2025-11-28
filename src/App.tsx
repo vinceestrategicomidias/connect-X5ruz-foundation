@@ -9,6 +9,7 @@ import { ChamadaProvider } from "@/contexts/ChamadaContext";
 import { PacienteProvider } from "@/contexts/PacienteContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import DashboardMonitoramento from "./pages/DashboardMonitoramento";
 
@@ -27,6 +28,7 @@ const App = () => {
                 <PacienteProvider>
                   <Routes>
                     <Route path="/login" element={<Login />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/" element={<Index />} />
                     <Route path="/dashboard" element={<DashboardMonitoramento />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
