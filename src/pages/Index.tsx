@@ -5,42 +5,33 @@ import { ConnectColumn2 } from "@/components/ConnectColumn2";
 import { ConnectColumn3 } from "@/components/ConnectColumn3";
 import { CallFloatingCard } from "@/components/CallFloatingCard";
 import { FloatingButtons } from "@/components/FloatingButtons";
-import { PacienteProvider } from "@/contexts/PacienteContext";
-import { AtendenteProvider } from "@/contexts/AtendenteContext";
-import { ChamadaProvider } from "@/contexts/ChamadaContext";
 
 const Index = () => {
   return (
-    <AtendenteProvider>
-      <ChamadaProvider>
-        <PacienteProvider>
-          <ConnectContainer>
-            <div className="flex flex-col h-screen">
-              {/* Navbar Superior */}
-              <ConnectNavbar />
+    <ConnectContainer>
+      <div className="flex flex-col h-screen">
+        {/* Navbar Superior */}
+        <ConnectNavbar />
 
-              {/* Layout de 3 Colunas */}
-              <div className="flex flex-1 overflow-hidden">
-                {/* Coluna 1: Fluxo de Atendimento */}
-                <ConnectColumn1 />
+        {/* Layout de 3 Colunas */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Coluna 1: Fluxo de Atendimento */}
+          <ConnectColumn1 />
 
-                {/* Coluna 2: Área Central de Chat */}
-                <ConnectColumn2 />
+          {/* Coluna 2: Área Central de Chat */}
+          <ConnectColumn2 />
 
-                {/* Coluna 3: Lista Geral de Pacientes */}
-                <ConnectColumn3 />
-              </div>
-            </div>
+          {/* Coluna 3: Lista Geral de Pacientes */}
+          <ConnectColumn3 />
+        </div>
+      </div>
 
-            {/* Card Flutuante de Chamada */}
-            <CallFloatingCard />
+      {/* Card Flutuante de Chamada */}
+      <CallFloatingCard />
 
-            {/* Botões Flutuantes: Roteiros e IA Thalí */}
-            <FloatingButtons />
-          </ConnectContainer>
-        </PacienteProvider>
-      </ChamadaProvider>
-    </AtendenteProvider>
+      {/* Botões Flutuantes: Roteiros e IA Thalí */}
+      <FloatingButtons />
+    </ConnectContainer>
   );
 };
 
