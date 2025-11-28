@@ -17,26 +17,37 @@ export type Database = {
       atendentes: {
         Row: {
           avatar: string | null
-          cargo: string
+          cargo: Database["public"]["Enums"]["cargo_tipo"] | null
           created_at: string | null
           id: string
           nome: string
+          setor_id: string | null
         }
         Insert: {
           avatar?: string | null
-          cargo: string
+          cargo?: Database["public"]["Enums"]["cargo_tipo"] | null
           created_at?: string | null
           id?: string
           nome: string
+          setor_id?: string | null
         }
         Update: {
           avatar?: string | null
-          cargo?: string
+          cargo?: Database["public"]["Enums"]["cargo_tipo"] | null
           created_at?: string | null
           id?: string
           nome?: string
+          setor_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "atendentes_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversas: {
         Row: {
@@ -122,6 +133,7 @@ export type Database = {
           created_at: string | null
           id: string
           nome: string
+          setor_id: string | null
           status: string
           telefone: string
           tempo_na_fila: number | null
@@ -134,6 +146,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           nome: string
+          setor_id?: string | null
           status: string
           telefone: string
           tempo_na_fila?: number | null
@@ -146,6 +159,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           nome?: string
+          setor_id?: string | null
           status?: string
           telefone?: string
           tempo_na_fila?: number | null
@@ -160,7 +174,44 @@ export type Database = {
             referencedRelation: "atendentes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pacientes_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      setores: {
+        Row: {
+          ativo: boolean | null
+          cor: string | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          cor?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          cor?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -170,7 +221,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      cargo_tipo: "atendente" | "coordenacao" | "gestor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -297,6 +348,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      cargo_tipo: ["atendente", "coordenacao", "gestor"],
+    },
   },
 } as const

@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePacientes } from "@/hooks/usePacientes";
 import { ConnectPatientCard } from "./ConnectPatientCard";
 import { usePacienteContext } from "@/contexts/PacienteContext";
+import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +46,7 @@ export const ConnectColumn1 = () => {
 const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "finalizado" }) => {
   const { data: pacientes, isLoading } = usePacientes(status);
   const { setPacienteSelecionado } = usePacienteContext();
+  const { atendenteLogado } = useAtendenteContext();
   const queryClient = useQueryClient();
 
   // Realtime updates
@@ -81,7 +83,17 @@ const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "final
     );
   }
 
-  if (!pacientes || pacientes.length === 0) {
+  // Filtrar pacientes por setor e por atendente para "Meus Atendimentos"
+  const pacientesFiltrados =
+    status === "em_atendimento"
+      ? pacientes?.filter(
+          (p) =>
+            p.setor_id === atendenteLogado?.setor_id &&
+            p.atendente_responsavel === atendenteLogado?.id
+        )
+      : pacientes?.filter((p) => p.setor_id === atendenteLogado?.setor_id);
+
+  if (!pacientesFiltrados || pacientesFiltrados.length === 0) {
     const mensagens = {
       fila: "Nenhum paciente na fila",
       em_atendimento: "Nenhum atendimento em andamento",
@@ -98,7 +110,7 @@ const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "final
   }
 
   // Ordenar pacientes: alertas primeiro, depois por tempo na fila, depois por horário
-  const pacientesOrdenados = [...pacientes].sort((a, b) => {
+  const pacientesOrdenados = [...pacientesFiltrados].sort((a, b) => {
     const tempoLimite = 30;
     const aEmAlerta = a.status === "fila" && (a.tempo_na_fila || 0) >= tempoLimite;
     const bEmAlerta = b.status === "fila" && (b.tempo_na_fila || 0) >= tempoLimite;

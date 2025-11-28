@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTodosPacientes } from "@/hooks/usePacientes";
 import { ConnectPatientCard } from "./ConnectPatientCard";
 import { usePacienteContext } from "@/contexts/PacienteContext";
+import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 export const ConnectColumn3 = () => {
   const { data: pacientes, isLoading } = useTodosPacientes();
   const { setPacienteSelecionado } = usePacienteContext();
+  const { atendenteLogado } = useAtendenteContext();
   const [busca, setBusca] = useState("");
   const [expandido, setExpandido] = useState(true);
   const queryClient = useQueryClient();
@@ -38,10 +40,13 @@ export const ConnectColumn3 = () => {
     };
   }, [queryClient]);
 
-  const pacientesFiltrados = pacientes?.filter((paciente) =>
-    paciente.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    paciente.telefone.includes(busca)
-  );
+  const pacientesFiltrados = pacientes
+    ?.filter((p) => p.setor_id === atendenteLogado?.setor_id)
+    ?.filter(
+      (paciente) =>
+        paciente.nome.toLowerCase().includes(busca.toLowerCase()) ||
+        paciente.telefone.includes(busca)
+    );
 
   // Ordenar pacientes: alertas primeiro, depois por tempo na fila, depois por horário
   const pacientesOrdenados = pacientesFiltrados?.sort((a, b) => {

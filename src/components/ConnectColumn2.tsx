@@ -9,11 +9,13 @@ import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConver
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
 import { useEnviarMensagem, useAtualizarStatusPaciente } from "@/hooks/useMutations";
 import { useState, useEffect, useRef } from "react";
-import { ConnectTransferDialog } from "./ConnectTransferDialog";
+import { ConnectTransferDialogNew } from "./ConnectTransferDialogNew";
 import { supabase } from "@/integrations/supabase/client";
+import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 export const ConnectColumn2 = () => {
   const { pacienteSelecionado } = usePacienteContext();
+  const { atendenteLogado } = useAtendenteContext();
   const { data: conversa } = useConversaByPaciente(pacienteSelecionado?.id || null);
   const { data: mensagens } = useMensagensByConversa(conversa?.id || null);
   const enviarMensagem = useEnviarMensagem();
@@ -60,12 +62,11 @@ export const ConnectColumn2 = () => {
 
     // Se for a primeira mensagem do atendente e o paciente está na fila, mudar status
     const ehPrimeiraMensagemAtendente = !mensagens?.some(m => m.autor === "atendente");
-    if (ehPrimeiraMensagemAtendente && pacienteSelecionado.status === "fila") {
-      const atendenteId = "11111111-1111-1111-1111-111111111111"; // Geovana
+    if (ehPrimeiraMensagemAtendente && pacienteSelecionado.status === "fila" && atendenteLogado) {
       await atualizarStatus.mutateAsync({
         pacienteId: pacienteSelecionado.id,
         novoStatus: "em_atendimento",
-        atendenteId,
+        atendenteId: atendenteLogado.id,
       });
     }
 
@@ -215,7 +216,7 @@ export const ConnectColumn2 = () => {
 
       {/* Dialog de Transferência */}
       {pacienteSelecionado && conversa && (
-        <ConnectTransferDialog
+        <ConnectTransferDialogNew
           open={showTransferDialog}
           onOpenChange={setShowTransferDialog}
           pacienteId={pacienteSelecionado.id}

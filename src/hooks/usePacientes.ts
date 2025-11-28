@@ -12,12 +12,13 @@ export interface Paciente {
   ultima_mensagem: string | null;
   atendente_responsavel: string | null;
   avatar: string | null;
+  setor_id: string;
   created_at: string;
 }
 
-export const usePacientes = (status?: PacienteStatus) => {
+export const usePacientes = (status?: PacienteStatus, setorId?: string) => {
   return useQuery({
-    queryKey: ["pacientes", status],
+    queryKey: ["pacientes", status, setorId],
     queryFn: async () => {
       let query = supabase
         .from("pacientes")
@@ -28,6 +29,10 @@ export const usePacientes = (status?: PacienteStatus) => {
         query = query.eq("status", status);
       }
 
+      if (setorId) {
+        query = query.eq("setor_id", setorId);
+      }
+
       const { data, error } = await query;
 
       if (error) throw error;
@@ -36,14 +41,20 @@ export const usePacientes = (status?: PacienteStatus) => {
   });
 };
 
-export const useTodosPacientes = () => {
+export const useTodosPacientes = (setorId?: string) => {
   return useQuery({
-    queryKey: ["pacientes", "todos"],
+    queryKey: ["pacientes", "todos", setorId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("pacientes")
         .select("*")
         .order("tempo_na_fila", { ascending: false });
+
+      if (setorId) {
+        query = query.eq("setor_id", setorId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Paciente[];
