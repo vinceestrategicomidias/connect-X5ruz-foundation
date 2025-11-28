@@ -39,14 +39,14 @@ export const EmojiStickerPicker = ({
     return () => observer.disconnect();
   }, []);
 
-  // Selecionar primeiro pacote automaticamente quando mudar para abas de figurinhas
+  // Selecionar pacote correto ao mudar de aba
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     
-    if (value === "institucional" && !selectedPacote && pacotes) {
+    if (value === "institucional" && pacotes) {
       const institucional = pacotes.find(p => p.tipo === 'institucional');
       if (institucional) setSelectedPacote(institucional.id);
-    } else if (value === "thali" && !selectedPacote && pacotes) {
+    } else if (value === "thali" && pacotes) {
       const thali = pacotes.find(p => p.tipo === 'thali');
       if (thali) setSelectedPacote(thali.id);
     }
