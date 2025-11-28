@@ -2,6 +2,8 @@ import { Bell, Settings } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { SetoresManagement } from "./SetoresManagement";
+import { ManualDialer } from "./ManualDialer";
+import { DashboardProdutividade } from "./DashboardProdutividade";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 export const ConnectNavbar = () => {
@@ -28,6 +30,8 @@ export const ConnectNavbar = () => {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
+        <ManualDialer />
+        <DashboardProdutividade />
         <SetoresManagement />
         <ConnectIconButton icon={Bell} />
         <ConnectIconButton icon={Settings} />

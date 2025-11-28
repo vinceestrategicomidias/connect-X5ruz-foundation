@@ -1,4 +1,4 @@
-import { Send, Paperclip, Mic, UserCog } from "lucide-react";
+import { Send, Paperclip, Mic, UserCog, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +12,9 @@ import { useState, useEffect, useRef } from "react";
 import { ConnectTransferDialogNew } from "./ConnectTransferDialogNew";
 import { supabase } from "@/integrations/supabase/client";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
+import { useIniciarChamada } from "@/hooks/useChamadas";
+import { useChamadaContext } from "@/contexts/ChamadaContext";
+import { toast } from "sonner";
 
 export const ConnectColumn2 = () => {
   const { pacienteSelecionado } = usePacienteContext();
@@ -20,6 +23,8 @@ export const ConnectColumn2 = () => {
   const { data: mensagens } = useMensagensByConversa(conversa?.id || null);
   const enviarMensagem = useEnviarMensagem();
   const atualizarStatus = useAtualizarStatusPaciente();
+  const iniciarChamada = useIniciarChamada();
+  const { setChamadaAtiva } = useChamadaContext();
   const [mensagemTexto, setMensagemTexto] = useState("");
   const [digitando, setDigitando] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
@@ -87,6 +92,21 @@ export const ConnectColumn2 = () => {
     }
   };
 
+  const handleLigar = async () => {
+    if (!pacienteSelecionado || !atendenteLogado) return;
+
+    const chamada = await iniciarChamada.mutateAsync({
+      numeroDiscado: pacienteSelecionado.telefone,
+      atendenteId: atendenteLogado.id,
+      setorOrigem: atendenteLogado.setor_id,
+      pacienteId: pacienteSelecionado.id,
+      tipo: "paciente",
+    });
+
+    setChamadaAtiva(chamada);
+    toast.success(`Ligando para ${pacienteSelecionado.nome}`);
+  };
+
   const getStatusBadge = () => {
     if (!pacienteSelecionado) return "offline";
     
@@ -132,14 +152,23 @@ export const ConnectColumn2 = () => {
           </div>
         </div>
         {pacienteSelecionado && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowTransferDialog(true)}
-          >
-            <UserCog className="h-4 w-4 mr-2" />
-            Transferir
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleLigar}
+            >
+              <Phone className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTransferDialog(true)}
+            >
+              <UserCog className="h-4 w-4 mr-2" />
+              Transferir
+            </Button>
+          </div>
         )}
       </div>
 
