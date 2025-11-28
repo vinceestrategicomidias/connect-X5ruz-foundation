@@ -41,6 +41,24 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Limpar arquivos antigos sem formato de expressão
+    const { data: allFiles } = await supabaseAdmin.storage
+      .from('thali-avatar')
+      .list();
+    
+    if (allFiles) {
+      const oldFiles = allFiles.filter(file => 
+        file.name.match(/^thali-avatar-\d+\.png$/) // Formato antigo sem expressão
+      );
+      
+      if (oldFiles.length > 0) {
+        console.log(`Removendo ${oldFiles.length} arquivos antigos...`);
+        await supabaseAdmin.storage
+          .from('thali-avatar')
+          .remove(oldFiles.map(f => f.name));
+      }
+    }
+
     // Verificar expressões já existentes
     const { data: existingFiles } = await supabaseAdmin.storage
       .from('thali-avatar')
