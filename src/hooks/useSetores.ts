@@ -8,6 +8,8 @@ export interface Setor {
   descricao: string | null;
   cor: string;
   ativo: boolean;
+  recebe_ligacoes: boolean | null;
+  recebe_mensagens: boolean | null;
   created_at: string;
   updated_at: string;
 }

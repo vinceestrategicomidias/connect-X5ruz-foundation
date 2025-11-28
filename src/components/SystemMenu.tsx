@@ -8,13 +8,22 @@ import {
   Bot,
   FileText,
   BarChart3,
-  Settings,
   Map,
   UserCheck,
+  Bell,
+  Code2,
+  Save,
+  Plus,
 } from "lucide-react";
 import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
-import { ConfiguracoesManagement } from "./ConfiguracoesManagement";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
+import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
+import { useUnidades, useCriarUnidade } from "@/hooks/useUnidades";
+import { useSetores } from "@/hooks/useSetores";
+import { usePerfisAcesso } from "@/hooks/usePerfisAcesso";
+import { useAtendentes } from "@/hooks/useAtendentes";
+import { useMensageriaConfig, useAtualizarMensageriaConfig } from "@/hooks/useMensageriaConfig";
+import { useUraConfig, useAtualizarUraConfig } from "@/hooks/useUraConfig";
 import {
   Drawer,
   DrawerContent,
@@ -22,6 +31,15 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface SystemMenuProps {
@@ -40,7 +58,8 @@ type MenuSection =
   | "mensageria"
   | "relatorios"
   | "dashboard"
-  | "config";
+  | "alertas"
+  | "api";
 
 const menuItems = [
   { id: "empresa" as MenuSection, label: "Empresa", icon: Building2 },
@@ -50,95 +69,388 @@ const menuItems = [
   { id: "perfis" as MenuSection, label: "Perfis de Acesso", icon: ShieldCheck },
   { id: "validacoes" as MenuSection, label: "Validações de Perfil", icon: UserCheck, requiresCoordenacao: true },
   { id: "ura" as MenuSection, label: "URA (Telefonia)", icon: Phone },
-  { id: "mensageria" as MenuSection, label: "Robô e Mensageria", icon: Bot },
+  { id: "mensageria" as MenuSection, label: "IA e Mensageria", icon: Bot },
+  { id: "alertas" as MenuSection, label: "Alertas", icon: Bell },
+  { id: "api" as MenuSection, label: "API e Webhooks", icon: Code2 },
   { id: "relatorios" as MenuSection, label: "Relatórios", icon: FileText },
   { id: "dashboard" as MenuSection, label: "Dashboard", icon: BarChart3 },
-  { id: "config" as MenuSection, label: "Configurações", icon: Settings },
 ];
 
 export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
   const { isCoordenacao, isGestor } = useAtendenteContext();
   const [selectedSection, setSelectedSection] = useState<MenuSection>("empresa");
   const [validacoesOpen, setValidacoesOpen] = useState(false);
-  const [configuracoesOpen, setConfiguracoesOpen] = useState(false);
+  
+  // Hooks de dados
+  const { data: empresas } = useEmpresas();
+  const { data: unidades } = useUnidades();
+  const { data: setores } = useSetores();
+  const { data: perfis } = usePerfisAcesso();
+  const { data: atendentes } = useAtendentes();
+  const { data: mensageriaConfig } = useMensageriaConfig();
+  const { data: uraConfig } = useUraConfig();
+  
+  // Mutations
+  const atualizarEmpresa = useAtualizarEmpresa();
+  const criarUnidade = useCriarUnidade();
+  const atualizarMensageria = useAtualizarMensageriaConfig();
+  const atualizarUra = useAtualizarUraConfig();
+  
+  // Estados de formulários
+  const [empresaForm, setEmpresaForm] = useState({
+    nome: "",
+    cnpj: "",
+    endereco: "",
+    responsavel: "",
+  });
+  
+  const [novaUnidade, setNovaUnidade] = useState({
+    nome: "",
+    codigo_interno: "",
+    endereco: "",
+    fuso_horario: "GMT-3",
+  });
+  
+  const [uraForm, setUraForm] = useState({
+    mensagem_boas_vindas: "",
+    mensagem_espera: "",
+    mensagem_fora_expediente: "",
+    ativo: true,
+  });
+  
+  const [iaForm, setIaForm] = useState({
+    robo_ativo: false,
+    ia_ativa: false,
+  });
+  
+  const [alertasConfig, setAlertasConfig] = useState({
+    fila_alta: 12,
+    nps_baixo: 7,
+    tempo_resposta_alto: 6,
+  });
+  
+  const [apiConfig, setApiConfig] = useState({
+    chave_api: "LIRUZ-API-KEY-001",
+  });
+  
+  // Handlers
+  const handleSalvarEmpresa = () => {
+    if (empresas && empresas[0]) {
+      atualizarEmpresa.mutate({ id: empresas[0].id, dados: empresaForm });
+    }
+  };
+  
+  const handleCriarUnidade = () => {
+    criarUnidade.mutate(novaUnidade);
+    setNovaUnidade({ nome: "", codigo_interno: "", endereco: "", fuso_horario: "GMT-3" });
+  };
+  
+  const handleSalvarUra = () => {
+    if (uraConfig && uraConfig[0]) {
+      atualizarUra.mutate({ id: uraConfig[0].id, dados: uraForm });
+    }
+  };
+  
+  const handleSalvarIA = () => {
+    if (mensageriaConfig && mensageriaConfig[0]) {
+      atualizarMensageria.mutate({ id: mensageriaConfig[0].id, dados: iaForm });
+    }
+  };
 
   const renderContent = () => {
     switch (selectedSection) {
       case "empresa":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Cadastro da Empresa</h3>
-            <p className="text-sm text-muted-foreground">
-              Configure os dados da sua empresa: nome, CNPJ, endereço, logo e responsável administrativo.
-            </p>
-            <div className="mt-4">
-              <button
-                onClick={() => setConfiguracoesOpen(true)}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Abrir Configurações Completas
-              </button>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Cadastro da Empresa</h3>
+              <p className="text-sm text-muted-foreground">
+                Configure os dados da sua empresa
+              </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Dados da Empresa</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome da Empresa</Label>
+                    <Input
+                      value={empresaForm.nome}
+                      onChange={(e) => setEmpresaForm({ ...empresaForm, nome: e.target.value })}
+                      placeholder="Grupo Liruz"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>CNPJ</Label>
+                    <Input
+                      value={empresaForm.cnpj}
+                      onChange={(e) => setEmpresaForm({ ...empresaForm, cnpj: e.target.value })}
+                      placeholder="28.443.771/0001-92"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Endereço Corporativo</Label>
+                  <Input
+                    value={empresaForm.endereco}
+                    onChange={(e) => setEmpresaForm({ ...empresaForm, endereco: e.target.value })}
+                    placeholder="Av. Nossa Senhora da Penha, 1500"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Responsável</Label>
+                  <Input
+                    value={empresaForm.responsavel}
+                    onChange={(e) => setEmpresaForm({ ...empresaForm, responsavel: e.target.value })}
+                    placeholder="Nome do responsável"
+                  />
+                </div>
+                
+                <Button onClick={handleSalvarEmpresa} className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Dados da Empresa
+                </Button>
+              </CardContent>
+            </Card>
+            
+            {empresas && empresas[0] && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dados Atuais</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Nome:</span>
+                    <span className="font-medium">{empresas[0].nome}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">CNPJ:</span>
+                    <span className="font-medium">{empresas[0].cnpj || "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Endereço:</span>
+                    <span className="font-medium text-right">{empresas[0].endereco || "—"}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         );
 
       case "unidades":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Unidades Empresariais</h3>
-            <p className="text-sm text-muted-foreground">
-              Gerencie as unidades da sua empresa. Cada unidade pode ter seus próprios setores e atendentes.
-            </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Unidades Empresariais</h3>
+              <p className="text-sm text-muted-foreground">
+                Gerencie as unidades da sua empresa
               </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Criar Nova Unidade</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome da Unidade</Label>
+                    <Input
+                      value={novaUnidade.nome}
+                      onChange={(e) => setNovaUnidade({ ...novaUnidade, nome: e.target.value })}
+                      placeholder="Unidade São Paulo"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Código</Label>
+                    <Input
+                      value={novaUnidade.codigo_interno}
+                      onChange={(e) => setNovaUnidade({ ...novaUnidade, codigo_interno: e.target.value })}
+                      placeholder="SP01"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Endereço</Label>
+                  <Input
+                    value={novaUnidade.endereco}
+                    onChange={(e) => setNovaUnidade({ ...novaUnidade, endereco: e.target.value })}
+                    placeholder="Av. Paulista, 1000"
+                  />
+                </div>
+                
+                <Button onClick={handleCriarUnidade} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Unidade
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Unidades Cadastradas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-3">
+                    {unidades && unidades.map((unidade) => (
+                      <div key={unidade.id} className="p-4 border rounded-lg space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold">{unidade.nome}</h4>
+                          <Badge variant={unidade.ativo ? "default" : "secondary"}>
+                            {unidade.ativo ? "Ativa" : "Inativa"}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Código: {unidade.codigo_interno || "—"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {unidade.endereco || "Endereço não informado"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
         );
 
       case "setores":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Gestão de Setores</h3>
-            <p className="text-sm text-muted-foreground">
-              Configure setores por unidade. Defina se recebem ligações e mensagens.
-            </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Gestão de Setores</h3>
+              <p className="text-sm text-muted-foreground">
+                Setores cadastrados no sistema
               </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Setores Ativos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {setores && setores.map((setor) => (
+                    <div key={setor.id} className="p-4 border rounded-lg space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: setor.cor || "#888" }} />
+                        <h4 className="font-semibold">{setor.nome}</h4>
+                      </div>
+                      {setor.descricao && (
+                        <p className="text-sm text-muted-foreground">{setor.descricao}</p>
+                      )}
+                      <div className="flex gap-2 flex-wrap">
+                        {setor.recebe_ligacoes && (
+                          <Badge variant="outline" className="text-xs">
+                            <Phone className="h-3 w-3 mr-1" />
+                            Ligações
+                          </Badge>
+                        )}
+                        {setor.recebe_mensagens && (
+                          <Badge variant="outline" className="text-xs">
+                            <Bot className="h-3 w-3 mr-1" />
+                            Mensagens
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
 
       case "usuarios":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Gestão de Usuários</h3>
-            <p className="text-sm text-muted-foreground">
-              Crie e gerencie usuários do sistema. Vincule a unidades, setores e perfis de acesso.
-            </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Gestão de Usuários</h3>
+              <p className="text-sm text-muted-foreground">
+                Usuários cadastrados no sistema ({atendentes?.length || 0})
               </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Usuários do Sistema</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[500px]">
+                  <div className="space-y-3">
+                    {atendentes && atendentes.map((usuario) => (
+                      <div key={usuario.id} className="flex items-center gap-4 p-3 border rounded-lg">
+                        <Avatar>
+                          <AvatarImage src={usuario.avatar || undefined} />
+                          <AvatarFallback>{usuario.nome.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{usuario.nome}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {usuario.cargo}
+                          </p>
+                        </div>
+                        <Badge variant="secondary">
+                          {usuario.cargo}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
         );
 
       case "perfis":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Perfis de Acesso</h3>
-            <p className="text-sm text-muted-foreground">
-              Configure perfis personalizados com permissões detalhadas para cada tipo de usuário.
-            </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Perfis de Acesso</h3>
+              <p className="text-sm text-muted-foreground">
+                Configure permissões por perfil
               </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Perfis Cadastrados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {perfis && perfis.map((perfil) => (
+                    <div key={perfil.id} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold">{perfil.nome}</h4>
+                        <Badge>{perfil.nome}</Badge>
+                      </div>
+                      {perfil.descricao && (
+                        <p className="text-sm text-muted-foreground">{perfil.descricao}</p>
+                      )}
+                      <Separator />
+                      <div>
+                        <p className="text-sm font-medium mb-2">Permissões:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {perfil.permissoes && Object.entries(perfil.permissoes).filter(([_, v]) => v).map(([key]) => (
+                            <Badge key={key} variant="outline" className="text-xs">
+                              {key.replace(/_/g, " ")}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
 
@@ -162,31 +474,164 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
 
       case "ura":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Configuração da URA</h3>
-            <p className="text-sm text-muted-foreground">
-              Configure a URA telefônica: áudios, mensagens, opções de menu e horários de funcionamento.
-            </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Configuração da URA</h3>
+              <p className="text-sm text-muted-foreground">
+                Configure mensagens e opções da URA telefônica
               </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de URA</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>URA Ativa</Label>
+                    <p className="text-sm text-muted-foreground">Ativar/desativar sistema de URA</p>
+                  </div>
+                  <Switch
+                    checked={uraForm.ativo}
+                    onCheckedChange={(checked) => setUraForm({ ...uraForm, ativo: checked })}
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <Label>Mensagem de Boas-vindas</Label>
+                  <Textarea
+                    value={uraForm.mensagem_boas_vindas}
+                    onChange={(e) => setUraForm({ ...uraForm, mensagem_boas_vindas: e.target.value })}
+                    placeholder="Bem-vindo ao Grupo Liruz..."
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Mensagem de Espera</Label>
+                  <Textarea
+                    value={uraForm.mensagem_espera}
+                    onChange={(e) => setUraForm({ ...uraForm, mensagem_espera: e.target.value })}
+                    placeholder="Por favor, aguarde..."
+                    rows={2}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Mensagem Fora do Expediente</Label>
+                  <Textarea
+                    value={uraForm.mensagem_fora_expediente}
+                    onChange={(e) => setUraForm({ ...uraForm, mensagem_fora_expediente: e.target.value })}
+                    placeholder="Nosso horário de atendimento é..."
+                    rows={2}
+                  />
+                </div>
+                
+                <Button onClick={handleSalvarUra} className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Configurações URA
+                </Button>
+              </CardContent>
+            </Card>
+            
+            {uraConfig && uraConfig[0] && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Opções do Menu URA</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="p-3 border rounded-lg">
+                      <p className="font-medium">Tecla 1 → Pré-venda</p>
+                      <p className="text-sm text-muted-foreground">Redirecionando para Pré-Venda</p>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <p className="font-medium">Tecla 2 → Convênios</p>
+                      <p className="text-sm text-muted-foreground">Encaminhando para Convênios</p>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <p className="font-medium">Tecla 3 → Comercial Connect</p>
+                      <p className="text-sm text-muted-foreground">Transferindo para Comercial Connect</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         );
 
       case "mensageria":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Robô e Mensageria</h3>
-            <p className="text-sm text-muted-foreground">
-              Ative robô de pré-atendimento, crie fluxos automatizados e configure assistente IA.
-            </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">IA e Mensageria</h3>
+              <p className="text-sm text-muted-foreground">
+                Configure inteligência artificial e automação
               </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de IA</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Robô de Pré-atendimento</Label>
+                    <p className="text-sm text-muted-foreground">Captar dados antes de transferir</p>
+                  </div>
+                  <Switch
+                    checked={iaForm.robo_ativo}
+                    onCheckedChange={(checked) => setIaForm({ ...iaForm, robo_ativo: checked })}
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Assistente IA</Label>
+                    <p className="text-sm text-muted-foreground">Sugestões automáticas e análise</p>
+                  </div>
+                  <Switch
+                    checked={iaForm.ia_ativa}
+                    onCheckedChange={(checked) => setIaForm({ ...iaForm, ia_ativa: checked })}
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-3">
+                  <Label>Funcionalidades de IA</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 border rounded-lg">
+                      <p className="font-medium text-sm">Sugestão de Respostas</p>
+                      <p className="text-xs text-muted-foreground">Baseado no contexto</p>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <p className="font-medium text-sm">Análise de Sentimento</p>
+                      <p className="text-xs text-muted-foreground">Detecta urgência e humor</p>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <p className="font-medium text-sm">Extração de Dados</p>
+                      <p className="text-xs text-muted-foreground">CPF, nome, convênio</p>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <p className="font-medium text-sm">Classificação</p>
+                      <p className="text-xs text-muted-foreground">Identifica intenção</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button onClick={handleSalvarIA} className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Configurações de IA
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         );
 
@@ -220,21 +665,165 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
           </div>
         );
 
-      case "config":
+      case "alertas":
         return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Configurações Avançadas</h3>
-            <p className="text-sm text-muted-foreground">
-              Gerencie todas as configurações do sistema: empresa, unidades, usuários, perfis, URA, IA, alertas e APIs.
-            </p>
-            <div className="mt-4">
-              <button
-                onClick={() => setConfiguracoesOpen(true)}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Abrir Configurações Completas
-              </button>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Configuração de Alertas</h3>
+              <p className="text-sm text-muted-foreground">
+                Configure limites e notificações
+              </p>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Limites de Alertas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Fila Alta (nº de pessoas)</Label>
+                  <Input
+                    type="number"
+                    value={alertasConfig.fila_alta}
+                    onChange={(e) => setAlertasConfig({ ...alertasConfig, fila_alta: Number(e.target.value) })}
+                  />
+                  <p className="text-xs text-muted-foreground">Alerta quando fila ultrapassar este número</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>NPS Baixo (nota mínima)</Label>
+                  <Input
+                    type="number"
+                    value={alertasConfig.nps_baixo}
+                    onChange={(e) => setAlertasConfig({ ...alertasConfig, nps_baixo: Number(e.target.value) })}
+                  />
+                  <p className="text-xs text-muted-foreground">Alerta quando NPS for menor que esta nota</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Tempo de Resposta Alto (minutos)</Label>
+                  <Input
+                    type="number"
+                    value={alertasConfig.tempo_resposta_alto}
+                    onChange={(e) => setAlertasConfig({ ...alertasConfig, tempo_resposta_alto: Number(e.target.value) })}
+                  />
+                  <p className="text-xs text-muted-foreground">Alerta quando tempo ultrapassar este limite</p>
+                </div>
+                
+                <Button className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Configurações de Alertas
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Tipos de Alertas Ativos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm">Fila Alta</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm">NPS Baixo</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm">Tempo de Resposta Alto</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm">Previsão de Pico</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm">Relatório Crítico</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      
+      case "api":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">API e Webhooks</h3>
+              <p className="text-sm text-muted-foreground">
+                Configure integrações externas
+              </p>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Chave API</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>API Key</Label>
+                  <Input
+                    value={apiConfig.chave_api}
+                    onChange={(e) => setApiConfig({ ...apiConfig, chave_api: e.target.value })}
+                    readOnly
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">Use esta chave para autenticar requisições</p>
+                </div>
+                
+                <Button className="w-full" variant="outline">
+                  Gerar Nova Chave
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Endpoints Disponíveis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="p-3 border rounded-lg space-y-1">
+                    <p className="font-medium text-sm">POST /api/pacientes/create</p>
+                    <p className="text-xs text-muted-foreground">Criar novo paciente</p>
+                  </div>
+                  <div className="p-3 border rounded-lg space-y-1">
+                    <p className="font-medium text-sm">POST /api/chat/send</p>
+                    <p className="text-xs text-muted-foreground">Enviar mensagem</p>
+                  </div>
+                  <div className="p-3 border rounded-lg space-y-1">
+                    <p className="font-medium text-sm">POST /api/atendimentos/start</p>
+                    <p className="text-xs text-muted-foreground">Iniciar atendimento</p>
+                  </div>
+                  <div className="p-3 border rounded-lg space-y-1">
+                    <p className="font-medium text-sm">GET /api/setores</p>
+                    <p className="text-xs text-muted-foreground">Listar setores</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Webhooks Configurados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="p-3 border rounded-lg space-y-1">
+                    <p className="font-medium text-sm">nova_mensagem</p>
+                    <p className="text-xs text-muted-foreground font-mono">https://webhook.exemplo.com/mensagens</p>
+                  </div>
+                  <div className="p-3 border rounded-lg space-y-1">
+                    <p className="font-medium text-sm">alteracao_status</p>
+                    <p className="text-xs text-muted-foreground font-mono">https://webhook.exemplo.com/status</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
 
@@ -296,7 +885,6 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
       </Drawer>
       
       <ValidacoesPerfilPanel open={validacoesOpen} onOpenChange={setValidacoesOpen} />
-      <ConfiguracoesManagement open={configuracoesOpen} onOpenChange={setConfiguracoesOpen} />
     </>
   );
 };
