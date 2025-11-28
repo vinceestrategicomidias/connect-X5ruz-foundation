@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,11 +9,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   LayoutGrid,
-  User,
   BarChart3,
-  Shield,
   FileText,
   Download,
   ArrowRightLeft,
@@ -25,16 +24,28 @@ import {
   History,
   Lightbulb,
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useChamadas } from "@/hooks/useChamadas";
 import { usePacientes } from "@/hooks/usePacientes";
-import { useEffect, useState as useStateLocal } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 type SecaoPainel =
-  | "perfil"
   | "dashboards"
-  | "permissoes"
   | "roteiros"
   | "relatorios"
   | "transferencias"
@@ -53,9 +64,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: "perfil", label: "Perfil", icon: User },
   { id: "dashboards", label: "Dashboards", icon: BarChart3 },
-  { id: "permissoes", label: "Permissões", icon: Shield },
   { id: "roteiros", label: "Roteiros", icon: FileText },
   { id: "relatorios", label: "Relatórios", icon: Download },
   { id: "transferencias", label: "Transferências", icon: ArrowRightLeft },
@@ -68,6 +77,33 @@ const menuItems: MenuItem[] = [
   { id: "ideias", label: "Ideias", icon: Lightbulb },
 ];
 
+const COLORS = ["#0A2647", "#144272", "#205295", "#2C74B3"];
+
+const atendimentosPorDiaData = [
+  { dia: "Seg", atendimentos: 45 },
+  { dia: "Ter", atendimentos: 52 },
+  { dia: "Qua", atendimentos: 38 },
+  { dia: "Qui", atendimentos: 61 },
+  { dia: "Sex", atendimentos: 49 },
+  { dia: "Sáb", atendimentos: 28 },
+  { dia: "Dom", atendimentos: 15 },
+];
+
+const tmaTmeData = [
+  { dia: "Seg", TMA: 320, TME: 180 },
+  { dia: "Ter", TMA: 290, TME: 160 },
+  { dia: "Qua", TMA: 310, TME: 175 },
+  { dia: "Qui", TMA: 280, TME: 150 },
+  { dia: "Sex", TMA: 305, TME: 165 },
+];
+
+const statusAtendimentosData = [
+  { name: "Finalizados", value: 65 },
+  { name: "Em atendimento", value: 20 },
+  { name: "Aguardando resposta", value: 10 },
+  { name: "Em fila", value: 5 },
+];
+
 export const PainelUnificado = () => {
   const [open, setOpen] = useState(false);
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoPainel>("dashboards");
@@ -77,7 +113,7 @@ export const PainelUnificado = () => {
     isCoordenacao ? atendenteLogado?.setor_id : undefined
   );
   const { data: pacientes } = usePacientes(undefined, atendenteLogado?.setor_id);
-  const [metricas, setMetricas] = useStateLocal({
+  const [metricas, setMetricas] = useState({
     totalAtendimentos: 0,
     tma: 0,
     tme: 0,
@@ -128,42 +164,16 @@ export const PainelUnificado = () => {
 
   const renderConteudo = () => {
     switch (secaoAtiva) {
-      case "perfil":
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
-                {atendenteLogado?.nome.charAt(0)}
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold">{atendenteLogado?.nome}</h3>
-                <p className="text-muted-foreground capitalize">
-                  {atendenteLogado?.cargo}
-                </p>
-              </div>
-            </div>
-            <Card className="p-6">
-              <h4 className="font-semibold mb-4">Informações do Perfil</h4>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm text-muted-foreground">Nome</label>
-                  <p className="font-medium">{atendenteLogado?.nome}</p>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground">Cargo</label>
-                  <p className="font-medium capitalize">{atendenteLogado?.cargo}</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        );
-
       case "dashboards":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold">Dashboards de Produtividade</h3>
+            <h3 className="text-2xl font-bold text-[#0A2647]">
+              Dashboards de Produtividade
+            </h3>
+
+            {/* Cards de métricas */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6">
+              <Card className="p-6 bg-gradient-to-br from-[#0A2647]/5 to-[#0A2647]/10">
                 <div className="text-3xl font-bold text-[#0A2647]">
                   {metricas.totalAtendimentos}
                 </div>
@@ -171,20 +181,24 @@ export const PainelUnificado = () => {
                   Total de Atendimentos
                 </p>
               </Card>
-              <Card className="p-6">
-                <div className="text-3xl font-bold text-[#0A2647]">
+              <Card className="p-6 bg-gradient-to-br from-[#144272]/5 to-[#144272]/10">
+                <div className="text-3xl font-bold text-[#144272]">
                   {formatarTempo(metricas.tma)}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">TMA</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  TMA - Tempo Médio Atendimento
+                </p>
               </Card>
-              <Card className="p-6">
-                <div className="text-3xl font-bold text-[#0A2647]">
+              <Card className="p-6 bg-gradient-to-br from-[#205295]/5 to-[#205295]/10">
+                <div className="text-3xl font-bold text-[#205295]">
                   {formatarTempo(metricas.tme)}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">TME</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  TME - Tempo Médio Espera
+                </p>
               </Card>
-              <Card className="p-6">
-                <div className="text-3xl font-bold text-[#0A2647]">
+              <Card className="p-6 bg-gradient-to-br from-[#2C74B3]/5 to-[#2C74B3]/10">
+                <div className="text-3xl font-bold text-[#2C74B3]">
                   {metricas.taxaConclusao}%
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -192,35 +206,339 @@ export const PainelUnificado = () => {
                 </p>
               </Card>
             </div>
+
+            {/* Gráficos */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4 text-[#0A2647]">
+                  Atendimentos por Dia
+                </h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={atendimentosPorDiaData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="dia" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="atendimentos" fill="#0A2647" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4 text-[#0A2647]">
+                  TMA e TME Diário
+                </h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={tmaTmeData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="dia" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="TMA"
+                      stroke="#0A2647"
+                      strokeWidth={3}
+                      dot={{ r: 5 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="TME"
+                      stroke="#2C74B3"
+                      strokeWidth={3}
+                      dot={{ r: 5 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
+
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4 text-[#0A2647]">
+                  Status de Atendimentos (Hoje)
+                </h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={statusAtendimentosData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {statusAtendimentosData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4 text-[#0A2647]">
+                  Horários de Pico
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    { horario: "08-09", msgs: 45, nivel: "Médio" },
+                    { horario: "09-10", msgs: 78, nivel: "Alto" },
+                    { horario: "10-11", msgs: 92, nivel: "Muito Alto" },
+                    { horario: "11-12", msgs: 65, nivel: "Alto" },
+                    { horario: "14-15", msgs: 55, nivel: "Médio" },
+                  ].map((item) => (
+                    <div
+                      key={item.horario}
+                      className="flex justify-between items-center p-3 rounded-lg bg-muted/30"
+                    >
+                      <span className="font-medium">{item.horario}h</span>
+                      <span className="text-muted-foreground">
+                        {item.msgs} mensagens
+                      </span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          item.nivel === "Muito Alto"
+                            ? "bg-red-100 text-red-700"
+                            : item.nivel === "Alto"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {item.nivel}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          </div>
+        );
+
+      case "roteiros":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-[#0A2647]">
+              Roteiros de Atendimento
+            </h3>
             <Card className="p-6">
-              <h4 className="font-semibold mb-4">Mensagens Enviadas Hoje</h4>
-              <div className="text-4xl font-bold text-[#0A2647]">
-                {metricas.totalMensagens}
+              <p className="text-muted-foreground mb-4">
+                Scripts e modelos de mensagens para o setor.
+              </p>
+              <Button className="bg-[#0A2647]">Criar Novo Roteiro</Button>
+            </Card>
+          </div>
+        );
+
+      case "relatorios":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-[#0A2647]">Relatórios</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="p-6">
+                <h4 className="font-semibold mb-2">NPS Geral do Setor</h4>
+                <div className="text-4xl font-bold text-[#0A2647]">8.5</div>
+              </Card>
+              <Card className="p-6">
+                <h4 className="font-semibold mb-2">Taxa de Transferências</h4>
+                <div className="text-4xl font-bold text-[#144272]">12%</div>
+              </Card>
+            </div>
+            <Card className="p-6">
+              <h4 className="font-semibold mb-4">Top 3 Atendentes</h4>
+              <div className="space-y-3">
+                {[
+                  { nome: "Ana Silva", atendimentos: 85, nps: 9.2 },
+                  { nome: "Carlos Santos", atendimentos: 78, nps: 8.9 },
+                  { nome: "Maria Oliveira", atendimentos: 72, nps: 8.7 },
+                ].map((atendente, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
+                          idx === 0
+                            ? "bg-yellow-500"
+                            : idx === 1
+                            ? "bg-gray-400"
+                            : "bg-orange-600"
+                        }`}
+                      >
+                        {idx + 1}
+                      </div>
+                      <span className="font-medium">{atendente.nome}</span>
+                    </div>
+                    <div className="text-right text-sm">
+                      <div className="font-semibold">{atendente.atendimentos} atendimentos</div>
+                      <div className="text-muted-foreground">NPS: {atendente.nps}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
         );
 
-      case "permissoes":
+      case "preditiva":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold">Permissões</h3>
+            <h3 className="text-2xl font-bold text-[#0A2647]">
+              Análise Preditiva
+            </h3>
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50">
+              <h4 className="font-semibold mb-4">Previsões para Hoje</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="h-5 w-5 text-[#0A2647]" />
+                  <span>Volume esperado: <strong>120-145 atendimentos</strong></span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Bell className="h-5 w-5 text-orange-500" />
+                  <span>Pico previsto: <strong>10h-12h</strong></span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Activity className="h-5 w-5 text-green-500" />
+                  <span>Fila prevista: <strong>Média</strong></span>
+                </div>
+              </div>
+            </Card>
             <Card className="p-6">
+              <h4 className="font-semibold mb-2">Recomendação da IA</h4>
               <p className="text-muted-foreground">
-                Gerenciamento de cargos e permissões em desenvolvimento.
+                Considere alocar +1 atendente entre 10h-12h para evitar sobrecarga.
               </p>
             </Card>
           </div>
         );
 
-      case "transferencias":
+      case "alertas":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold">Histórico de Transferências</h3>
+            <h3 className="text-2xl font-bold text-[#0A2647]">Alertas</h3>
+            <div className="space-y-3">
+              <Card className="p-4 border-l-4 border-l-red-500">
+                <div className="flex items-start gap-3">
+                  <Bell className="h-5 w-5 text-red-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Fila com tempo elevado</h4>
+                    <p className="text-sm text-muted-foreground">
+                      8 pacientes aguardando há mais de 15 minutos
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-4 border-l-4 border-l-yellow-500">
+                <div className="flex items-start gap-3">
+                  <Bell className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">TME acima da média</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Tempo médio de espera 25% acima do padrão
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        );
+
+      case "feedback":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-[#0A2647]">
+              Feedback da Equipe
+            </h3>
             <Card className="p-6">
-              <p className="text-muted-foreground">
-                Histórico de transferências em desenvolvimento.
-              </p>
+              <h4 className="font-semibold mb-4">Sugestões da IA</h4>
+              <div className="space-y-3">
+                <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ThumbsUp className="h-4 w-4 text-green-600" />
+                    <span className="font-semibold text-green-900">Elogio</span>
+                  </div>
+                  <p className="text-sm text-green-800">
+                    <strong>Ana Silva</strong> manteve NPS de 9.2 por 30 dias consecutivos.
+                  </p>
+                  <Button size="sm" className="mt-3 bg-green-600">
+                    Enviar Elogio
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        );
+
+      case "ideias":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-[#0A2647]">
+              Ideias e Sugestões
+            </h3>
+            <Card className="p-6">
+              <Button className="bg-[#0A2647] mb-4">Enviar Nova Ideia</Button>
+              <div className="space-y-3">
+                <div className="p-4 rounded-lg border">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-semibold">Automatizar respostas FAQ</h4>
+                    <span className="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+                      Em análise
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Criar bot para perguntas frequentes
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    Por: Carlos Santos
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </div>
+        );
+
+      case "auditoria":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-[#0A2647]">
+              Auditoria de Ações
+            </h3>
+            <Card className="p-6">
+              <div className="space-y-3">
+                {[
+                  {
+                    acao: "Transferência de atendimento",
+                    user: "Ana Silva",
+                    data: "28/11/2025 14:32",
+                  },
+                  {
+                    acao: "Pausa de recebimento",
+                    user: "Carlos Santos",
+                    data: "28/11/2025 12:15",
+                  },
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-lg border flex justify-between items-center"
+                  >
+                    <div>
+                      <h4 className="font-medium">{item.acao}</h4>
+                      <p className="text-sm text-muted-foreground">{item.user}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {item.data}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
         );
@@ -228,13 +546,11 @@ export const PainelUnificado = () => {
       default:
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold capitalize">
+            <h3 className="text-2xl font-bold text-[#0A2647] capitalize">
               {menuItems.find((m) => m.id === secaoAtiva)?.label}
             </h3>
             <Card className="p-6">
-              <p className="text-muted-foreground">
-                Conteúdo em desenvolvimento.
-              </p>
+              <p className="text-muted-foreground">Conteúdo em desenvolvimento.</p>
             </Card>
           </div>
         );
