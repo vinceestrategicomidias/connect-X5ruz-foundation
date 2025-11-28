@@ -111,27 +111,49 @@ export const useTransferirAtendimento = () => {
     mutationFn: async ({
       pacienteId,
       novoAtendenteId,
+      novoSetorId,
       conversaId,
+      voltarParaFila = false,
     }: {
       pacienteId: string;
-      novoAtendenteId: string;
+      novoAtendenteId?: string;
+      novoSetorId?: string;
       conversaId: string;
+      voltarParaFila?: boolean;
     }) => {
+      const updateData: any = {};
+
+      if (voltarParaFila) {
+        updateData.status = "fila";
+        updateData.atendente_responsavel = null;
+      } else if (novoAtendenteId) {
+        updateData.atendente_responsavel = novoAtendenteId;
+        updateData.status = "em_atendimento";
+      }
+
+      if (novoSetorId) {
+        updateData.setor_id = novoSetorId;
+        updateData.status = "fila";
+        updateData.atendente_responsavel = null;
+      }
+
       // Atualizar paciente
       const { error: pacienteError } = await supabase
         .from("pacientes")
-        .update({ atendente_responsavel: novoAtendenteId })
+        .update(updateData)
         .eq("id", pacienteId);
 
       if (pacienteError) throw pacienteError;
 
-      // Atualizar conversa
-      const { error: conversaError } = await supabase
-        .from("conversas")
-        .update({ atendente_id: novoAtendenteId })
-        .eq("id", conversaId);
+      // Atualizar conversa se houver novo atendente
+      if (novoAtendenteId) {
+        const { error: conversaError } = await supabase
+          .from("conversas")
+          .update({ atendente_id: novoAtendenteId })
+          .eq("id", conversaId);
 
-      if (conversaError) throw conversaError;
+        if (conversaError) throw conversaError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pacientes"] });
