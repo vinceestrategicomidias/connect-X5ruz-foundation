@@ -16,6 +16,22 @@ export const ConnectColumn3 = () => {
     paciente.telefone.includes(busca)
   );
 
+  // Ordenar pacientes: alertas primeiro, depois por tempo na fila, depois por horário
+  const pacientesOrdenados = pacientesFiltrados?.sort((a, b) => {
+    const tempoLimite = 30;
+    const aEmAlerta = a.status === "fila" && (a.tempo_na_fila || 0) >= tempoLimite;
+    const bEmAlerta = b.status === "fila" && (b.tempo_na_fila || 0) >= tempoLimite;
+    
+    if (aEmAlerta && !bEmAlerta) return -1;
+    if (!aEmAlerta && bEmAlerta) return 1;
+    
+    if ((b.tempo_na_fila || 0) !== (a.tempo_na_fila || 0)) {
+      return (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0);
+    }
+    
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   return (
     <div className="w-80 border-l border-border bg-card flex flex-col h-full">
       {/* Header */}
@@ -41,7 +57,7 @@ export const ConnectColumn3 = () => {
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : !pacientesFiltrados || pacientesFiltrados.length === 0 ? (
+        ) : !pacientesOrdenados || pacientesOrdenados.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <p className="text-sm text-muted-foreground text-center">
               {busca ? "Nenhum paciente encontrado" : "Nenhum paciente cadastrado"}
@@ -49,12 +65,15 @@ export const ConnectColumn3 = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            {pacientesFiltrados.map((paciente) => (
+            {pacientesOrdenados.map((paciente) => (
               <ConnectPatientCard
                 key={paciente.id}
                 name={paciente.nome}
                 lastMessage={paciente.ultima_mensagem || undefined}
-                time={paciente.tempo_na_fila > 0 ? `${paciente.tempo_na_fila}min` : undefined}
+                lastMessageTime={new Date(paciente.created_at).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
                 status={
                   paciente.status === "fila"
                     ? "espera"
@@ -62,6 +81,7 @@ export const ConnectColumn3 = () => {
                     ? "andamento"
                     : "finalizado"
                 }
+                tempoNaFila={paciente.tempo_na_fila || 0}
                 onClick={() => setPacienteSelecionado(paciente)}
               />
             ))}

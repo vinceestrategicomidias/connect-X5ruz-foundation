@@ -19,7 +19,7 @@ export const ConnectColumn1 = () => {
       <Tabs defaultValue="espera" className="flex-1 flex flex-col">
         <div className="px-4 pt-4">
           <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="espera">Fila de Espera</TabsTrigger>
+            <TabsTrigger value="espera">Fila</TabsTrigger>
             <TabsTrigger value="andamento">Em Andamento</TabsTrigger>
             <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
           </TabsList>
@@ -67,14 +67,34 @@ const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "final
     );
   }
 
+  // Ordenar pacientes: alertas primeiro, depois por tempo na fila, depois por horário
+  const pacientesOrdenados = [...pacientes].sort((a, b) => {
+    const tempoLimite = 30;
+    const aEmAlerta = a.status === "fila" && (a.tempo_na_fila || 0) >= tempoLimite;
+    const bEmAlerta = b.status === "fila" && (b.tempo_na_fila || 0) >= tempoLimite;
+    
+    if (aEmAlerta && !bEmAlerta) return -1;
+    if (!aEmAlerta && bEmAlerta) return 1;
+    
+    if ((b.tempo_na_fila || 0) !== (a.tempo_na_fila || 0)) {
+      return (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0);
+    }
+    
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   return (
     <ScrollArea className="h-full px-4">
       <div className="space-y-2">
-        {pacientes.map((paciente) => (
+        {pacientesOrdenados.map((paciente) => (
           <ConnectPatientCard
             key={paciente.id}
             name={paciente.nome}
             lastMessage={paciente.ultima_mensagem || undefined}
+            lastMessageTime={new Date(paciente.created_at).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
             status={
               status === "fila"
                 ? "espera"
@@ -82,6 +102,7 @@ const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "final
                 ? "andamento"
                 : "finalizado"
             }
+            tempoNaFila={paciente.tempo_na_fila || 0}
             onClick={() => setPacienteSelecionado(paciente)}
           />
         ))}
