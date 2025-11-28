@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Plus, Upload, Image as ImageIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { GeradorFigurinhasThali } from "./GeradorFigurinhasThali";
+import { GeradorLoteFigurinhasThali } from "./GeradorLoteFigurinhasThali";
 
 export const FigurinhasManagement = () => {
   const [selectedPacote, setSelectedPacote] = useState<string | null>(null);
@@ -156,6 +157,7 @@ export const FigurinhasManagement = () => {
           </TabsContent>
 
           <TabsContent value="ai" className="space-y-4">
+            <GeradorLoteFigurinhasThali />
             <GeradorFigurinhasThali />
           </TabsContent>
 
