@@ -21,21 +21,36 @@ export const ConnectColumn1 = () => {
 
       {/* Tabs de Status */}
       <Tabs defaultValue="espera" className="flex-1 flex flex-col">
-        <div className="px-4 pt-4">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="espera">Fila</TabsTrigger>
-            <TabsTrigger value="andamento">Meus Atendimentos</TabsTrigger>
-            <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
+        <div className="px-4 pt-4 pb-2">
+          <TabsList className="w-full h-auto grid grid-cols-3 gap-1 bg-muted/50 p-1">
+            <TabsTrigger 
+              value="espera" 
+              className="text-xs font-medium py-2.5 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap"
+            >
+              Fila
+            </TabsTrigger>
+            <TabsTrigger 
+              value="andamento" 
+              className="text-xs font-medium py-2.5 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap"
+            >
+              Meus Atend.
+            </TabsTrigger>
+            <TabsTrigger 
+              value="finalizados" 
+              className="text-xs font-medium py-2.5 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap"
+            >
+              Finalizados
+            </TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="espera" className="flex-1 mt-4">
+        <TabsContent value="espera" className="flex-1 mt-2">
           <PacientesLista status="fila" />
         </TabsContent>
-        <TabsContent value="andamento" className="flex-1 mt-4">
+        <TabsContent value="andamento" className="flex-1 mt-2">
           <PacientesLista status="em_atendimento" />
         </TabsContent>
-        <TabsContent value="finalizados" className="flex-1 mt-4">
+        <TabsContent value="finalizados" className="flex-1 mt-2">
           <PacientesLista status="finalizado" />
         </TabsContent>
       </Tabs>
