@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, LayoutDashboard, Bell as BellIcon } from "lucide-react";
+import { Menu, LayoutDashboard, Bell } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
@@ -9,6 +9,7 @@ import { RankingTop3 } from "./RankingTop3";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
+import { DemoModeSelector } from "./DemoModeSelector";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 export const ConnectNavbar = () => {
@@ -43,7 +44,7 @@ export const ConnectNavbar = () => {
         <SetoresManagement />
         {(isCoordenacao || isGestor) && (
           <ConnectIconButton
-            icon={BellIcon}
+            icon={Bell}
             onClick={() => setValidacoesOpen(true)}
             tooltip="Validações Pendentes"
             variant="ghost"
@@ -60,6 +61,7 @@ export const ConnectNavbar = () => {
           tooltip="Painel Estratégico"
         />
         <NotificationsPanel />
+        <DemoModeSelector />
         <UserProfileMenu />
       </div>
 
