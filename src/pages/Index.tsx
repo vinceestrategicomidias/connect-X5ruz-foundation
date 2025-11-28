@@ -1,13 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { ConnectContainer } from "@/components/ConnectContainer";
+import { ConnectNavbar } from "@/components/ConnectNavbar";
+import { ConnectColumn1 } from "@/components/ConnectColumn1";
+import { ConnectColumn2 } from "@/components/ConnectColumn2";
+import { ConnectColumn3 } from "@/components/ConnectColumn3";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <ConnectContainer>
+      <div className="flex flex-col h-screen">
+        {/* Navbar Superior */}
+        <ConnectNavbar />
+
+        {/* Layout de 3 Colunas */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Coluna 1: Fluxo de Atendimento */}
+          <ConnectColumn1 />
+
+          {/* Coluna 2: Área Central de Chat */}
+          <ConnectColumn2 />
+
+          {/* Coluna 3: Lista Geral de Pacientes */}
+          <ConnectColumn3 />
+        </div>
       </div>
-    </div>
+    </ConnectContainer>
   );
 };
 
