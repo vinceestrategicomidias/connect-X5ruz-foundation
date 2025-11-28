@@ -11,9 +11,9 @@ import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { ThaliAvatar } from "./ThaliAvatar";
+import { ThaliAvatar, type ThaliExpression } from "./ThaliAvatar";
 
-const getNotificationIcon = (type: Notification["type"]) => {
+const getNotificationIcon = (type: Notification["type"], description?: string) => {
   const iconClass = "h-5 w-5";
   
   switch (type) {
@@ -30,7 +30,18 @@ const getNotificationIcon = (type: Notification["type"]) => {
     case "ideia_aprovada":
       return <Lightbulb className={cn(iconClass, "text-green-500")} />;
     case "feedback_thali":
-      return <ThaliAvatar size="sm" />;
+      // Determinar expressão baseada no conteúdo da notificação
+      const expression: ThaliExpression = 
+        description?.toLowerCase().includes("urgente") || 
+        description?.toLowerCase().includes("alerta") || 
+        description?.toLowerCase().includes("crítico")
+          ? "alertando"
+          : description?.toLowerCase().includes("sucesso") || 
+            description?.toLowerCase().includes("positivo") ||
+            description?.toLowerCase().includes("parabéns")
+          ? "feliz"
+          : "neutral";
+      return <ThaliAvatar size="sm" expression={expression} />;
     default:
       return <Bell className={cn(iconClass, "text-muted-foreground")} />;
   }
@@ -80,7 +91,7 @@ export const NotificationsPanel = () => {
     >
       <div className="flex-shrink-0 mt-0.5">
         <div className="h-9 w-9 rounded-full bg-muted/50 flex items-center justify-center">
-          {getNotificationIcon(notification.type)}
+          {getNotificationIcon(notification.type, notification.description)}
         </div>
       </div>
       <div className="flex-1 min-w-0">
