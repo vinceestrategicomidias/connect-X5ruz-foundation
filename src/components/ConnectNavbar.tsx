@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Menu, LayoutDashboard, Sun, Moon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Menu, LayoutDashboard, Sun, Moon, BarChart3 } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
@@ -11,6 +12,7 @@ import { UserProfileMenu } from "./UserProfileMenu";
 import { useTheme } from "next-themes";
 
 export const ConnectNavbar = () => {
+  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [painelOpen, setPainelOpen] = useState(false);
@@ -39,6 +41,11 @@ export const ConnectNavbar = () => {
       <div className="flex items-center gap-3">
         <ManualDialer />
         <SetoresManagement />
+        <ConnectIconButton 
+          icon={BarChart3}
+          onClick={() => navigate("/dashboard")}
+          tooltip="Dashboard de Monitoramento"
+        />
         <ConnectIconButton 
           icon={Menu}
           onClick={() => setSystemMenuOpen(true)}
