@@ -15,12 +15,6 @@ import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useIniciarChamada } from "@/hooks/useChamadas";
 import { useChamadaContext } from "@/contexts/ChamadaContext";
 import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { PerfilPacienteSheet } from "./PerfilPacienteSheet";
 
 export const ConnectColumn2 = () => {
@@ -176,18 +170,13 @@ export const ConnectColumn2 = () => {
               <UserCog className="h-4 w-4 mr-2" />
               Transferir
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card z-50">
-                <DropdownMenuItem onClick={() => setPerfilOpen(true)}>
-                  Ver perfil do paciente
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setPerfilOpen(true)}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
           </div>
         )}
       </div>
