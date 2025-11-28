@@ -14,8 +14,13 @@ import {
   Code2,
   Save,
   Plus,
+  Copy,
+  RefreshCw,
 } from "lucide-react";
 import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
+import { ApiWebhooksManager } from "./ApiWebhooksManager";
+import { ApiLogsViewer } from "./ApiLogsViewer";
+import { ApiDocsPanel } from "./ApiDocsPanel";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
 import { useUnidades, useCriarUnidade } from "@/hooks/useUnidades";
@@ -40,6 +45,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 interface SystemMenuProps {
@@ -753,77 +759,79 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold">API e Webhooks</h3>
+              <h3 className="text-lg font-semibold">API e Integrações</h3>
               <p className="text-sm text-muted-foreground">
-                Configure integrações externas
+                Gerencie chaves API, webhooks, logs e documentação
               </p>
             </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Chave API</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input
-                    value={apiConfig.chave_api}
-                    onChange={(e) => setApiConfig({ ...apiConfig, chave_api: e.target.value })}
-                    readOnly
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground">Use esta chave para autenticar requisições</p>
-                </div>
-                
-                <Button className="w-full" variant="outline">
-                  Gerar Nova Chave
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Endpoints Disponíveis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="p-3 border rounded-lg space-y-1">
-                    <p className="font-medium text-sm">POST /api/pacientes/create</p>
-                    <p className="text-xs text-muted-foreground">Criar novo paciente</p>
-                  </div>
-                  <div className="p-3 border rounded-lg space-y-1">
-                    <p className="font-medium text-sm">POST /api/chat/send</p>
-                    <p className="text-xs text-muted-foreground">Enviar mensagem</p>
-                  </div>
-                  <div className="p-3 border rounded-lg space-y-1">
-                    <p className="font-medium text-sm">POST /api/atendimentos/start</p>
-                    <p className="text-xs text-muted-foreground">Iniciar atendimento</p>
-                  </div>
-                  <div className="p-3 border rounded-lg space-y-1">
-                    <p className="font-medium text-sm">GET /api/setores</p>
-                    <p className="text-xs text-muted-foreground">Listar setores</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Webhooks Configurados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="p-3 border rounded-lg space-y-1">
-                    <p className="font-medium text-sm">nova_mensagem</p>
-                    <p className="text-xs text-muted-foreground font-mono">https://webhook.exemplo.com/mensagens</p>
-                  </div>
-                  <div className="p-3 border rounded-lg space-y-1">
-                    <p className="font-medium text-sm">alteracao_status</p>
-                    <p className="text-xs text-muted-foreground font-mono">https://webhook.exemplo.com/status</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Tabs defaultValue="chave" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="chave">Chave API</TabsTrigger>
+                <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+                <TabsTrigger value="logs">Logs</TabsTrigger>
+                <TabsTrigger value="docs">Documentação</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="chave" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Chave API Ativa</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>API Key</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={apiConfig.chave_api}
+                          readOnly
+                          className="font-mono text-sm"
+                        />
+                        <Button variant="outline" size="icon">
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Use esta chave no header: Authorization: Bearer {apiConfig.chave_api}
+                      </p>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-2">
+                      <Label>Limites</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 border rounded-lg">
+                          <div className="text-2xl font-bold">1000</div>
+                          <div className="text-xs text-muted-foreground">req/minuto</div>
+                        </div>
+                        <div className="p-3 border rounded-lg">
+                          <div className="text-2xl font-bold">250</div>
+                          <div className="text-xs text-muted-foreground">burst/5s</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button variant="outline" className="w-full">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Gerar Nova Chave
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="webhooks">
+                <ApiWebhooksManager />
+              </TabsContent>
+
+              <TabsContent value="logs">
+                <ApiLogsViewer />
+              </TabsContent>
+
+              <TabsContent value="docs">
+                <ApiDocsPanel />
+              </TabsContent>
+            </Tabs>
           </div>
         );
 

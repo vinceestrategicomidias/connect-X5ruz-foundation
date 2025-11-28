@@ -55,6 +55,85 @@ export type Database = {
           },
         ]
       }
+      api_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string | null
+          endpoint: string
+          id: string
+          ip_origem: string | null
+          metodo: string
+          payload_resumido: Json | null
+          status_code: number | null
+          tempo_resposta_ms: number | null
+          user_agent: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          ip_origem?: string | null
+          metodo: string
+          payload_resumido?: Json | null
+          status_code?: number | null
+          tempo_resposta_ms?: number | null
+          user_agent?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          ip_origem?: string | null
+          metodo?: string
+          payload_resumido?: Json | null
+          status_code?: number | null
+          tempo_resposta_ms?: number | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_rate_limits: {
+        Row: {
+          api_key_id: string | null
+          contador: number | null
+          created_at: string | null
+          id: string
+          minuto: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          contador?: number | null
+          created_at?: string | null
+          id?: string
+          minuto: string
+        }
+        Update: {
+          api_key_id?: string | null
+          contador?: number | null
+          created_at?: string | null
+          id?: string
+          minuto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_rate_limits_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       atendentes: {
         Row: {
           ativo: boolean | null
@@ -693,11 +772,60 @@ export type Database = {
         }
         Relationships: []
       }
+      webhooks: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          empresa_id: string | null
+          evento: string
+          id: string
+          secret: string | null
+          tentativas_falhas: number | null
+          ultima_tentativa: string | null
+          updated_at: string | null
+          url_destino: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          evento: string
+          id?: string
+          secret?: string | null
+          tentativas_falhas?: number | null
+          ultima_tentativa?: string | null
+          updated_at?: string | null
+          url_destino: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          evento?: string
+          id?: string
+          secret?: string | null
+          tentativas_falhas?: number | null
+          ultima_tentativa?: string | null
+          updated_at?: string | null
+          url_destino?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhooks_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_api_logs: { Args: never; Returns: undefined }
+      cleanup_old_rate_limits: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
