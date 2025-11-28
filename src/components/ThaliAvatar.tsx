@@ -3,9 +3,10 @@ import { cn } from "@/lib/utils";
 interface ThaliAvatarProps {
   size?: "sm" | "md" | "lg";
   className?: string;
+  processing?: boolean;
 }
 
-export const ThaliAvatar = ({ size = "md", className }: ThaliAvatarProps) => {
+export const ThaliAvatar = ({ size = "md", className, processing = false }: ThaliAvatarProps) => {
   const sizeClasses = {
     sm: "w-8 h-8 text-xs",
     md: "w-10 h-10 text-sm",
@@ -17,6 +18,7 @@ export const ThaliAvatar = ({ size = "md", className }: ThaliAvatarProps) => {
       className={cn(
         "rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center font-display font-bold text-primary-foreground shadow-md",
         sizeClasses[size],
+        processing && "animate-breathe",
         className
       )}
     >
