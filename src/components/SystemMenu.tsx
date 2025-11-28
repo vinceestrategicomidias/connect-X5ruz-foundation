@@ -13,6 +13,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
+import { ConfiguracoesManagement } from "./ConfiguracoesManagement";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import {
   Drawer,
@@ -59,6 +60,7 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
   const { isCoordenacao, isGestor } = useAtendenteContext();
   const [selectedSection, setSelectedSection] = useState<MenuSection>("empresa");
   const [validacoesOpen, setValidacoesOpen] = useState(false);
+  const [configuracoesOpen, setConfiguracoesOpen] = useState(false);
 
   const renderContent = () => {
     switch (selectedSection) {
@@ -69,10 +71,13 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
             <p className="text-sm text-muted-foreground">
               Configure os dados da sua empresa: nome, CNPJ, endereço, logo e responsável administrativo.
             </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
-              </p>
+            <div className="mt-4">
+              <button
+                onClick={() => setConfiguracoesOpen(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Abrir Configurações Completas
+              </button>
             </div>
           </div>
         );
@@ -220,12 +225,15 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Configurações Avançadas</h3>
             <p className="text-sm text-muted-foreground">
-              Gerencie API externa, chaves, webhooks, limites de SLA e integrações externas.
+              Gerencie todas as configurações do sistema: empresa, unidades, usuários, perfis, URA, IA, alertas e APIs.
             </p>
-            <div className="p-6 rounded-lg border bg-card">
-              <p className="text-center text-muted-foreground">
-                Módulo em desenvolvimento
-              </p>
+            <div className="mt-4">
+              <button
+                onClick={() => setConfiguracoesOpen(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Abrir Configurações Completas
+              </button>
             </div>
           </div>
         );
@@ -288,6 +296,7 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
       </Drawer>
       
       <ValidacoesPerfilPanel open={validacoesOpen} onOpenChange={setValidacoesOpen} />
+      <ConfiguracoesManagement open={configuracoesOpen} onOpenChange={setConfiguracoesOpen} />
     </>
   );
 };
