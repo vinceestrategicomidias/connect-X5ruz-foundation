@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -104,8 +103,12 @@ const statusAtendimentosData = [
   { name: "Em fila", value: 5 },
 ];
 
-export const PainelUnificado = () => {
-  const [open, setOpen] = useState(false);
+interface PainelUnificadoProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) => {
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoPainel>("dashboards");
   const { atendenteLogado, isCoordenacao } = useAtendenteContext();
   const { data: chamadas } = useChamadas(
@@ -558,13 +561,7 @@ export const PainelUnificado = () => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <LayoutGrid className="h-4 w-4 mr-2" />
-          Painel
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl h-[90vh] p-0">
         <div className="flex h-full">
           {/* Sidebar */}

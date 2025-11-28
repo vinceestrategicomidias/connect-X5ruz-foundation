@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Settings, LayoutGrid } from "lucide-react";
+import { LayoutGrid, Menu, LayoutDashboard } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { SetoresManagement } from "./SetoresManagement";
@@ -7,11 +7,13 @@ import { ManualDialer } from "./ManualDialer";
 import { PainelUnificado } from "./PainelUnificado";
 import { SystemMenu } from "./SystemMenu";
 import { RankingTop3 } from "./RankingTop3";
+import { NotificationsPanel } from "./NotificationsPanel";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 export const ConnectNavbar = () => {
   const { atendenteLogado } = useAtendenteContext();
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
+  const [painelOpen, setPainelOpen] = useState(false);
 
   return (
     <nav className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
@@ -38,14 +40,18 @@ export const ConnectNavbar = () => {
       {/* Actions */}
       <div className="flex items-center gap-3">
         <ManualDialer />
-        <PainelUnificado />
         <SetoresManagement />
         <ConnectIconButton 
-          icon={LayoutGrid} 
+          icon={Menu}
           onClick={() => setSystemMenuOpen(true)}
+          tooltip="Menu do Sistema"
         />
-        <ConnectIconButton icon={Bell} />
-        <ConnectIconButton icon={Settings} />
+        <ConnectIconButton 
+          icon={LayoutDashboard}
+          onClick={() => setPainelOpen(true)}
+          tooltip="Painel Estratégico"
+        />
+        <NotificationsPanel />
         <ConnectAvatar
           name={atendenteLogado?.nome || "Atendente"}
           image={atendenteLogado?.avatar || undefined}
@@ -53,6 +59,7 @@ export const ConnectNavbar = () => {
       </div>
 
       <SystemMenu open={systemMenuOpen} onOpenChange={setSystemMenuOpen} />
+      <PainelUnificado open={painelOpen} onOpenChange={setPainelOpen} />
     </nav>
   );
 };
