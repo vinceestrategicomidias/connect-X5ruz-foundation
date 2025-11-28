@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Building2,
   Building,
@@ -86,6 +87,7 @@ const menuItems = [
 
 export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
   const { isCoordenacao, isGestor } = useAtendenteContext();
+  const navigate = useNavigate();
   const [selectedSection, setSelectedSection] = useState<MenuSection>("empresa");
   const [validacoesOpen, setValidacoesOpen] = useState(false);
   
@@ -848,7 +850,14 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => setSelectedSection(item.id)}
+                        onClick={() => {
+                          if (item.id === "dashboard") {
+                            navigate("/dashboard");
+                            onOpenChange(false);
+                          } else {
+                            setSelectedSection(item.id);
+                          }
+                        }}
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                           selectedSection === item.id
