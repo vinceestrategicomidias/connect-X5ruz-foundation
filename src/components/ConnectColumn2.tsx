@@ -16,6 +16,9 @@ import { useIniciarChamada } from "@/hooks/useChamadas";
 import { useChamadaContext } from "@/contexts/ChamadaContext";
 import { toast } from "sonner";
 import { PerfilPacienteSheet } from "./PerfilPacienteSheet";
+import { AttachmentMenu } from "./AttachmentMenu";
+import { AudioRecorder } from "./AudioRecorder";
+import { useUploadAnexo } from "@/hooks/useAnexos";
 
 export const ConnectColumn2 = () => {
   const { pacienteSelecionado } = usePacienteContext();
@@ -30,7 +33,9 @@ export const ConnectColumn2 = () => {
   const [digitando, setDigitando] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [perfilOpen, setPerfilOpen] = useState(false);
+  const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const uploadAnexo = useUploadAnexo();
 
   // Scroll automático para última mensagem
   useEffect(() => {
@@ -85,6 +90,92 @@ export const ConnectColumn2 = () => {
 
     setMensagemTexto("");
     setDigitando(false);
+  };
+
+  const handleFileSelect = async (file: File, tipo: string) => {
+    if (!conversa?.id || !pacienteSelecionado) {
+      toast.error("Selecione um paciente primeiro");
+      return;
+    }
+
+    try {
+      // Criar mensagem vazia para anexar o arquivo
+      const { data: mensagem, error } = await supabase
+        .from('mensagens')
+        .insert({
+          conversa_id: conversa.id,
+          texto: '',
+          autor: 'atendente',
+          tipo: 'texto',
+          horario: new Date().toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+        })
+        .select()
+        .single();
+
+      if (error || !mensagem) {
+        throw new Error(error?.message || 'Erro ao criar mensagem');
+      }
+
+      // Upload do arquivo
+      await uploadAnexo.mutateAsync({
+        mensagemId: mensagem.id,
+        file,
+        tipo,
+      });
+
+    } catch (error) {
+      console.error('Erro ao enviar arquivo:', error);
+      toast.error('Erro ao enviar arquivo');
+    }
+  };
+
+  const handleAudioRecorded = async (audioBlob: Blob, duration: number) => {
+    if (!conversa?.id || !pacienteSelecionado) {
+      toast.error("Selecione um paciente primeiro");
+      return;
+    }
+
+    try {
+      // Criar arquivo do blob
+      const audioFile = new File([audioBlob], `audio_${Date.now()}.webm`, {
+        type: 'audio/webm;codecs=opus'
+      });
+
+      // Criar mensagem vazia para anexar o áudio
+      const { data: mensagem, error } = await supabase
+        .from('mensagens')
+        .insert({
+          conversa_id: conversa.id,
+          texto: '',
+          autor: 'atendente',
+          tipo: 'texto',
+          horario: new Date().toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+        })
+        .select()
+        .single();
+
+      if (error || !mensagem) {
+        throw new Error(error?.message || 'Erro ao criar mensagem');
+      }
+
+      // Upload do áudio
+      await uploadAnexo.mutateAsync({
+        mensagemId: mensagem.id,
+        file: audioFile,
+        tipo: 'audio',
+      });
+
+      setIsRecordingAudio(false);
+    } catch (error) {
+      console.error('Erro ao enviar áudio:', error);
+      toast.error('Erro ao enviar áudio');
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -204,12 +295,14 @@ export const ConnectColumn2 = () => {
                   content={mensagem.texto}
                   time={mensagem.horario}
                   senderName={pacienteSelecionado.nome}
+                  mensagemId={mensagem.id}
                 />
               ) : (
                 <ConnectMessageBubbleAttendant
                   key={mensagem.id}
                   content={mensagem.texto}
                   time={mensagem.horario}
+                  mensagemId={mensagem.id}
                 />
               )
             )}
@@ -224,32 +317,49 @@ export const ConnectColumn2 = () => {
 
       {/* Input de Mensagem */}
       <div className="border-t border-border bg-card p-4">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" disabled={!pacienteSelecionado}>
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          <Input
-            placeholder="Digite sua mensagem..."
-            className="flex-1"
+        {isRecordingAudio ? (
+          <AudioRecorder
+            onAudioRecorded={handleAudioRecorded}
             disabled={!pacienteSelecionado}
-            value={mensagemTexto}
-            onChange={(e) => {
-              setMensagemTexto(e.target.value);
-              setDigitando(e.target.value.length > 0);
-            }}
-            onKeyPress={handleKeyPress}
           />
-          <Button variant="outline" size="icon" disabled={!pacienteSelecionado}>
-            <Mic className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            disabled={!pacienteSelecionado || !mensagemTexto.trim()}
-            onClick={handleEnviarMensagem}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <AttachmentMenu
+              onFileSelect={handleFileSelect}
+              disabled={!pacienteSelecionado}
+            >
+              <Button variant="outline" size="icon" disabled={!pacienteSelecionado}>
+                <Paperclip className="h-4 w-4" />
+              </Button>
+            </AttachmentMenu>
+            <Input
+              placeholder="Digite sua mensagem..."
+              className="flex-1"
+              disabled={!pacienteSelecionado}
+              value={mensagemTexto}
+              onChange={(e) => {
+                setMensagemTexto(e.target.value);
+                setDigitando(e.target.value.length > 0);
+              }}
+              onKeyPress={handleKeyPress}
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={!pacienteSelecionado}
+              onClick={() => setIsRecordingAudio(true)}
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              disabled={!pacienteSelecionado || !mensagemTexto.trim()}
+              onClick={handleEnviarMensagem}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Dialog de Transferência */}

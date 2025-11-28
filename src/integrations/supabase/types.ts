@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      anexos_mensagens: {
+        Row: {
+          created_at: string | null
+          duracao_segundos: number | null
+          id: string
+          mensagem_id: string | null
+          metadados: Json | null
+          mime_type: string | null
+          nome_arquivo: string
+          tamanho_bytes: number | null
+          tipo: string
+          url_storage: string
+        }
+        Insert: {
+          created_at?: string | null
+          duracao_segundos?: number | null
+          id?: string
+          mensagem_id?: string | null
+          metadados?: Json | null
+          mime_type?: string | null
+          nome_arquivo: string
+          tamanho_bytes?: number | null
+          tipo: string
+          url_storage: string
+        }
+        Update: {
+          created_at?: string | null
+          duracao_segundos?: number | null
+          id?: string
+          mensagem_id?: string | null
+          metadados?: Json | null
+          mime_type?: string | null
+          nome_arquivo?: string
+          tamanho_bytes?: number | null
+          tipo?: string
+          url_storage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anexos_mensagens_mensagem_id_fkey"
+            columns: ["mensagem_id"]
+            isOneToOne: false
+            referencedRelation: "mensagens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_config: {
         Row: {
           api_key: string
