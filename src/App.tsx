@@ -14,30 +14,32 @@ import DashboardMonitoramento from "./pages/DashboardMonitoramento";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" storageKey="connect-theme">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AtendenteProvider>
-            <ChamadaProvider>
-              <PacienteProvider>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<DashboardMonitoramento />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </PacienteProvider>
-            </ChamadaProvider>
-          </AtendenteProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" storageKey="connect-theme">
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AtendenteProvider>
+              <ChamadaProvider>
+                <PacienteProvider>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/" element={<Index />} />
+                    <Route path="/dashboard" element={<DashboardMonitoramento />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </PacienteProvider>
+              </ChamadaProvider>
+            </AtendenteProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
