@@ -14,37 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_config: {
+        Row: {
+          api_key: string
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          integracoes_externas: Json | null
+          limites_sla: Json | null
+          updated_at: string | null
+          webhooks: Json | null
+        }
+        Insert: {
+          api_key: string
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          integracoes_externas?: Json | null
+          limites_sla?: Json | null
+          updated_at?: string | null
+          webhooks?: Json | null
+        }
+        Update: {
+          api_key?: string
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          integracoes_externas?: Json | null
+          limites_sla?: Json | null
+          updated_at?: string | null
+          webhooks?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_config_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       atendentes: {
         Row: {
+          ativo: boolean | null
           avatar: string | null
           cargo: Database["public"]["Enums"]["cargo_tipo"] | null
           created_at: string | null
+          email: string | null
           id: string
           nome: string
+          perfil_id: string | null
+          senha: string | null
           setor_id: string | null
+          unidade_id: string | null
         }
         Insert: {
+          ativo?: boolean | null
           avatar?: string | null
           cargo?: Database["public"]["Enums"]["cargo_tipo"] | null
           created_at?: string | null
+          email?: string | null
           id?: string
           nome: string
+          perfil_id?: string | null
+          senha?: string | null
           setor_id?: string | null
+          unidade_id?: string | null
         }
         Update: {
+          ativo?: boolean | null
           avatar?: string | null
           cargo?: Database["public"]["Enums"]["cargo_tipo"] | null
           created_at?: string | null
+          email?: string | null
           id?: string
           nome?: string
+          perfil_id?: string | null
+          senha?: string | null
           setor_id?: string | null
+          unidade_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "atendentes_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis_de_acesso"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "atendentes_setor_id_fkey"
             columns: ["setor_id"]
             isOneToOne: false
             referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atendentes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -155,6 +225,39 @@ export type Database = {
           },
         ]
       }
+      empresas: {
+        Row: {
+          cnpj: string | null
+          created_at: string | null
+          endereco: string | null
+          id: string
+          logo_url: string | null
+          nome: string
+          responsavel: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          logo_url?: string | null
+          nome: string
+          responsavel?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          logo_url?: string | null
+          nome?: string
+          responsavel?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       mensagens: {
         Row: {
           autor: string
@@ -189,6 +292,50 @@ export type Database = {
             columns: ["conversa_id"]
             isOneToOne: false
             referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensageria_config: {
+        Row: {
+          assistente_config: Json | null
+          created_at: string | null
+          fluxos_automatizados: Json | null
+          ia_ativa: boolean | null
+          id: string
+          respostas_automaticas: Json | null
+          robo_ativo: boolean | null
+          unidade_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assistente_config?: Json | null
+          created_at?: string | null
+          fluxos_automatizados?: Json | null
+          ia_ativa?: boolean | null
+          id?: string
+          respostas_automaticas?: Json | null
+          robo_ativo?: boolean | null
+          unidade_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assistente_config?: Json | null
+          created_at?: string | null
+          fluxos_automatizados?: Json | null
+          ia_ativa?: boolean | null
+          id?: string
+          respostas_automaticas?: Json | null
+          robo_ativo?: boolean | null
+          unidade_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensageria_config_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -250,6 +397,33 @@ export type Database = {
           },
         ]
       }
+      perfis_de_acesso: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          permissoes: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          permissoes?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          permissoes?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       setores: {
         Row: {
           ativo: boolean | null
@@ -258,6 +432,9 @@ export type Database = {
           descricao: string | null
           id: string
           nome: string
+          recebe_ligacoes: boolean | null
+          recebe_mensagens: boolean | null
+          unidade_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -267,6 +444,9 @@ export type Database = {
           descricao?: string | null
           id?: string
           nome: string
+          recebe_ligacoes?: boolean | null
+          recebe_mensagens?: boolean | null
+          unidade_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -276,7 +456,136 @@ export type Database = {
           descricao?: string | null
           id?: string
           nome?: string
+          recebe_ligacoes?: boolean | null
+          recebe_mensagens?: boolean | null
+          unidade_id?: string | null
           updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setores_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unidades: {
+        Row: {
+          ativo: boolean | null
+          codigo_interno: string | null
+          created_at: string | null
+          empresa_id: string | null
+          endereco: string | null
+          fuso_horario: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          codigo_interno?: string | null
+          created_at?: string | null
+          empresa_id?: string | null
+          endereco?: string | null
+          fuso_horario?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          codigo_interno?: string | null
+          created_at?: string | null
+          empresa_id?: string | null
+          endereco?: string | null
+          fuso_horario?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unidades_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ura_config: {
+        Row: {
+          ativo: boolean | null
+          audio_url: string | null
+          created_at: string | null
+          horario_funcionamento: Json | null
+          id: string
+          mensagem_boas_vindas: string | null
+          mensagem_espera: string | null
+          mensagem_fora_expediente: string | null
+          mensagem_lotacao: string | null
+          opcoes: Json | null
+          unidade_id: string | null
+          updated_at: string | null
+          voz_tipo: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          audio_url?: string | null
+          created_at?: string | null
+          horario_funcionamento?: Json | null
+          id?: string
+          mensagem_boas_vindas?: string | null
+          mensagem_espera?: string | null
+          mensagem_fora_expediente?: string | null
+          mensagem_lotacao?: string | null
+          opcoes?: Json | null
+          unidade_id?: string | null
+          updated_at?: string | null
+          voz_tipo?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          audio_url?: string | null
+          created_at?: string | null
+          horario_funcionamento?: Json | null
+          id?: string
+          mensagem_boas_vindas?: string | null
+          mensagem_espera?: string | null
+          mensagem_fora_expediente?: string | null
+          mensagem_lotacao?: string | null
+          opcoes?: Json | null
+          unidade_id?: string | null
+          updated_at?: string | null
+          voz_tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ura_config_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -285,9 +594,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role:
+        | "atendente"
+        | "coordenacao"
+        | "gestor"
+        | "auditor"
+        | "supervisor"
       cargo_tipo: "atendente" | "coordenacao" | "gestor"
     }
     CompositeTypes: {
@@ -416,6 +737,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["atendente", "coordenacao", "gestor", "auditor", "supervisor"],
       cargo_tipo: ["atendente", "coordenacao", "gestor"],
     },
   },
