@@ -112,15 +112,15 @@ const notificationTemplates: Omit<Notification, "id" | "timestamp">[] = [
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [userId, setUserId] = useState<string | null>(null);
+  // Mock user ID para protótipo (Geovana)
+  const MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";
+  const [userId, setUserId] = useState<string | null>(MOCK_USER_ID);
   const [initialLoaded, setInitialLoaded] = useState(false);
   const notificationSimulationEnabled = true; // Sempre ativo no protótipo
 
-  // Get current user
+  // Set mock user ID for prototype
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id || null);
-    });
+    setUserId(MOCK_USER_ID);
   }, []);
 
   // Load initial demo notifications
