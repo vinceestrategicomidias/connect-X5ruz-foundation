@@ -4,6 +4,10 @@ import { usePacientes } from "@/hooks/usePacientes";
 import { ConnectPatientCard } from "./ConnectPatientCard";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { Loader2 } from "lucide-react";
+import { useAtualizarStatusPaciente } from "@/hooks/useMutations";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const ConnectColumn1 = () => {
   return (
@@ -42,6 +46,45 @@ export const ConnectColumn1 = () => {
 const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "finalizado" }) => {
   const { data: pacientes, isLoading } = usePacientes(status);
   const { setPacienteSelecionado } = usePacienteContext();
+  const atualizarStatus = useAtualizarStatusPaciente();
+  const queryClient = useQueryClient();
+
+  // Realtime updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("pacientes-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "pacientes",
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["pacientes"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  const handleClickPaciente = async (paciente: any) => {
+    setPacienteSelecionado(paciente);
+
+    // Se clicar em paciente da fila, mover para em_atendimento
+    if (paciente.status === "fila") {
+      // Atendente Geovana (ID do mock)
+      const atendenteId = "11111111-1111-1111-1111-111111111111";
+      await atualizarStatus.mutateAsync({
+        pacienteId: paciente.id,
+        novoStatus: "em_atendimento",
+        atendenteId,
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -103,7 +146,7 @@ const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "final
                 : "finalizado"
             }
             tempoNaFila={paciente.tempo_na_fila || 0}
-            onClick={() => setPacienteSelecionado(paciente)}
+            onClick={() => handleClickPaciente(paciente)}
           />
         ))}
       </div>

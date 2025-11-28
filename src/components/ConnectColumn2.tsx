@@ -1,4 +1,4 @@
-import { Send, Paperclip, Mic } from "lucide-react";
+import { Send, Paperclip, Mic, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -7,11 +7,72 @@ import { ConnectStatusIndicator } from "./ConnectStatusIndicator";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConversas";
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
+import { useEnviarMensagem } from "@/hooks/useMutations";
+import { useState, useEffect, useRef } from "react";
+import { ConnectTransferDialog } from "./ConnectTransferDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ConnectColumn2 = () => {
   const { pacienteSelecionado } = usePacienteContext();
   const { data: conversa } = useConversaByPaciente(pacienteSelecionado?.id || null);
   const { data: mensagens } = useMensagensByConversa(conversa?.id || null);
+  const enviarMensagem = useEnviarMensagem();
+  const [mensagemTexto, setMensagemTexto] = useState("");
+  const [digitando, setDigitando] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Scroll automático para última mensagem
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [mensagens]);
+
+  // Realtime para mensagens
+  useEffect(() => {
+    if (!conversa?.id) return;
+
+    const channel = supabase
+      .channel(`mensagens-${conversa.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "mensagens",
+          filter: `conversa_id=eq.${conversa.id}`,
+        },
+        () => {
+          // Forçar atualização
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversa?.id]);
+
+  const handleEnviarMensagem = async () => {
+    if (!mensagemTexto.trim() || !conversa?.id) return;
+
+    await enviarMensagem.mutateAsync({
+      conversaId: conversa.id,
+      texto: mensagemTexto,
+      autor: "atendente",
+    });
+
+    setMensagemTexto("");
+    setDigitando(false);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleEnviarMensagem();
+    }
+  };
 
   const getStatusBadge = () => {
     if (!pacienteSelecionado) return "offline";
@@ -57,10 +118,20 @@ export const ConnectColumn2 = () => {
             </div>
           </div>
         </div>
+        {pacienteSelecionado && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTransferDialog(true)}
+          >
+            <UserCog className="h-4 w-4 mr-2" />
+            Transferir
+          </Button>
+        )}
       </div>
 
       {/* Área de Mensagens */}
-      <ScrollArea className="flex-1 p-6">
+      <ScrollArea className="flex-1 p-6" ref={scrollRef}>
         {!pacienteSelecionado ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-muted-foreground text-center">
@@ -91,6 +162,11 @@ export const ConnectColumn2 = () => {
                 />
               )
             )}
+            {digitando && (
+              <div className="text-xs text-muted-foreground italic ml-2 mt-2">
+                Digitando...
+              </div>
+            )}
           </div>
         )}
       </ScrollArea>
@@ -105,15 +181,36 @@ export const ConnectColumn2 = () => {
             placeholder="Digite sua mensagem..."
             className="flex-1"
             disabled={!pacienteSelecionado}
+            value={mensagemTexto}
+            onChange={(e) => {
+              setMensagemTexto(e.target.value);
+              setDigitando(e.target.value.length > 0);
+            }}
+            onKeyPress={handleKeyPress}
           />
           <Button variant="outline" size="icon" disabled={!pacienteSelecionado}>
             <Mic className="h-4 w-4" />
           </Button>
-          <Button size="icon" disabled={!pacienteSelecionado}>
+          <Button
+            size="icon"
+            disabled={!pacienteSelecionado || !mensagemTexto.trim()}
+            onClick={handleEnviarMensagem}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
+      {/* Dialog de Transferência */}
+      {pacienteSelecionado && conversa && (
+        <ConnectTransferDialog
+          open={showTransferDialog}
+          onOpenChange={setShowTransferDialog}
+          pacienteId={pacienteSelecionado.id}
+          conversaId={conversa.id}
+          pacienteNome={pacienteSelecionado.nome}
+        />
+      )}
     </div>
   );
 };
