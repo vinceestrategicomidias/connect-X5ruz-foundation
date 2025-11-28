@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 import { Chamada } from "@/hooks/useChamadas";
+import { loadRingingAudio } from "@/utils/audioUtils";
 
 interface ChamadaContextType {
   chamadaAtiva: Chamada | null;
@@ -15,6 +16,38 @@ export const ChamadaProvider = ({ children }: { children: ReactNode }) => {
   const [chamadaAtiva, setChamadaAtiva] = useState<Chamada | null>(null);
   const [tempoDecorrido, setTempoDecorrido] = useState(0);
   const [mutado, setMutado] = useState(false);
+  const ringingAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Controlar som de ligando
+  useEffect(() => {
+    const isRinging = chamadaAtiva && 
+      (chamadaAtiva.status === "discando" || chamadaAtiva.status === "chamando");
+
+    if (isRinging) {
+      // Criar e tocar áudio de ringing
+      if (!ringingAudioRef.current) {
+        ringingAudioRef.current = loadRingingAudio();
+      }
+      
+      ringingAudioRef.current.play().catch(error => {
+        console.log("Erro ao tocar som de ringing:", error);
+      });
+    } else {
+      // Parar áudio quando não estiver discando/chamando
+      if (ringingAudioRef.current) {
+        ringingAudioRef.current.pause();
+        ringingAudioRef.current.currentTime = 0;
+      }
+    }
+
+    // Cleanup ao desmontar
+    return () => {
+      if (ringingAudioRef.current) {
+        ringingAudioRef.current.pause();
+        ringingAudioRef.current.currentTime = 0;
+      }
+    };
+  }, [chamadaAtiva?.status]);
 
   useEffect(() => {
     if (!chamadaAtiva || chamadaAtiva.status === "encerrada") {
