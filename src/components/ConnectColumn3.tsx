@@ -125,7 +125,6 @@ export const ConnectColumn3 = () => {
               <ConnectPatientCard
                 key={paciente.id}
                 name={paciente.nome}
-                paciente={paciente}
                 lastMessage={paciente.ultima_mensagem || undefined}
                 lastMessageTime={new Date(paciente.created_at).toLocaleTimeString('pt-BR', { 
                   hour: '2-digit', 

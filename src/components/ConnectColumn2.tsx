@@ -1,4 +1,4 @@
-import { Send, Paperclip, Mic, UserCog, Phone } from "lucide-react";
+import { Send, Paperclip, Mic, UserCog, Phone, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,6 +15,13 @@ import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useIniciarChamada } from "@/hooks/useChamadas";
 import { useChamadaContext } from "@/contexts/ChamadaContext";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { PerfilPacienteSheet } from "./PerfilPacienteSheet";
 
 export const ConnectColumn2 = () => {
   const { pacienteSelecionado } = usePacienteContext();
@@ -28,6 +35,7 @@ export const ConnectColumn2 = () => {
   const [mensagemTexto, setMensagemTexto] = useState("");
   const [digitando, setDigitando] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [perfilOpen, setPerfilOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Scroll automático para última mensagem
@@ -168,6 +176,18 @@ export const ConnectColumn2 = () => {
               <UserCog className="h-4 w-4 mr-2" />
               Transferir
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card z-50">
+                <DropdownMenuItem onClick={() => setPerfilOpen(true)}>
+                  Ver perfil do paciente
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
@@ -253,6 +273,13 @@ export const ConnectColumn2 = () => {
           pacienteNome={pacienteSelecionado.nome}
         />
       )}
+
+      {/* Perfil do Paciente */}
+      <PerfilPacienteSheet
+        open={perfilOpen}
+        onOpenChange={setPerfilOpen}
+        paciente={pacienteSelecionado}
+      />
     </div>
   );
 };
