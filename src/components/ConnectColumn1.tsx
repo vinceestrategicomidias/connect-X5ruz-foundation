@@ -4,7 +4,6 @@ import { usePacientes } from "@/hooks/usePacientes";
 import { ConnectPatientCard } from "./ConnectPatientCard";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { Loader2 } from "lucide-react";
-import { useAtualizarStatusPaciente } from "@/hooks/useMutations";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,7 +23,7 @@ export const ConnectColumn1 = () => {
         <div className="px-4 pt-4">
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="espera">Fila</TabsTrigger>
-            <TabsTrigger value="andamento">Em Andamento</TabsTrigger>
+            <TabsTrigger value="andamento">Meus Atendimentos</TabsTrigger>
             <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
           </TabsList>
         </div>
@@ -46,7 +45,6 @@ export const ConnectColumn1 = () => {
 const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "finalizado" }) => {
   const { data: pacientes, isLoading } = usePacientes(status);
   const { setPacienteSelecionado } = usePacienteContext();
-  const atualizarStatus = useAtualizarStatusPaciente();
   const queryClient = useQueryClient();
 
   // Realtime updates
@@ -71,19 +69,8 @@ const PacientesLista = ({ status }: { status: "fila" | "em_atendimento" | "final
     };
   }, [queryClient]);
 
-  const handleClickPaciente = async (paciente: any) => {
+  const handleClickPaciente = (paciente: any) => {
     setPacienteSelecionado(paciente);
-
-    // Se clicar em paciente da fila, mover para em_atendimento
-    if (paciente.status === "fila") {
-      // Atendente Geovana (ID do mock)
-      const atendenteId = "11111111-1111-1111-1111-111111111111";
-      await atualizarStatus.mutateAsync({
-        pacienteId: paciente.id,
-        novoStatus: "em_atendimento",
-        atendenteId,
-      });
-    }
   };
 
   if (isLoading) {
