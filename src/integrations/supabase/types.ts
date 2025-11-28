@@ -340,6 +340,53 @@ export type Database = {
           },
         ]
       }
+      notificacoes: {
+        Row: {
+          acao: string | null
+          created_at: string | null
+          data_hora: string
+          id: string
+          lida: boolean
+          mensagem: string
+          referencia_id: string | null
+          tipo: string
+          titulo: string
+          usuario_destino_id: string
+        }
+        Insert: {
+          acao?: string | null
+          created_at?: string | null
+          data_hora?: string
+          id?: string
+          lida?: boolean
+          mensagem: string
+          referencia_id?: string | null
+          tipo: string
+          titulo: string
+          usuario_destino_id: string
+        }
+        Update: {
+          acao?: string | null
+          created_at?: string | null
+          data_hora?: string
+          id?: string
+          lida?: boolean
+          mensagem?: string
+          referencia_id?: string | null
+          tipo?: string
+          titulo?: string
+          usuario_destino_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_usuario_destino_id_fkey"
+            columns: ["usuario_destino_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pacientes: {
         Row: {
           atendente_responsavel: string | null
