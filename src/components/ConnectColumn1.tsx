@@ -11,52 +11,27 @@ export const ConnectColumn1 = () => {
         </h2>
       </div>
 
-      {/* Tabs de Fluxo */}
-      <Tabs defaultValue="pre-venda" className="flex-1 flex flex-col">
+      {/* Tabs de Status */}
+      <Tabs defaultValue="espera" className="flex-1 flex flex-col">
         <div className="px-4 pt-4">
           <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="pre-venda">Pré-venda</TabsTrigger>
-            <TabsTrigger value="venda">Venda</TabsTrigger>
-            <TabsTrigger value="pos-venda">Pós-venda</TabsTrigger>
+            <TabsTrigger value="espera">Fila de Espera</TabsTrigger>
+            <TabsTrigger value="andamento">Em Andamento</TabsTrigger>
+            <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
           </TabsList>
         </div>
 
-        {/* Conteúdo de cada aba */}
-        <TabsContent value="pre-venda" className="flex-1 mt-0">
-          <SubTabs />
+        <TabsContent value="espera" className="flex-1 mt-4">
+          <EmptyState message="Nenhum paciente na fila" />
         </TabsContent>
-        <TabsContent value="venda" className="flex-1 mt-0">
-          <SubTabs />
+        <TabsContent value="andamento" className="flex-1 mt-4">
+          <EmptyState message="Nenhum atendimento em andamento" />
         </TabsContent>
-        <TabsContent value="pos-venda" className="flex-1 mt-0">
-          <SubTabs />
+        <TabsContent value="finalizados" className="flex-1 mt-4">
+          <EmptyState message="Nenhum atendimento finalizado" />
         </TabsContent>
       </Tabs>
     </div>
-  );
-};
-
-const SubTabs = () => {
-  return (
-    <Tabs defaultValue="espera" className="flex flex-col h-full">
-      <div className="px-4 pt-4">
-        <TabsList className="w-full grid grid-cols-3 text-xs">
-          <TabsTrigger value="espera">Fila de Espera</TabsTrigger>
-          <TabsTrigger value="andamento">Em Andamento</TabsTrigger>
-          <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
-        </TabsList>
-      </div>
-
-      <TabsContent value="espera" className="flex-1 mt-4">
-        <EmptyState message="Nenhum paciente na fila" />
-      </TabsContent>
-      <TabsContent value="andamento" className="flex-1 mt-4">
-        <EmptyState message="Nenhum atendimento em andamento" />
-      </TabsContent>
-      <TabsContent value="finalizados" className="flex-1 mt-4">
-        <EmptyState message="Nenhum atendimento finalizado" />
-      </TabsContent>
-    </Tabs>
   );
 };
 
