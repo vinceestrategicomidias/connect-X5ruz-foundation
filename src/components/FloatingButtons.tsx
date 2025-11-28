@@ -14,19 +14,19 @@ export const FloatingButtons = () => {
         {/* Botão de Roteiros (superior) */}
         <Button
           onClick={() => setRoteirosOpen(true)}
-          className="w-14 h-14 rounded-full bg-[#007BFF] hover:bg-[#0069D9] shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+          className="w-14 h-14 rounded-full bg-primary hover:bg-primary-hover shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
           size="icon"
         >
-          <MessageSquare className="h-5 w-5 text-white" strokeWidth={2} />
+          <MessageSquare className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
         </Button>
 
         {/* Botão da IA Thalí (inferior) */}
         <Button
           onClick={() => setThaliOpen(true)}
-          className="w-14 h-14 rounded-full bg-[#007BFF] hover:bg-[#0069D9] shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+          className="w-14 h-14 rounded-full bg-primary hover:bg-primary-hover shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
           size="icon"
         >
-          <Sparkles className="h-5 w-5 text-white" strokeWidth={2} />
+          <Sparkles className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
         </Button>
       </div>
 
