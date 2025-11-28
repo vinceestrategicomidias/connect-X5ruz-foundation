@@ -8,7 +8,6 @@ import { SystemMenu } from "./SystemMenu";
 import { RankingTop3 } from "./RankingTop3";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { UserProfileMenu } from "./UserProfileMenu";
-import { DemoModeSelector } from "./DemoModeSelector";
 import { useTheme } from "next-themes";
 
 export const ConnectNavbar = () => {
@@ -57,7 +56,6 @@ export const ConnectNavbar = () => {
           tooltip="Alternar Tema"
           variant="ghost"
         />
-        <DemoModeSelector />
         <UserProfileMenu />
       </div>
 

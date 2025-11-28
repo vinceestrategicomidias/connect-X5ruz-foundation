@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Tables } from "@/integrations/supabase/types";
-import { useDemoMode } from "@/contexts/DemoModeContext";
 
 export type NotificationType = 
   | "transferencia_recebida"
@@ -115,7 +114,7 @@ export const useNotifications = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [initialLoaded, setInitialLoaded] = useState(false);
-  const { notificationSimulationEnabled } = useDemoMode();
+  const notificationSimulationEnabled = true; // Sempre ativo no protótipo
 
   // Get current user
   useEffect(() => {
@@ -270,10 +269,10 @@ export const useNotifications = () => {
   useEffect(() => {
     if (!notificationSimulationEnabled || !userId) return;
 
-    // Simulate notifications every 2 minutes (120 seconds)
+    // Simulate notifications every 1 minute (60 seconds)
     const interval = setInterval(() => {
       addSimulatedNotification();
-    }, 120000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [notificationSimulationEnabled, userId, addSimulatedNotification]);
