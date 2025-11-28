@@ -1,4 +1,4 @@
-import { Bell, Check, ArrowRightLeft, Trophy, PhoneMissed, Star, AlertTriangle, Lightbulb, Brain } from "lucide-react";
+import { Bell, Check, ArrowRightLeft, Trophy, PhoneMissed, Star, AlertTriangle, Lightbulb } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -11,6 +11,7 @@ import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { ThaliAvatar } from "./ThaliAvatar";
 
 const getNotificationIcon = (type: Notification["type"]) => {
   const iconClass = "h-5 w-5";
@@ -29,7 +30,7 @@ const getNotificationIcon = (type: Notification["type"]) => {
     case "ideia_aprovada":
       return <Lightbulb className={cn(iconClass, "text-green-500")} />;
     case "feedback_thali":
-      return <Brain className={cn(iconClass, "text-purple-500")} />;
+      return <ThaliAvatar size="sm" />;
     default:
       return <Bell className={cn(iconClass, "text-muted-foreground")} />;
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Sparkles, Copy, Heart, MessageCircle, TrendingUp, Clock } from "lucide-react";
+import { X, Copy, Heart, MessageCircle, TrendingUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { usePacienteContext } from "@/contexts/PacienteContext";
+import { ThaliAvatar } from "./ThaliAvatar";
 
 interface ThaliPanelProps {
   open: boolean;
@@ -133,9 +134,7 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4 bg-gradient-to-r from-primary/10 to-primary/5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-primary" />
-              </div>
+              <ThaliAvatar size="md" />
               <div>
                 <h2 className="text-lg font-semibold">Thalí</h2>
                 <p className="text-xs text-muted-foreground">Assistente Inteligente</p>
@@ -156,7 +155,7 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
                 </div>
                 {loading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Sparkles className="h-4 w-4 animate-pulse" />
+                    <ThaliAvatar size="sm" className="animate-pulse" />
                     <span>Analisando...</span>
                   </div>
                 ) : (

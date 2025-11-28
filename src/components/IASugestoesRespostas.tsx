@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ThaliAvatar } from "./ThaliAvatar";
 
 interface Sugestao {
   texto: string;
@@ -58,7 +59,7 @@ export const IASugestoesRespostas = ({ conversaId, onUsarSugestao }: IASugestoes
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <ThaliAvatar size="sm" />
           <h3 className="font-semibold">Sugestões da Thalí</h3>
         </div>
         <Button
@@ -74,7 +75,7 @@ export const IASugestoesRespostas = ({ conversaId, onUsarSugestao }: IASugestoes
             </>
           ) : (
             <>
-              <Sparkles className="h-4 w-4 mr-2" />
+              <ThaliAvatar size="sm" className="mr-2 w-4 h-4" />
               Gerar Sugestões
             </>
           )}
