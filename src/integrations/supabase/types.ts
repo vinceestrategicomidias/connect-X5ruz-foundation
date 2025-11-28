@@ -397,6 +397,63 @@ export type Database = {
           },
         ]
       }
+      perfil_validacoes: {
+        Row: {
+          campos_alterados: Json
+          coordenador_responsavel: string | null
+          created_at: string | null
+          data_solicitacao: string | null
+          data_validacao: string | null
+          id: string
+          observacao: string | null
+          status: string
+          updated_at: string | null
+          usuario_id: string
+          valores_novos: Json
+        }
+        Insert: {
+          campos_alterados: Json
+          coordenador_responsavel?: string | null
+          created_at?: string | null
+          data_solicitacao?: string | null
+          data_validacao?: string | null
+          id?: string
+          observacao?: string | null
+          status?: string
+          updated_at?: string | null
+          usuario_id: string
+          valores_novos: Json
+        }
+        Update: {
+          campos_alterados?: Json
+          coordenador_responsavel?: string | null
+          created_at?: string | null
+          data_solicitacao?: string | null
+          data_validacao?: string | null
+          id?: string
+          observacao?: string | null
+          status?: string
+          updated_at?: string | null
+          usuario_id?: string
+          valores_novos?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_validacoes_coordenador_responsavel_fkey"
+            columns: ["coordenador_responsavel"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "perfil_validacoes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfis_de_acesso: {
         Row: {
           created_at: string | null
