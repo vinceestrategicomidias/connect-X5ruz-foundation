@@ -77,7 +77,7 @@ const menuItems = [
   { id: "perfis" as MenuSection, label: "Perfis de Acesso", icon: ShieldCheck },
   { id: "validacoes" as MenuSection, label: "Validações de Perfil", icon: UserCheck, requiresCoordenacao: true },
   { id: "ura" as MenuSection, label: "URA (Telefonia)", icon: Phone },
-  { id: "mensageria" as MenuSection, label: "IA e Mensageria", icon: Bot },
+  { id: "mensageria" as MenuSection, label: "Thalí e Mensageria", icon: Bot },
   { id: "alertas" as MenuSection, label: "Alertas", icon: Bell },
   { id: "api" as MenuSection, label: "API e Webhooks", icon: Code2 },
   { id: "relatorios" as MenuSection, label: "Relatórios", icon: FileText },
@@ -575,16 +575,16 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold">IA e Mensageria</h3>
+              <h3 className="text-lg font-semibold">Thalí e Mensageria</h3>
               <p className="text-sm text-muted-foreground">
-                Configure inteligência artificial e automação
+                Configure a Thalí e automação de mensagens
               </p>
             </div>
             
             <Tabs defaultValue="config" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="config">Configurações</TabsTrigger>
-                <TabsTrigger value="alertas">Alertas IA</TabsTrigger>
+                <TabsTrigger value="alertas">Alertas da Thalí</TabsTrigger>
                 <TabsTrigger value="mensageria">Mensageria</TabsTrigger>
               </TabsList>
 

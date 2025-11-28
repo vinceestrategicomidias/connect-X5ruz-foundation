@@ -135,7 +135,7 @@ export const IAPreditivaPanel = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Lightbulb className="h-5 w-5 text-yellow-500" />
-                  Recomendações da IA
+                  Recomendações da Thalí
                 </CardTitle>
               </CardHeader>
               <CardContent>

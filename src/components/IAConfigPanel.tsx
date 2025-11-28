@@ -56,10 +56,10 @@ export const IAConfigPanel = () => {
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Brain className="h-6 w-6 text-primary" />
-          Configurações de Inteligência Artificial
+          Configurações da Thalí
         </h2>
         <p className="text-muted-foreground mt-2">
-          Configure como a IA irá auxiliar nos atendimentos
+          Configure como a Thalí irá auxiliar nos atendimentos
         </p>
       </div>
 
@@ -70,8 +70,8 @@ export const IAConfigPanel = () => {
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-base">IA Ativa</Label>
-              <p className="text-sm text-muted-foreground">Ativar/desativar todos os módulos de IA</p>
+              <Label className="text-base">Thalí Ativa</Label>
+              <p className="text-sm text-muted-foreground">Ativar/desativar todos os módulos da Thalí</p>
             </div>
             <Switch
               checked={formData.ia_ativa}
@@ -124,7 +124,7 @@ export const IAConfigPanel = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Módulos de IA</CardTitle>
+          <CardTitle>Módulos da Thalí</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -276,7 +276,7 @@ export const IAConfigPanel = () => {
 
       <Button onClick={handleSalvar} className="w-full" size="lg">
         <Save className="h-4 w-4 mr-2" />
-        Salvar Configurações de IA
+        Salvar Configurações da Thalí
       </Button>
     </div>
   );

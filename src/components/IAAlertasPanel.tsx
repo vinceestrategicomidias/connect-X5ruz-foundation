@@ -46,7 +46,7 @@ export const IAAlertasPanel = () => {
       <div>
         <h2 className="text-2xl font-bold">Alertas Inteligentes</h2>
         <p className="text-muted-foreground mt-2">
-          Alertas gerados automaticamente pela IA
+          Alertas gerados automaticamente pela Thalí
         </p>
       </div>
 

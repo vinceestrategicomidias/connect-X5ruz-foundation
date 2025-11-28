@@ -28,7 +28,7 @@ const getNotificationIcon = (type: Notification["type"]) => {
       return <AlertTriangle className={cn(iconClass, "text-orange-500")} />;
     case "ideia_aprovada":
       return <Lightbulb className={cn(iconClass, "text-green-500")} />;
-    case "feedback_ia":
+    case "feedback_thali":
       return <Brain className={cn(iconClass, "text-purple-500")} />;
     default:
       return <Bell className={cn(iconClass, "text-muted-foreground")} />;

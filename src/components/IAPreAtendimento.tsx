@@ -68,7 +68,7 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
       <Card className="border-primary/20">
         <CardContent className="pt-6 flex items-center justify-center">
           <Brain className="h-5 w-5 animate-pulse text-primary mr-2" />
-          <span className="text-sm">IA analisando mensagem...</span>
+          <span className="text-sm">Thalí analisando mensagem...</span>
         </CardContent>
       </Card>
     );
@@ -81,7 +81,7 @@ export const IAPreAtendimento = ({ conversaId, mensagemInicial }: IAPreAtendimen
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Brain className="h-5 w-5 text-primary" />
-          Análise de IA - Pré-atendimento
+          Análise da Thalí - Pré-atendimento
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

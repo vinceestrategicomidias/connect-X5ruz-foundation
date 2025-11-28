@@ -189,7 +189,7 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
             </TabsTrigger>
             <TabsTrigger value="ia" className="gap-2">
               <Bot className="h-4 w-4" />
-              IA
+              Thalí
             </TabsTrigger>
             <TabsTrigger value="alertas" className="gap-2">
               <Bell className="h-4 w-4" />
@@ -472,12 +472,12 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
                 </Card>
               </TabsContent>
 
-              {/* IA */}
+              {/* THALÍ */}
               <TabsContent value="ia" className="mt-0 space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Inteligência Artificial</CardTitle>
-                    <CardDescription>Configurações de IA e automação</CardDescription>
+                    <CardTitle>Assistente Thalí</CardTitle>
+                    <CardDescription>Configurações da Thalí e automação</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-3">
@@ -492,7 +492,7 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
                       <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
                           <h4 className="font-medium">Sugestão de Respostas</h4>
-                          <p className="text-sm text-muted-foreground">IA sugere respostas automáticas</p>
+                          <p className="text-sm text-muted-foreground">Thalí sugere respostas automáticas</p>
                         </div>
                         <Switch
                           checked={iaForm.assistente_config.sugestao_respostas}
@@ -540,7 +540,7 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
 
                     <Button onClick={handleSalvarIA} className="w-full gap-2">
                       <Save className="h-4 w-4" />
-                      Salvar Configurações de IA
+                      Salvar Configurações da Thalí
                     </Button>
                   </CardContent>
                 </Card>

@@ -35,7 +35,7 @@ export const IASugestoesRespostas = ({ conversaId, onUsarSugestao }: IASugestoes
       }
     } catch (error) {
       console.error('Erro ao buscar sugestões:', error);
-      toast.error('Erro ao buscar sugestões de IA');
+      toast.error('Erro ao buscar sugestões da Thalí');
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export const IASugestoesRespostas = ({ conversaId, onUsarSugestao }: IASugestoes
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold">Sugestões de IA</h3>
+          <h3 className="font-semibold">Sugestões da Thalí</h3>
         </div>
         <Button
           size="sm"
@@ -112,7 +112,7 @@ export const IASugestoesRespostas = ({ conversaId, onUsarSugestao }: IASugestoes
 
       {sugestoes.length === 0 && !loading && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          Clique em "Gerar Sugestões" para obter respostas da IA
+          Clique em "Gerar Sugestões" para obter respostas da Thalí
         </p>
       )}
     </Card>

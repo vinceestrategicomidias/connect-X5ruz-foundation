@@ -66,8 +66,8 @@ const menuItems: MenuItem[] = [
   { id: "transferencias", label: "Transferências", icon: ArrowRightLeft },
   { id: "nps", label: "NPS Feedback", icon: ThumbsUp },
   { id: "alertas", label: "Alertas", icon: Bell },
-  { id: "preditiva", label: "Preditiva (IA)", icon: TrendingUp },
-  { id: "feedback", label: "Feedback (IA)", icon: MessageSquare },
+  { id: "preditiva", label: "Thalí Preditiva", icon: TrendingUp },
+  { id: "feedback", label: "Feedback da Thalí", icon: MessageSquare },
   { id: "indicadores", label: "Indicadores", icon: Activity },
   { id: "auditoria", label: "Auditoria de Ações", icon: History },
   { id: "ideias", label: "Ideias", icon: Lightbulb },
@@ -163,14 +163,14 @@ const dadosEmpresaGrande = {
     ],
   },
 
-  // Alertas IA
+  // Alertas da Thalí
   alertas: [
     { tipo: "Fila alta", setor: "Pré-venda", detalhes: "14 pacientes aguardando acima de 10 minutos.", cor: "red" },
     { tipo: "NPS baixo", atendente: "Marcos", detalhes: "NPS nas últimas 24h caiu para 74.", cor: "orange" },
     { tipo: "Tempo médio alto", atendente: "Bianca", detalhes: "TMA subiu para 4m52s.", cor: "yellow" },
   ],
 
-  // Preditiva IA
+  // Thalí Preditiva
   preditiva: {
     horarioPicoPrevisto: "10h–11h",
     volumeEsperadoHoje: 921,
@@ -182,7 +182,7 @@ const dadosEmpresaGrande = {
     ],
   },
 
-  // Feedback IA
+  // Feedback da Thalí
   feedbackIA: {
     elogios: [
       { atendente: "Geovana", motivo: "Maior índice de satisfação do setor" },
@@ -210,7 +210,7 @@ const dadosEmpresaGrande = {
   // Ideias
   ideias: [
     { usuario: "Paloma", ideia: "Criar scripts automáticos de resposta rápida.", status: "Em análise" },
-    { usuario: "Marcos", ideia: "Otimizar fila com IA.", status: "Implementada" },
+    { usuario: "Marcos", ideia: "Otimizar fila com Thalí.", status: "Implementada" },
     { usuario: "Emilly", ideia: "Criar modo escuro mais suave.", status: "Aprovada" },
   ],
   reconhecimentoSemana: { usuario: "Emilly", motivo: "Melhor evolução de NPS" },
@@ -382,7 +382,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             {/* Horários de Pico */}
             <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                Horários de Pico (Classificação por IA)
+                Horários de Pico (Classificação pela Thalí)
               </h4>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 {dadosEmpresaGrande.horariosPico.map((item) => (
@@ -658,7 +658,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             <div className="flex items-center gap-2">
               <Bell className="h-6 w-6 text-[#0A2647]" />
               <h3 className="text-2xl font-bold text-[#0A2647]">
-                Alertas Automáticos (IA)
+                Alertas Automáticos da Thalí
               </h3>
             </div>
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
@@ -702,7 +702,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             <div className="flex items-center gap-2">
               <TrendingUp className="h-6 w-6 text-[#0A2647]" />
               <h3 className="text-2xl font-bold text-[#0A2647]">
-                Análise Preditiva (IA)
+                Análise Preditiva da Thalí
               </h3>
             </div>
 
@@ -739,7 +739,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             <Card className="p-6 overflow-hidden">
               <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-yellow-500" />
-                Recomendações da IA
+                Recomendações da Thalí
               </h4>
               <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                 {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, idx) => (
@@ -764,7 +764,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             <div className="flex items-center gap-2">
               <MessageSquare className="h-6 w-6 text-[#0A2647]" />
               <h3 className="text-2xl font-bold text-[#0A2647]">
-                Feedback Gerado por IA
+                Feedback Gerado pela Thalí
               </h3>
             </div>
 

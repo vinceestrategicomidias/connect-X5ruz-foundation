@@ -74,10 +74,10 @@ export const useAtualizarIAConfig = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ia_config"] });
-      toast.success("Configurações de IA atualizadas");
+      toast.success("Configurações da Thalí atualizadas");
     },
     onError: () => {
-      toast.error("Erro ao atualizar configurações de IA");
+      toast.error("Erro ao atualizar configurações da Thalí");
     },
   });
 };
