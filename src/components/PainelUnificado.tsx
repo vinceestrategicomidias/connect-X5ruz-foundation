@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   LayoutGrid,
   BarChart3,
@@ -22,6 +19,8 @@ import {
   Activity,
   History,
   Lightbulb,
+  X,
+  Award,
 } from "lucide-react";
 import {
   BarChart,
@@ -38,10 +37,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { cn } from "@/lib/utils";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
-import { useChamadas } from "@/hooks/useChamadas";
-import { usePacientes } from "@/hooks/usePacientes";
-import { supabase } from "@/integrations/supabase/client";
 
 type SecaoPainel =
   | "dashboards"
@@ -63,45 +60,163 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: "dashboards", label: "Dashboards", icon: BarChart3 },
+  { id: "dashboards", label: "Dashboards", icon: LayoutGrid },
   { id: "roteiros", label: "Roteiros", icon: FileText },
-  { id: "relatorios", label: "Relatórios", icon: Download },
+  { id: "relatorios", label: "Relatórios Inteligentes", icon: BarChart3 },
   { id: "transferencias", label: "Transferências", icon: ArrowRightLeft },
   { id: "nps", label: "NPS Feedback", icon: ThumbsUp },
   { id: "alertas", label: "Alertas", icon: Bell },
-  { id: "preditiva", label: "Preditiva", icon: TrendingUp },
-  { id: "feedback", label: "Feedback", icon: MessageSquare },
+  { id: "preditiva", label: "Preditiva (IA)", icon: TrendingUp },
+  { id: "feedback", label: "Feedback (IA)", icon: MessageSquare },
   { id: "indicadores", label: "Indicadores", icon: Activity },
   { id: "auditoria", label: "Auditoria de Ações", icon: History },
   { id: "ideias", label: "Ideias", icon: Lightbulb },
 ];
 
+// Dados simulados de GRANDE EMPRESA
+const dadosEmpresaGrande = {
+  // Cards superiores
+  totalAtendimentos: 2847,
+  tmaSetor: "3m 42s",
+  tmeSetor: "5m 11s",
+  taxaConclusao: 87,
+
+  // Atendimentos por dia
+  atendimentosPorDia: [
+    { dia: "Seg", atendimentos: 412 },
+    { dia: "Ter", atendimentos: 386 },
+    { dia: "Qua", atendimentos: 502 },
+    { dia: "Qui", atendimentos: 631 },
+    { dia: "Sex", atendimentos: 713 },
+    { dia: "Sáb", atendimentos: 279 },
+    { dia: "Dom", atendimentos: 194 },
+  ],
+
+  // TMA e TME por dia
+  tmaTmePorDia: [
+    { dia: "Seg", TMA: 3.2, TME: 4.8 },
+    { dia: "Ter", TMA: 3.4, TME: 5.3 },
+    { dia: "Qua", TMA: 3.5, TME: 6.1 },
+    { dia: "Qui", TMA: 3.2, TME: 5.8 },
+    { dia: "Sex", TMA: 2.9, TME: 4.7 },
+    { dia: "Sáb", TMA: 4.6, TME: 7.4 },
+    { dia: "Dom", TMA: 5.1, TME: 8.1 },
+  ],
+
+  // Distribuição por atendente
+  distribuicaoPorAtendente: [
+    { nome: "Geovana", atendimentos: 314 },
+    { nome: "Paloma", atendimentos: 287 },
+    { nome: "Emilly", atendimentos: 274 },
+    { nome: "Marcos", atendimentos: 251 },
+    { nome: "Bianca", atendimentos: 229 },
+  ],
+
+  // Status de atendimentos
+  statusAtendimentos: [
+    { name: "Finalizados", value: 1124 },
+    { name: "Em Atendimento", value: 382 },
+    { name: "Aguardando Resposta", value: 514 },
+    { name: "Em Fila", value: 827 },
+  ],
+
+  // Horários de pico
+  horariosPico: [
+    { horario: "08-09", msgs: 45, nivel: "Médio", cor: "bg-blue-100 text-blue-700" },
+    { horario: "09-10", msgs: 62, nivel: "Alto", cor: "bg-orange-100 text-orange-700" },
+    { horario: "10-11", msgs: 88, nivel: "Muito Alto", cor: "bg-red-100 text-red-700" },
+    { horario: "11-12", msgs: 44, nivel: "Médio", cor: "bg-blue-100 text-blue-700" },
+    { horario: "12-13", msgs: 29, nivel: "Baixo", cor: "bg-green-100 text-green-700" },
+    { horario: "13-14", msgs: 56, nivel: "Alto", cor: "bg-orange-100 text-orange-700" },
+  ],
+
+  // Relatórios inteligentes
+  npsGeral: 92,
+  porcentagemTransferencia: 13,
+  taxaReabertura: 8,
+  rankingTop3: [
+    { atendente: "Geovana", atendimentos: 314, tempoMedio: "3m21s", nps: 95 },
+    { atendente: "Emilly", atendimentos: 298, tempoMedio: "3m48s", nps: 92 },
+    { atendente: "Paloma", atendimentos: 283, tempoMedio: "4m01s", nps: 93 },
+  ],
+
+  // Transferências
+  transferencias: [
+    { hora: "09:33", de: "Marcos", para: "Geovana", paciente: "Ana Cristina" },
+    { hora: "10:14", de: "Paloma", para: "Emilly", paciente: "Luiz Fernando" },
+    { hora: "11:03", de: "Emilly", para: "Gestão", paciente: "Caso especial" },
+    { hora: "13:27", de: "Bianca", para: "Marcos", paciente: "José Silva" },
+    { hora: "14:52", de: "Geovana", para: "Paloma", paciente: "Maria Santos" },
+  ],
+
+  // NPS Feedback
+  nps: {
+    totalRespondido: 208,
+    npsMedio: 92,
+    promotores: 168,
+    neutros: 22,
+    detratores: 18,
+    feedbacksRecentes: [
+      { atendente: "Geovana", nota: 10, comentario: "Atendimento perfeito!" },
+      { atendente: "Paloma", nota: 9, comentario: "Rápida e eficiente." },
+      { atendente: "Marcos", nota: 6, comentario: "Poderia melhorar o tempo de espera." },
+    ],
+  },
+
+  // Alertas IA
+  alertas: [
+    { tipo: "Fila alta", setor: "Pré-venda", detalhes: "14 pacientes aguardando acima de 10 minutos.", cor: "red" },
+    { tipo: "NPS baixo", atendente: "Marcos", detalhes: "NPS nas últimas 24h caiu para 74.", cor: "orange" },
+    { tipo: "Tempo médio alto", atendente: "Bianca", detalhes: "TMA subiu para 4m52s.", cor: "yellow" },
+  ],
+
+  // Preditiva IA
+  preditiva: {
+    horarioPicoPrevisto: "10h–11h",
+    volumeEsperadoHoje: 921,
+    setorMaisDemandado: "Pré-cirurgia",
+    recomendacoes: [
+      "Realocar 1 atendente da pós-venda para pré-cirurgia das 9h às 12h.",
+      "Ativar fila prioritária para cirurgias complexas.",
+      "Aumentar vigilância nos casos com NPS baixo.",
+    ],
+  },
+
+  // Feedback IA
+  feedbackIA: {
+    elogios: [
+      { atendente: "Geovana", motivo: "Maior índice de satisfação do setor" },
+      { atendente: "Emilly", motivo: "Tempo médio extremamente eficiente" },
+    ],
+    melhorias: [
+      { atendente: "Marcos", motivo: "NPS baixo recorrente nas últimas 72h" },
+    ],
+  },
+
+  // Indicadores personalizados
+  indicadores: [
+    { nome: "Volume mensal", valor: "12.214" },
+    { nome: "Atendimentos complexos", valor: "431" },
+    { nome: "Taxa de resolutividade", valor: "89%" },
+  ],
+
+  // Auditoria de ações
+  auditoria: [
+    { acao: "Alteração de URA", por: "Gestor", horario: "08:12", data: "Hoje" },
+    { acao: "Edição de Roteiro", por: "Coordenação", horario: "10:47", data: "Hoje" },
+    { acao: "Validação de perfil", por: "Coordenação", horario: "14:19", data: "Hoje" },
+  ],
+
+  // Ideias
+  ideias: [
+    { usuario: "Paloma", ideia: "Criar scripts automáticos de resposta rápida.", status: "Em análise" },
+    { usuario: "Marcos", ideia: "Otimizar fila com IA.", status: "Implementada" },
+    { usuario: "Emilly", ideia: "Criar modo escuro mais suave.", status: "Aprovada" },
+  ],
+  reconhecimentoSemana: { usuario: "Emilly", motivo: "Melhor evolução de NPS" },
+};
+
 const COLORS = ["#0A2647", "#144272", "#205295", "#2C74B3"];
-
-const atendimentosPorDiaData = [
-  { dia: "Seg", atendimentos: 45 },
-  { dia: "Ter", atendimentos: 52 },
-  { dia: "Qua", atendimentos: 38 },
-  { dia: "Qui", atendimentos: 61 },
-  { dia: "Sex", atendimentos: 49 },
-  { dia: "Sáb", atendimentos: 28 },
-  { dia: "Dom", atendimentos: 15 },
-];
-
-const tmaTmeData = [
-  { dia: "Seg", TMA: 320, TME: 180 },
-  { dia: "Ter", TMA: 290, TME: 160 },
-  { dia: "Qua", TMA: 310, TME: 175 },
-  { dia: "Qui", TMA: 280, TME: 150 },
-  { dia: "Sex", TMA: 305, TME: 165 },
-];
-
-const statusAtendimentosData = [
-  { name: "Finalizados", value: 65 },
-  { name: "Em atendimento", value: 20 },
-  { name: "Aguardando resposta", value: 10 },
-  { name: "Em fila", value: 5 },
-];
 
 interface PainelUnificadoProps {
   open: boolean;
@@ -110,101 +225,55 @@ interface PainelUnificadoProps {
 
 export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) => {
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoPainel>("dashboards");
-  const { atendenteLogado, isCoordenacao } = useAtendenteContext();
-  const { data: chamadas } = useChamadas(
-    isCoordenacao ? undefined : atendenteLogado?.id,
-    isCoordenacao ? atendenteLogado?.setor_id : undefined
-  );
-  const { data: pacientes } = usePacientes(undefined, atendenteLogado?.setor_id);
-  const [metricas, setMetricas] = useState({
-    totalAtendimentos: 0,
-    tma: 0,
-    tme: 0,
-    taxaConclusao: 0,
-    totalMensagens: 0,
-  });
-
-  useEffect(() => {
-    const calcularMetricas = async () => {
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-
-      const chamadasHoje =
-        chamadas?.filter((c) => new Date(c.horario_inicio) >= hoje) || [];
-      const atendidas = chamadasHoje.filter((c) => c.status === "atendida");
-
-      const duracaoTotal = atendidas.reduce((acc, c) => acc + (c.duracao || 0), 0);
-      const tma = atendidas.length > 0 ? duracaoTotal / atendidas.length : 0;
-
-      const { count: totalMensagens } = await supabase
-        .from("mensagens")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", hoje.toISOString())
-        .eq("autor", "atendente");
-
-      const finalizados =
-        pacientes?.filter((p) => p.status === "finalizado").length || 0;
-      const total = pacientes?.length || 1;
-      const taxaConclusao = (finalizados / total) * 100;
-
-      setMetricas({
-        totalAtendimentos: atendidas.length,
-        tma: Math.floor(tma),
-        tme: 0, // Calcular depois
-        taxaConclusao: Math.round(taxaConclusao),
-        totalMensagens: totalMensagens || 0,
-      });
-    };
-
-    calcularMetricas();
-  }, [chamadas, pacientes]);
-
-  const formatarTempo = (segundos: number) => {
-    const mins = Math.floor(segundos / 60);
-    const segs = segundos % 60;
-    return `${mins}m ${segs}s`;
-  };
+  const { isCoordenacao, isGestor } = useAtendenteContext();
 
   const renderConteudo = () => {
     switch (secaoAtiva) {
       case "dashboards":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">
-              Dashboards de Produtividade
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Dashboards de Produtividade
+              </h3>
+              <select className="px-3 py-2 border border-border rounded-lg text-sm">
+                <option>Últimos 7 dias</option>
+                <option>Últimos 30 dias</option>
+                <option>Últimos 90 dias</option>
+              </select>
+            </div>
 
             {/* Cards de métricas */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6 bg-gradient-to-br from-[#0A2647]/5 to-[#0A2647]/10">
-                <div className="text-3xl font-bold text-[#0A2647]">
-                  {metricas.totalAtendimentos}
+              <Card className="p-6 bg-gradient-to-br from-[#0A2647]/5 to-[#0A2647]/10 border-[#0A2647]/20">
+                <div className="text-4xl font-bold text-[#0A2647] mb-1">
+                  {dadosEmpresaGrande.totalAtendimentos.toLocaleString()}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground">
                   Total de Atendimentos
                 </p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#144272]/5 to-[#144272]/10">
-                <div className="text-3xl font-bold text-[#144272]">
-                  {formatarTempo(metricas.tma)}
+              <Card className="p-6 bg-gradient-to-br from-[#144272]/5 to-[#144272]/10 border-[#144272]/20">
+                <div className="text-4xl font-bold text-[#144272] mb-1">
+                  {dadosEmpresaGrande.tmaSetor}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground">
                   TMA - Tempo Médio Atendimento
                 </p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#205295]/5 to-[#205295]/10">
-                <div className="text-3xl font-bold text-[#205295]">
-                  {formatarTempo(metricas.tme)}
+              <Card className="p-6 bg-gradient-to-br from-[#205295]/5 to-[#205295]/10 border-[#205295]/20">
+                <div className="text-4xl font-bold text-[#205295] mb-1">
+                  {dadosEmpresaGrande.tmeSetor}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground">
                   TME - Tempo Médio Espera
                 </p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#2C74B3]/5 to-[#2C74B3]/10">
-                <div className="text-3xl font-bold text-[#2C74B3]">
-                  {metricas.taxaConclusao}%
+              <Card className="p-6 bg-gradient-to-br from-[#2C74B3]/5 to-[#2C74B3]/10 border-[#2C74B3]/20">
+                <div className="text-4xl font-bold text-[#2C74B3] mb-1">
+                  {dadosEmpresaGrande.taxaConclusao}%
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground">
                   Taxa de Conclusão
                 </p>
               </Card>
@@ -213,11 +282,11 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             {/* Gráficos */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="p-6">
-                <h4 className="font-semibold mb-4 text-[#0A2647]">
-                  Atendimentos por Dia
+                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                  Atendimentos por Dia da Semana
                 </h4>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={atendimentosPorDiaData}>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                     <XAxis dataKey="dia" />
                     <YAxis />
@@ -228,11 +297,11 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </Card>
 
               <Card className="p-6">
-                <h4 className="font-semibold mb-4 text-[#0A2647]">
-                  TMA e TME Diário
+                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                  TMA e TME Diário (minutos)
                 </h4>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={tmaTmeData}>
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                     <XAxis dataKey="dia" />
                     <YAxis />
@@ -243,38 +312,53 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                       dataKey="TMA"
                       stroke="#0A2647"
                       strokeWidth={3}
-                      dot={{ r: 5 }}
+                      dot={{ r: 5, fill: "#0A2647" }}
+                      name="TMA"
                     />
                     <Line
                       type="monotone"
                       dataKey="TME"
                       stroke="#2C74B3"
                       strokeWidth={3}
-                      dot={{ r: 5 }}
+                      dot={{ r: 5, fill: "#2C74B3" }}
+                      name="TME"
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
 
               <Card className="p-6">
-                <h4 className="font-semibold mb-4 text-[#0A2647]">
-                  Status de Atendimentos (Hoje)
+                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                  Distribuição por Atendente
                 </h4>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis type="number" />
+                    <YAxis dataKey="nome" type="category" width={80} />
+                    <Tooltip />
+                    <Bar dataKey="atendimentos" fill="#144272" radius={[0, 8, 8, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                  Status de Atendimentos
+                </h4>
+                <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie
-                      data={statusAtendimentosData}
+                      data={dadosEmpresaGrande.statusAtendimentos}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={80}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={90}
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {statusAtendimentosData.map((entry, index) => (
+                      {dadosEmpresaGrande.statusAtendimentos.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -285,57 +369,88 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
-
-              <Card className="p-6">
-                <h4 className="font-semibold mb-4 text-[#0A2647]">
-                  Horários de Pico
-                </h4>
-                <div className="space-y-2">
-                  {[
-                    { horario: "08-09", msgs: 45, nivel: "Médio" },
-                    { horario: "09-10", msgs: 78, nivel: "Alto" },
-                    { horario: "10-11", msgs: 92, nivel: "Muito Alto" },
-                    { horario: "11-12", msgs: 65, nivel: "Alto" },
-                    { horario: "14-15", msgs: 55, nivel: "Médio" },
-                  ].map((item) => (
-                    <div
-                      key={item.horario}
-                      className="flex justify-between items-center p-3 rounded-lg bg-muted/30"
-                    >
-                      <span className="font-medium">{item.horario}h</span>
-                      <span className="text-muted-foreground">
-                        {item.msgs} mensagens
-                      </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          item.nivel === "Muito Alto"
-                            ? "bg-red-100 text-red-700"
-                            : item.nivel === "Alto"
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-blue-100 text-blue-700"
-                        }`}
-                      >
-                        {item.nivel}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
             </div>
+
+            {/* Horários de Pico */}
+            <Card className="p-6">
+              <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                Horários de Pico (Classificação por IA)
+              </h4>
+              <div className="space-y-2">
+                {dadosEmpresaGrande.horariosPico.map((item) => (
+                  <div
+                    key={item.horario}
+                    className="flex justify-between items-center p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                  >
+                    <span className="font-semibold text-foreground">{item.horario}h</span>
+                    <span className="text-muted-foreground">
+                      {item.msgs} mensagens
+                    </span>
+                    <span
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-bold",
+                        item.cor
+                      )}
+                    >
+                      {item.nivel}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         );
 
       case "roteiros":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">
-              Roteiros de Atendimento
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Roteiros de Atendimento
+              </h3>
+              {(isCoordenacao || isGestor) && (
+                <Button className="bg-[#0A2647] hover:bg-[#144272]">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Criar Novo Roteiro
+                </Button>
+              )}
+            </div>
+
             <Card className="p-6">
-              <p className="text-muted-foreground mb-4">
-                Scripts e modelos de mensagens para o setor.
-              </p>
-              <Button className="bg-[#0A2647]">Criar Novo Roteiro</Button>
+              <h4 className="font-semibold mb-4 text-lg">Setor: Pré-venda</h4>
+              <div className="space-y-4">
+                <div className="p-4 border border-border rounded-lg">
+                  <h5 className="font-semibold mb-2">Roteiro Particular</h5>
+                  <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                    <li>Mensagem inicial</li>
+                    <li>Solicitar documentos</li>
+                    <li>Enviar orçamento</li>
+                    <li>Confirmação</li>
+                  </ol>
+                  {(isCoordenacao || isGestor) && (
+                    <div className="flex gap-2 mt-3">
+                      <Button size="sm" variant="outline">Editar</Button>
+                      <Button size="sm" variant="outline" className="text-destructive">Excluir</Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 border border-border rounded-lg">
+                  <h5 className="font-semibold mb-2">Roteiro Convênio</h5>
+                  <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                    <li>Mensagem inicial</li>
+                    <li>Solicitar dados do plano</li>
+                    <li>Enviar orientações</li>
+                    <li>Agendamento</li>
+                  </ol>
+                  {(isCoordenacao || isGestor) && (
+                    <div className="flex gap-2 mt-3">
+                      <Button size="sm" variant="outline">Editar</Button>
+                      <Button size="sm" variant="outline" className="text-destructive">Excluir</Button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </Card>
           </div>
         );
@@ -343,46 +458,86 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "relatorios":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">Relatórios</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Relatórios Inteligentes
+              </h3>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar PDF
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar Excel
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-6">
-                <h4 className="font-semibold mb-2">NPS Geral do Setor</h4>
-                <div className="text-4xl font-bold text-[#0A2647]">8.5</div>
+                <div className="text-sm text-muted-foreground mb-1">NPS Geral</div>
+                <div className="text-4xl font-bold text-[#0A2647]">
+                  {dadosEmpresaGrande.npsGeral}
+                </div>
               </Card>
               <Card className="p-6">
-                <h4 className="font-semibold mb-2">Taxa de Transferências</h4>
-                <div className="text-4xl font-bold text-[#144272]">12%</div>
+                <div className="text-sm text-muted-foreground mb-1">
+                  Tempo Médio Atendimento
+                </div>
+                <div className="text-4xl font-bold text-[#144272]">
+                  {dadosEmpresaGrande.tmaSetor}
+                </div>
+              </Card>
+              <Card className="p-6">
+                <div className="text-sm text-muted-foreground mb-1">
+                  % Transferências
+                </div>
+                <div className="text-4xl font-bold text-[#205295]">
+                  {dadosEmpresaGrande.porcentagemTransferencia}%
+                </div>
+              </Card>
+              <Card className="p-6">
+                <div className="text-sm text-muted-foreground mb-1">
+                  Taxa Reabertura
+                </div>
+                <div className="text-4xl font-bold text-[#2C74B3]">
+                  {dadosEmpresaGrande.taxaReabertura}%
+                </div>
               </Card>
             </div>
+
             <Card className="p-6">
-              <h4 className="font-semibold mb-4">Top 3 Atendentes</h4>
+              <h4 className="font-semibold mb-4 text-lg">Ranking Top 3 Atendentes</h4>
               <div className="space-y-3">
-                {[
-                  { nome: "Ana Silva", atendimentos: 85, nps: 9.2 },
-                  { nome: "Carlos Santos", atendimentos: 78, nps: 8.9 },
-                  { nome: "Maria Oliveira", atendimentos: 72, nps: 8.7 },
-                ].map((atendente, idx) => (
+                {dadosEmpresaGrande.rankingTop3.map((atendente, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                    className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-muted/30 to-transparent hover:from-muted/50 transition-all"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
-                          idx === 0
-                            ? "bg-yellow-500"
-                            : idx === 1
-                            ? "bg-gray-400"
-                            : "bg-orange-600"
-                        }`}
+                        className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg",
+                          idx === 0 && "bg-gradient-to-br from-yellow-400 to-yellow-600",
+                          idx === 1 && "bg-gradient-to-br from-gray-300 to-gray-500",
+                          idx === 2 && "bg-gradient-to-br from-orange-400 to-orange-600"
+                        )}
                       >
                         {idx + 1}
                       </div>
-                      <span className="font-medium">{atendente.nome}</span>
+                      <div>
+                        <div className="font-semibold text-lg">{atendente.atendente}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {atendente.atendimentos} atendimentos • TMA: {atendente.tempoMedio}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right text-sm">
-                      <div className="font-semibold">{atendente.atendimentos} atendimentos</div>
-                      <div className="text-muted-foreground">NPS: {atendente.nps}</div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-[#0A2647]">
+                        {atendente.nps}
+                      </div>
+                      <div className="text-xs text-muted-foreground">NPS</div>
                     </div>
                   </div>
                 ))}
@@ -391,34 +546,100 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
           </div>
         );
 
-      case "preditiva":
+      case "transferencias":
         return (
           <div className="space-y-6">
             <h3 className="text-2xl font-bold text-[#0A2647]">
-              Análise Preditiva
+              Transferências - Auditoria Diária
             </h3>
-            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50">
-              <h4 className="font-semibold mb-4">Previsões para Hoje</h4>
+            <Card className="p-6">
               <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="h-5 w-5 text-[#0A2647]" />
-                  <span>Volume esperado: <strong>120-145 atendimentos</strong></span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Bell className="h-5 w-5 text-orange-500" />
-                  <span>Pico previsto: <strong>10h-12h</strong></span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Activity className="h-5 w-5 text-green-500" />
-                  <span>Fila prevista: <strong>Média</strong></span>
-                </div>
+                {dadosEmpresaGrande.transferencias.map((trans, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="text-sm font-mono text-muted-foreground">
+                        {trans.hora}
+                      </div>
+                      <ArrowRightLeft className="h-4 w-4 text-primary" />
+                      <div className="text-sm">
+                        <span className="font-medium">{trans.de}</span>
+                        <span className="text-muted-foreground mx-1">→</span>
+                        <span className="font-medium">{trans.para}</span>
+                      </div>
+                    </div>
+                    <div className="text-sm font-medium">{trans.paciente}</div>
+                  </div>
+                ))}
               </div>
             </Card>
+          </div>
+        );
+
+      case "nps":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-[#0A2647]">
+              NPS e Feedback dos Pacientes
+            </h3>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="p-6">
+                <div className="text-sm text-muted-foreground mb-1">
+                  Total Respondido
+                </div>
+                <div className="text-4xl font-bold text-[#0A2647]">
+                  {dadosEmpresaGrande.nps.totalRespondido}
+                </div>
+              </Card>
+              <Card className="p-6">
+                <div className="text-sm text-muted-foreground mb-1">
+                  NPS Médio
+                </div>
+                <div className="text-4xl font-bold text-green-600">
+                  {dadosEmpresaGrande.nps.npsMedio}
+                </div>
+              </Card>
+              <Card className="p-6">
+                <div className="text-sm text-muted-foreground mb-1">
+                  Promotores
+                </div>
+                <div className="text-4xl font-bold text-green-600">
+                  {dadosEmpresaGrande.nps.promotores}
+                </div>
+              </Card>
+              <Card className="p-6">
+                <div className="text-sm text-muted-foreground mb-1">
+                  Detratores
+                </div>
+                <div className="text-4xl font-bold text-red-600">
+                  {dadosEmpresaGrande.nps.detratores}
+                </div>
+              </Card>
+            </div>
+
             <Card className="p-6">
-              <h4 className="font-semibold mb-2">Recomendação da IA</h4>
-              <p className="text-muted-foreground">
-                Considere alocar +1 atendente entre 10h-12h para evitar sobrecarga.
-              </p>
+              <h4 className="font-semibold mb-4 text-lg">Feedbacks Recentes</h4>
+              <div className="space-y-3">
+                {dadosEmpresaGrande.nps.feedbacksRecentes.map((feedback, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-lg border border-border"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{feedback.atendente}</span>
+                      <span className="text-2xl font-bold text-[#0A2647]">
+                        {feedback.nota}/10
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground italic">
+                      "{feedback.comentario}"
+                    </p>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
         );
@@ -426,55 +647,223 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "alertas":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">Alertas</h3>
-            <div className="space-y-3">
-              <Card className="p-4 border-l-4 border-l-red-500">
-                <div className="flex items-start gap-3">
-                  <Bell className="h-5 w-5 text-red-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold">Fila com tempo elevado</h4>
-                    <p className="text-sm text-muted-foreground">
-                      8 pacientes aguardando há mais de 15 minutos
-                    </p>
-                  </div>
-                </div>
-              </Card>
-              <Card className="p-4 border-l-4 border-l-yellow-500">
-                <div className="flex items-start gap-3">
-                  <Bell className="h-5 w-5 text-yellow-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold">TME acima da média</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Tempo médio de espera 25% acima do padrão
-                    </p>
-                  </div>
-                </div>
-              </Card>
+            <div className="flex items-center gap-2">
+              <Bell className="h-6 w-6 text-[#0A2647]" />
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Alertas Automáticos (IA)
+              </h3>
             </div>
+            <div className="space-y-3">
+              {dadosEmpresaGrande.alertas.map((alerta, idx) => (
+                <Card
+                  key={idx}
+                  className={cn(
+                    "p-4 border-l-4",
+                    alerta.cor === "red" && "border-l-red-500 bg-red-50/50",
+                    alerta.cor === "orange" && "border-l-orange-500 bg-orange-50/50",
+                    alerta.cor === "yellow" && "border-l-yellow-500 bg-yellow-50/50"
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <Bell className={cn(
+                      "h-5 w-5 mt-0.5",
+                      alerta.cor === "red" && "text-red-500",
+                      alerta.cor === "orange" && "text-orange-500",
+                      alerta.cor === "yellow" && "text-yellow-600"
+                    )} />
+                    <div className="flex-1">
+                      <h4 className="font-semibold mb-1">
+                        {alerta.tipo}
+                        {alerta.setor && ` - ${alerta.setor}`}
+                        {alerta.atendente && ` - ${alerta.atendente}`}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {alerta.detalhes}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "preditiva":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-[#0A2647]" />
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Análise Preditiva (IA)
+              </h3>
+            </div>
+
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50">
+              <h4 className="font-semibold mb-4 text-lg">Previsões para Hoje</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    Horário de Pico Previsto
+                  </div>
+                  <div className="text-2xl font-bold text-[#0A2647]">
+                    {dadosEmpresaGrande.preditiva.horarioPicoPrevisto}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    Volume Esperado Hoje
+                  </div>
+                  <div className="text-2xl font-bold text-[#0A2647]">
+                    {dadosEmpresaGrande.preditiva.volumeEsperadoHoje}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    Setor Mais Demandado
+                  </div>
+                  <div className="text-2xl font-bold text-[#0A2647]">
+                    {dadosEmpresaGrande.preditiva.setorMaisDemandado}
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-yellow-500" />
+                Recomendações da IA
+              </h4>
+              <div className="space-y-2">
+                {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-lg bg-muted/30 flex items-start gap-3"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-primary">{idx + 1}</span>
+                    </div>
+                    <p className="text-sm">{rec}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         );
 
       case "feedback":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">
-              Feedback da Equipe
-            </h3>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-6 w-6 text-[#0A2647]" />
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Feedback Gerado por IA
+              </h3>
+            </div>
+
             <Card className="p-6">
-              <h4 className="font-semibold mb-4">Sugestões da IA</h4>
+              <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
+                <ThumbsUp className="h-5 w-5 text-green-600" />
+                Elogios
+              </h4>
               <div className="space-y-3">
-                <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <ThumbsUp className="h-4 w-4 text-green-600" />
-                    <span className="font-semibold text-green-900">Elogio</span>
+                {dadosEmpresaGrande.feedbackIA.elogios.map((elogio, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-lg bg-green-50 border border-green-200"
+                  >
+                    <div className="font-semibold text-green-900 mb-1">
+                      {elogio.atendente}
+                    </div>
+                    <p className="text-sm text-green-800">{elogio.motivo}</p>
                   </div>
-                  <p className="text-sm text-green-800">
-                    <strong>Ana Silva</strong> manteve NPS de 9.2 por 30 dias consecutivos.
-                  </p>
-                  <Button size="sm" className="mt-3 bg-green-600">
-                    Enviar Elogio
-                  </Button>
-                </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-orange-600" />
+                Oportunidades de Melhoria
+              </h4>
+              <div className="space-y-3">
+                {dadosEmpresaGrande.feedbackIA.melhorias.map((melhoria, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-lg bg-orange-50 border border-orange-200"
+                  >
+                    <div className="font-semibold text-orange-900 mb-1">
+                      {melhoria.atendente}
+                    </div>
+                    <p className="text-sm text-orange-800">{melhoria.motivo}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        );
+
+      case "indicadores":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Indicadores Personalizados
+              </h3>
+              {(isCoordenacao || isGestor) && (
+                <Button className="bg-[#0A2647] hover:bg-[#144272]">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Criar Indicador
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {dadosEmpresaGrande.indicadores.map((indicador, idx) => (
+                <Card key={idx} className="p-6">
+                  <div className="text-sm text-muted-foreground mb-1">
+                    {indicador.nome}
+                  </div>
+                  <div className="text-4xl font-bold text-[#0A2647]">
+                    {indicador.valor}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "auditoria":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <History className="h-6 w-6 text-[#0A2647]" />
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                Auditoria de Ações
+              </h3>
+            </div>
+
+            <Card className="p-6">
+              <div className="space-y-2">
+                {dadosEmpresaGrande.auditoria.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <History className="h-4 w-4 text-primary" />
+                      <div>
+                        <div className="font-medium">{item.acao}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Por: {item.por}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right text-sm">
+                      <div className="font-medium">{item.data}</div>
+                      <div className="text-muted-foreground">{item.horario}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -483,62 +872,62 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "ideias":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">
-              Ideias e Sugestões
-            </h3>
-            <Card className="p-6">
-              <Button className="bg-[#0A2647] mb-4">Enviar Nova Ideia</Button>
-              <div className="space-y-3">
-                <div className="p-4 rounded-lg border">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold">Automatizar respostas FAQ</h4>
-                    <span className="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
-                      Em análise
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Criar bot para perguntas frequentes
-                  </p>
-                  <span className="text-xs text-muted-foreground">
-                    Por: Carlos Santos
-                  </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-6 w-6 text-[#0A2647]" />
+                <h3 className="text-2xl font-bold text-[#0A2647]">
+                  Ideias e Sugestões
+                </h3>
+              </div>
+              <Button className="bg-[#0A2647] hover:bg-[#144272]">
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Enviar Ideia
+              </Button>
+            </div>
+
+            <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
+              <h4 className="font-semibold mb-3 text-lg flex items-center gap-2">
+                <Award className="h-5 w-5 text-yellow-600" />
+                Reconhecimento da Semana
+              </h4>
+              <div className="p-4 bg-white rounded-lg">
+                <div className="font-bold text-lg mb-1">
+                  {dadosEmpresaGrande.reconhecimentoSemana.usuario}
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  {dadosEmpresaGrande.reconhecimentoSemana.motivo}
+                </p>
               </div>
             </Card>
-          </div>
-        );
 
-      case "auditoria":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">
-              Auditoria de Ações
-            </h3>
             <Card className="p-6">
+              <h4 className="font-semibold mb-4 text-lg">Ideias Enviadas</h4>
               <div className="space-y-3">
-                {[
-                  {
-                    acao: "Transferência de atendimento",
-                    user: "Ana Silva",
-                    data: "28/11/2025 14:32",
-                  },
-                  {
-                    acao: "Pausa de recebimento",
-                    user: "Carlos Santos",
-                    data: "28/11/2025 12:15",
-                  },
-                ].map((item, idx) => (
+                {dadosEmpresaGrande.ideias.map((ideia, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-lg border flex justify-between items-center"
+                    className="p-4 rounded-lg border border-border hover:bg-muted/20 transition-colors"
                   >
-                    <div>
-                      <h4 className="font-medium">{item.acao}</h4>
-                      <p className="text-sm text-muted-foreground">{item.user}</p>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold">{ideia.usuario}</span>
+                          <span
+                            className={cn(
+                              "px-2 py-0.5 rounded-full text-xs font-medium",
+                              ideia.status === "Implementada" && "bg-green-100 text-green-700",
+                              ideia.status === "Aprovada" && "bg-blue-100 text-blue-700",
+                              ideia.status === "Em análise" && "bg-yellow-100 text-yellow-700"
+                            )}
+                          >
+                            {ideia.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {ideia.ideia}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {item.data}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -547,52 +936,77 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
         );
 
       default:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647] capitalize">
-              {menuItems.find((m) => m.id === secaoAtiva)?.label}
-            </h3>
-            <Card className="p-6">
-              <p className="text-muted-foreground">Conteúdo em desenvolvimento.</p>
-            </Card>
-          </div>
-        );
+        return <div>Seção em desenvolvimento</div>;
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0">
+      <DialogContent className="max-w-[95vw] h-[90vh] p-0 gap-0">
         <div className="flex h-full">
-          {/* Sidebar */}
-          <div className="w-64 border-r border-border bg-muted/20">
-            <DialogHeader className="p-6 border-b border-border">
-              <DialogTitle className="text-[#0A2647]">Painel Connect</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="h-[calc(100%-80px)]">
-              <div className="p-4 space-y-1">
-                {menuItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Button
-                      key={item.id}
-                      variant={secaoAtiva === item.id ? "secondary" : "ghost"}
-                      className="w-full justify-start transition-all duration-200"
-                      onClick={() => setSecaoAtiva(item.id)}
-                    >
-                      <Icon className="h-4 w-4 mr-3" />
-                      {item.label}
-                    </Button>
-                  );
-                })}
+          {/* Menu Lateral */}
+          <div className="w-64 border-r border-border bg-muted/30 flex flex-col">
+            <div className="p-6 border-b border-border">
+              <div className="flex items-center gap-2 mb-1">
+                <LayoutGrid className="h-6 w-6 text-[#0A2647]" />
+                <h2 className="text-xl font-bold text-[#0A2647]">
+                  Painel Estratégico
+                </h2>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Grupo Liruz
+              </p>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-2">
+                {menuItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setSecaoAtiva(item.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all",
+                      "hover:bg-primary/10",
+                      secaoAtiva === item.id
+                        ? "bg-[#0A2647] text-white shadow-md"
+                        : "text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </button>
+                ))}
               </div>
             </ScrollArea>
           </div>
 
-          {/* Conteúdo */}
-          <div className="flex-1">
-            <ScrollArea className="h-full">
-              <div className="p-8">{renderConteudo()}</div>
+          {/* Área Principal */}
+          <div className="flex-1 flex flex-col">
+            <div className="p-4 border-b border-border bg-card flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const activeItem = menuItems.find((m) => m.id === secaoAtiva);
+                  if (activeItem) {
+                    const IconComponent = activeItem.icon;
+                    return <IconComponent className="h-5 w-5 text-primary" />;
+                  }
+                  return null;
+                })()}
+                <h3 className="font-semibold text-lg">
+                  {menuItems.find((m) => m.id === secaoAtiva)?.label}
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onOpenChange(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-6">{renderConteudo()}</div>
             </ScrollArea>
           </div>
         </div>
