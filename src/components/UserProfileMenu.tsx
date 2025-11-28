@@ -11,15 +11,22 @@ import { User, LogOut } from "lucide-react";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { MeuPerfilDialog } from "./MeuPerfilDialog";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const UserProfileMenu = () => {
   const navigate = useNavigate();
   const { atendenteLogado } = useAtendenteContext();
   const [perfilOpen, setPerfilOpen] = useState(false);
 
-  const handleLogout = () => {
-    // TODO: Implementar logout com Supabase quando auth estiver ativo
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logout realizado com sucesso!");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Erro ao fazer logout");
+    }
   };
 
   return (
