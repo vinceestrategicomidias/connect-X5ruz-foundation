@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,37 +81,32 @@ export const RankingTop3 = () => {
 
   if (ranking.length === 0) return null;
 
+  const getCoresTaca = (posicao: number) => {
+    if (posicao === 1) return "text-yellow-500 fill-yellow-500";
+    if (posicao === 2) return "text-gray-400 fill-gray-400";
+    return "text-orange-500 fill-orange-500";
+  };
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-4">
       {ranking.map((atendente) => (
-        <Card
+        <div
           key={atendente.posicao}
-          className={`px-3 py-2 flex items-center gap-2 transition-all hover:scale-105 ${
-            atendente.posicao === 1
-              ? "bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-300"
-              : atendente.posicao === 2
-              ? "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300"
-              : "bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300"
-          }`}
+          className="flex items-center gap-2 group transition-all hover:scale-105"
         >
           <Trophy
-            className={`h-4 w-4 ${
-              atendente.posicao === 1
-                ? "text-yellow-600"
-                : atendente.posicao === 2
-                ? "text-gray-500"
-                : "text-orange-600"
-            }`}
+            className={`h-5 w-5 ${getCoresTaca(atendente.posicao)} transition-transform group-hover:rotate-12`}
+            strokeWidth={1.5}
           />
           <div className="text-left">
-            <div className="text-xs font-semibold text-foreground">
+            <div className="text-xs font-semibold text-foreground leading-tight">
               {atendente.nome.split(" ")[0]}
             </div>
-            <div className="text-[10px] text-muted-foreground">
-              {atendente.atendimentos} atend. • NPS {atendente.nps}
+            <div className="text-[10px] text-muted-foreground leading-tight">
+              {atendente.atendimentos} atend.
             </div>
           </div>
-        </Card>
+        </div>
       ))}
     </div>
   );
