@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import { MessageAttachment } from "./MessageAttachment";
 import { useAnexosByMensagem } from "@/hooks/useAnexos";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ConnectMessageBubbleProps {
   content: string;
@@ -8,6 +10,8 @@ interface ConnectMessageBubbleProps {
   type: "patient" | "attendant";
   senderName?: string;
   mensagemId?: string;
+  tipoConteudo?: string;
+  figurinhaId?: string | null;
 }
 
 export const ConnectMessageBubblePatient = ({
@@ -15,8 +19,27 @@ export const ConnectMessageBubblePatient = ({
   time,
   senderName,
   mensagemId,
+  tipoConteudo,
+  figurinhaId,
 }: Omit<ConnectMessageBubbleProps, "type">) => {
   const { data: anexos } = useAnexosByMensagem(mensagemId || null);
+  
+  const { data: figurinha } = useQuery({
+    queryKey: ['figurinha', figurinhaId],
+    queryFn: async () => {
+      if (!figurinhaId) return null;
+      
+      const { data, error } = await supabase
+        .from('figurinhas')
+        .select('*')
+        .eq('id', figurinhaId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!figurinhaId && tipoConteudo === 'figurinha',
+  });
 
   return (
     <div className="flex justify-start mb-4">
@@ -41,7 +64,16 @@ export const ConnectMessageBubblePatient = ({
           ))}
             </div>
           )}
-          {content && (
+          {tipoConteudo === 'figurinha' && figurinha ? (
+            <div className="inline-block">
+              <img
+                src={figurinha.url_imagem}
+                alt={figurinha.nome}
+                className="w-32 h-32 object-contain rounded-lg"
+                title={figurinha.nome}
+              />
+            </div>
+          ) : content && (
             <div className="bg-card border border-border rounded-lg rounded-tl-none p-3 connect-shadow">
               <p className="text-sm text-foreground">{content}</p>
             </div>
@@ -57,8 +89,27 @@ export const ConnectMessageBubbleAttendant = ({
   content,
   time,
   mensagemId,
+  tipoConteudo,
+  figurinhaId,
 }: Omit<ConnectMessageBubbleProps, "type" | "senderName">) => {
   const { data: anexos } = useAnexosByMensagem(mensagemId || null);
+  
+  const { data: figurinha } = useQuery({
+    queryKey: ['figurinha', figurinhaId],
+    queryFn: async () => {
+      if (!figurinhaId) return null;
+      
+      const { data, error } = await supabase
+        .from('figurinhas')
+        .select('*')
+        .eq('id', figurinhaId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!figurinhaId && tipoConteudo === 'figurinha',
+  });
 
   return (
     <div className="flex justify-end mb-4">
@@ -80,7 +131,16 @@ export const ConnectMessageBubbleAttendant = ({
               ))}
             </div>
           )}
-          {content && (
+          {tipoConteudo === 'figurinha' && figurinha ? (
+            <div className="inline-block">
+              <img
+                src={figurinha.url_imagem}
+                alt={figurinha.nome}
+                className="w-32 h-32 object-contain rounded-lg"
+                title={figurinha.nome}
+              />
+            </div>
+          ) : content && (
             <div className="bg-primary text-primary-foreground rounded-lg rounded-tr-none p-3 connect-shadow">
               <p className="text-sm">{content}</p>
             </div>

@@ -387,6 +387,50 @@ export type Database = {
         }
         Relationships: []
       }
+      figurinhas: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          ordem: number | null
+          pacote_id: string | null
+          tags: string[] | null
+          url_imagem: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          ordem?: number | null
+          pacote_id?: string | null
+          tags?: string[] | null
+          url_imagem: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          ordem?: number | null
+          pacote_id?: string | null
+          tags?: string[] | null
+          url_imagem?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "figurinhas_pacote_id_fkey"
+            columns: ["pacote_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_figurinhas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ia_alertas: {
         Row: {
           acao_recomendada: string | null
@@ -862,28 +906,34 @@ export type Database = {
           autor: string
           conversa_id: string
           created_at: string | null
+          figurinha_id: string | null
           horario: string
           id: string
           texto: string
           tipo: string
+          tipo_conteudo: string | null
         }
         Insert: {
           autor: string
           conversa_id: string
           created_at?: string | null
+          figurinha_id?: string | null
           horario: string
           id?: string
           texto: string
           tipo: string
+          tipo_conteudo?: string | null
         }
         Update: {
           autor?: string
           conversa_id?: string
           created_at?: string | null
+          figurinha_id?: string | null
           horario?: string
           id?: string
           texto?: string
           tipo?: string
+          tipo_conteudo?: string | null
         }
         Relationships: [
           {
@@ -891,6 +941,13 @@ export type Database = {
             columns: ["conversa_id"]
             isOneToOne: false
             referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_figurinha_id_fkey"
+            columns: ["figurinha_id"]
+            isOneToOne: false
+            referencedRelation: "figurinhas"
             referencedColumns: ["id"]
           },
         ]
@@ -1042,6 +1099,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pacotes_figurinhas: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       perfil_validacoes: {
         Row: {

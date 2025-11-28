@@ -1,4 +1,4 @@
-import { Send, Paperclip, Mic, UserCog, Phone, MoreVertical } from "lucide-react";
+import { Send, Paperclip, Mic, UserCog, Phone, MoreVertical, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,6 +19,8 @@ import { PerfilPacienteSheet } from "./PerfilPacienteSheet";
 import { AttachmentMenu } from "./AttachmentMenu";
 import { AudioRecorder } from "./AudioRecorder";
 import { useUploadAnexo } from "@/hooks/useAnexos";
+import { EmojiStickerPicker } from "./EmojiStickerPicker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const ConnectColumn2 = () => {
   const { pacienteSelecionado } = usePacienteContext();
@@ -34,7 +36,9 @@ export const ConnectColumn2 = () => {
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [perfilOpen, setPerfilOpen] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const uploadAnexo = useUploadAnexo();
 
   // Scroll automático para última mensagem
@@ -90,6 +94,68 @@ export const ConnectColumn2 = () => {
 
     setMensagemTexto("");
     setDigitando(false);
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    const cursorPos = inputRef.current?.selectionStart || mensagemTexto.length;
+    const newText = 
+      mensagemTexto.slice(0, cursorPos) + 
+      emoji + 
+      mensagemTexto.slice(cursorPos);
+    setMensagemTexto(newText);
+    setEmojiPickerOpen(false);
+    
+    // Focar no input após inserir emoji
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+    }, 0);
+  };
+
+  const handleStickerSelect = async (stickerUrl: string, stickerName: string) => {
+    if (!conversa?.id || !pacienteSelecionado) return;
+
+    // Se for a primeira mensagem do atendente e o paciente está na fila, mudar status
+    const ehPrimeiraMensagemAtendente = !mensagens?.some(m => m.autor === "atendente");
+    if (ehPrimeiraMensagemAtendente && pacienteSelecionado.status === "fila" && atendenteLogado) {
+      await atualizarStatus.mutateAsync({
+        pacienteId: pacienteSelecionado.id,
+        novoStatus: "em_atendimento",
+        atendenteId: atendenteLogado.id,
+      });
+    }
+
+    // Buscar o ID da figurinha pela URL
+    const { data: figurinha } = await supabase
+      .from('figurinhas')
+      .select('id')
+      .eq('url_imagem', stickerUrl)
+      .single();
+
+    if (!figurinha) {
+      toast.error("Erro ao enviar figurinha");
+      return;
+    }
+
+    // Enviar como mensagem de figurinha
+    const { error } = await supabase
+      .from('mensagens')
+      .insert({
+        conversa_id: conversa.id,
+        texto: stickerName,
+        autor: "atendente",
+        tipo: "figurinha",
+        tipo_conteudo: "figurinha",
+        figurinha_id: figurinha.id,
+        horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      });
+
+    if (error) {
+      toast.error("Erro ao enviar figurinha");
+      console.error(error);
+    }
+
+    setEmojiPickerOpen(false);
   };
 
   const handleFileSelect = async (file: File, tipo: string) => {
@@ -288,24 +354,29 @@ export const ConnectColumn2 = () => {
           </div>
         ) : (
           <div>
-            {mensagens.map((mensagem) =>
-              mensagem.autor === "paciente" ? (
+            {mensagens.map((mensagem) => {
+              const msg = mensagem as any; // Cast necessário pois tipos são auto-gerados
+              return msg.autor === "paciente" ? (
                 <ConnectMessageBubblePatient
-                  key={mensagem.id}
-                  content={mensagem.texto}
-                  time={mensagem.horario}
+                  key={msg.id}
+                  content={msg.texto}
+                  time={msg.horario}
                   senderName={pacienteSelecionado.nome}
-                  mensagemId={mensagem.id}
+                  mensagemId={msg.id}
+                  tipoConteudo={msg.tipo_conteudo || 'texto'}
+                  figurinhaId={msg.figurinha_id}
                 />
               ) : (
                 <ConnectMessageBubbleAttendant
-                  key={mensagem.id}
-                  content={mensagem.texto}
-                  time={mensagem.horario}
-                  mensagemId={mensagem.id}
+                  key={msg.id}
+                  content={msg.texto}
+                  time={msg.horario}
+                  mensagemId={msg.id}
+                  tipoConteudo={msg.tipo_conteudo || 'texto'}
+                  figurinhaId={msg.figurinha_id}
                 />
-              )
-            )}
+              );
+            })}
             {digitando && (
               <div className="text-xs text-muted-foreground italic ml-2 mt-2">
                 Digitando...
@@ -324,6 +395,30 @@ export const ConnectColumn2 = () => {
           />
         ) : (
           <div className="flex items-center gap-2">
+            <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  disabled={!pacienteSelecionado}
+                  title="Emojis e figurinhas"
+                >
+                  <Smile className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                side="top" 
+                align="start" 
+                className="p-0 w-auto border-0"
+                sideOffset={8}
+              >
+                <EmojiStickerPicker
+                  onEmojiSelect={handleEmojiSelect}
+                  onStickerSelect={handleStickerSelect}
+                />
+              </PopoverContent>
+            </Popover>
+            
             <AttachmentMenu
               onFileSelect={handleFileSelect}
               disabled={!pacienteSelecionado}
@@ -332,7 +427,9 @@ export const ConnectColumn2 = () => {
                 <Paperclip className="h-4 w-4" />
               </Button>
             </AttachmentMenu>
+            
             <Input
+              ref={inputRef}
               placeholder="Digite sua mensagem..."
               className="flex-1"
               disabled={!pacienteSelecionado}
@@ -343,6 +440,7 @@ export const ConnectColumn2 = () => {
               }}
               onKeyPress={handleKeyPress}
             />
+            
             <Button
               variant="outline"
               size="icon"
@@ -351,6 +449,7 @@ export const ConnectColumn2 = () => {
             >
               <Mic className="h-4 w-4" />
             </Button>
+            
             <Button
               size="icon"
               disabled={!pacienteSelecionado || !mensagemTexto.trim()}
