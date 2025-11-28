@@ -19,18 +19,16 @@ export const ConnectNavbar = () => {
     <nav className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
       {/* Logo / Brand */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-sm">GL</span>
+        <div className="w-7 h-7 bg-[#0A2647] rounded-lg flex items-center justify-center flex-shrink-0">
+          <span className="text-white font-bold text-xs">GL</span>
         </div>
-        <div>
-          <h1 className="text-lg font-display font-semibold text-foreground">
-            Connect – Grupo Liruz
+        <div className="flex flex-col leading-none">
+          <h1 className="text-[26px] font-semibold text-[#0A2647] uppercase tracking-tight">
+            CONNECT
           </h1>
-          {atendenteLogado && (
-            <p className="text-xs text-muted-foreground capitalize">
-              {atendenteLogado.cargo}
-            </p>
-          )}
+          <p className="text-[11px] font-normal text-[#1D4E89] uppercase tracking-wide mt-0.5">
+            GRUPO LIRUZ
+          </p>
         </div>
       </div>
 
