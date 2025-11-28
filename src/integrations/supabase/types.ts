@@ -337,6 +337,476 @@ export type Database = {
         }
         Relationships: []
       }
+      ia_alertas: {
+        Row: {
+          acao_recomendada: string | null
+          atendido: boolean | null
+          atendido_em: string | null
+          atendido_por: string | null
+          created_at: string | null
+          dados_contexto: Json | null
+          descricao: string
+          destinatarios: string[] | null
+          id: string
+          severidade: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          acao_recomendada?: string | null
+          atendido?: boolean | null
+          atendido_em?: string | null
+          atendido_por?: string | null
+          created_at?: string | null
+          dados_contexto?: Json | null
+          descricao: string
+          destinatarios?: string[] | null
+          id?: string
+          severidade?: string | null
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          acao_recomendada?: string | null
+          atendido?: boolean | null
+          atendido_em?: string | null
+          atendido_por?: string | null
+          created_at?: string | null
+          dados_contexto?: Json | null
+          descricao?: string
+          destinatarios?: string[] | null
+          id?: string
+          severidade?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_alertas_atendido_por_fkey"
+            columns: ["atendido_por"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_analise_intencao: {
+        Row: {
+          confianca: number | null
+          conversa_id: string | null
+          created_at: string | null
+          dados_extraidos: Json | null
+          id: string
+          intencao_principal: string
+          intencoes_secundarias: Json | null
+          nivel_urgencia: string | null
+          paciente_id: string | null
+          texto_analisado: string
+          tipo_procedimento: string | null
+        }
+        Insert: {
+          confianca?: number | null
+          conversa_id?: string | null
+          created_at?: string | null
+          dados_extraidos?: Json | null
+          id?: string
+          intencao_principal: string
+          intencoes_secundarias?: Json | null
+          nivel_urgencia?: string | null
+          paciente_id?: string | null
+          texto_analisado: string
+          tipo_procedimento?: string | null
+        }
+        Update: {
+          confianca?: number | null
+          conversa_id?: string | null
+          created_at?: string | null
+          dados_extraidos?: Json | null
+          id?: string
+          intencao_principal?: string
+          intencoes_secundarias?: Json | null
+          nivel_urgencia?: string | null
+          paciente_id?: string | null
+          texto_analisado?: string
+          tipo_procedimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_analise_intencao_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_analise_intencao_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_auditoria: {
+        Row: {
+          acao_executada: string | null
+          created_at: string | null
+          dados_entrada: Json | null
+          dados_saida: Json | null
+          executado_automaticamente: boolean | null
+          id: string
+          recomendacao: string | null
+          resumo_analise: string | null
+          setor_id: string | null
+          tipo_decisao: string
+          unidade_id: string | null
+        }
+        Insert: {
+          acao_executada?: string | null
+          created_at?: string | null
+          dados_entrada?: Json | null
+          dados_saida?: Json | null
+          executado_automaticamente?: boolean | null
+          id?: string
+          recomendacao?: string | null
+          resumo_analise?: string | null
+          setor_id?: string | null
+          tipo_decisao: string
+          unidade_id?: string | null
+        }
+        Update: {
+          acao_executada?: string | null
+          created_at?: string | null
+          dados_entrada?: Json | null
+          dados_saida?: Json | null
+          executado_automaticamente?: boolean | null
+          id?: string
+          recomendacao?: string | null
+          resumo_analise?: string | null
+          setor_id?: string | null
+          tipo_decisao?: string
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_auditoria_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_auditoria_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_classificacao_picos: {
+        Row: {
+          classificacao: string | null
+          created_at: string | null
+          data: string
+          hora_fim: string
+          hora_inicio: string
+          id: string
+          quantidade_atendimentos: number | null
+          quantidade_mensagens: number | null
+          setor_id: string | null
+          tma_medio: number | null
+          tme_medio: number | null
+          unidade_id: string | null
+        }
+        Insert: {
+          classificacao?: string | null
+          created_at?: string | null
+          data: string
+          hora_fim: string
+          hora_inicio: string
+          id?: string
+          quantidade_atendimentos?: number | null
+          quantidade_mensagens?: number | null
+          setor_id?: string | null
+          tma_medio?: number | null
+          tme_medio?: number | null
+          unidade_id?: string | null
+        }
+        Update: {
+          classificacao?: string | null
+          created_at?: string | null
+          data?: string
+          hora_fim?: string
+          hora_inicio?: string
+          id?: string
+          quantidade_atendimentos?: number | null
+          quantidade_mensagens?: number | null
+          setor_id?: string | null
+          tma_medio?: number | null
+          tme_medio?: number | null
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_classificacao_picos_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_classificacao_picos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_config: {
+        Row: {
+          alertas_inteligentes_ativos: boolean | null
+          analise_intencao_ativa: boolean | null
+          created_at: string | null
+          empresa_id: string | null
+          feedback_automatico_ativo: boolean | null
+          ia_ativa: boolean | null
+          id: string
+          limite_fila_alta: number | null
+          limite_nps_baixo: number | null
+          limite_tma_minutos: number | null
+          nivel_atuacao: string | null
+          pre_atendimento_ativo: boolean | null
+          preditiva_ativa: boolean | null
+          sensibilidade_alertas: string | null
+          setor_id: string | null
+          sugestao_respostas_ativa: boolean | null
+          unidade_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alertas_inteligentes_ativos?: boolean | null
+          analise_intencao_ativa?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          feedback_automatico_ativo?: boolean | null
+          ia_ativa?: boolean | null
+          id?: string
+          limite_fila_alta?: number | null
+          limite_nps_baixo?: number | null
+          limite_tma_minutos?: number | null
+          nivel_atuacao?: string | null
+          pre_atendimento_ativo?: boolean | null
+          preditiva_ativa?: boolean | null
+          sensibilidade_alertas?: string | null
+          setor_id?: string | null
+          sugestao_respostas_ativa?: boolean | null
+          unidade_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alertas_inteligentes_ativos?: boolean | null
+          analise_intencao_ativa?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          feedback_automatico_ativo?: boolean | null
+          ia_ativa?: boolean | null
+          id?: string
+          limite_fila_alta?: number | null
+          limite_nps_baixo?: number | null
+          limite_tma_minutos?: number | null
+          nivel_atuacao?: string | null
+          pre_atendimento_ativo?: boolean | null
+          preditiva_ativa?: boolean | null
+          sensibilidade_alertas?: string | null
+          setor_id?: string | null
+          sugestao_respostas_ativa?: boolean | null
+          unidade_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_config_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_config_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_config_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_energia_equipe: {
+        Row: {
+          created_at: string | null
+          data: string
+          fatores: Json | null
+          hora: string
+          id: string
+          metricas: Json | null
+          nivel_energia: string | null
+          setor_id: string | null
+          unidade_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          fatores?: Json | null
+          hora: string
+          id?: string
+          metricas?: Json | null
+          nivel_energia?: string | null
+          setor_id?: string | null
+          unidade_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          fatores?: Json | null
+          hora?: string
+          id?: string
+          metricas?: Json | null
+          nivel_energia?: string | null
+          setor_id?: string | null
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_energia_equipe_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_energia_equipe_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_feedbacks: {
+        Row: {
+          aprovado: boolean | null
+          aprovado_por: string | null
+          atendente_id: string | null
+          created_at: string | null
+          enviado: boolean | null
+          enviado_em: string | null
+          id: string
+          justificativa: string
+          mensagem_sugerida: string | null
+          metricas_relacionadas: Json | null
+          tipo: string | null
+          titulo: string
+        }
+        Insert: {
+          aprovado?: boolean | null
+          aprovado_por?: string | null
+          atendente_id?: string | null
+          created_at?: string | null
+          enviado?: boolean | null
+          enviado_em?: string | null
+          id?: string
+          justificativa: string
+          mensagem_sugerida?: string | null
+          metricas_relacionadas?: Json | null
+          tipo?: string | null
+          titulo: string
+        }
+        Update: {
+          aprovado?: boolean | null
+          aprovado_por?: string | null
+          atendente_id?: string | null
+          created_at?: string | null
+          enviado?: boolean | null
+          enviado_em?: string | null
+          id?: string
+          justificativa?: string
+          mensagem_sugerida?: string | null
+          metricas_relacionadas?: Json | null
+          tipo?: string | null
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_feedbacks_aprovado_por_fkey"
+            columns: ["aprovado_por"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_feedbacks_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_preditiva: {
+        Row: {
+          acuracia_anterior: number | null
+          created_at: string | null
+          data_previsao: string
+          horarios_pico: Json | null
+          id: string
+          recomendacoes: Json | null
+          risco_sla: string | null
+          setores_alta_demanda: Json | null
+          unidade_id: string | null
+          volume_esperado: number | null
+        }
+        Insert: {
+          acuracia_anterior?: number | null
+          created_at?: string | null
+          data_previsao: string
+          horarios_pico?: Json | null
+          id?: string
+          recomendacoes?: Json | null
+          risco_sla?: string | null
+          setores_alta_demanda?: Json | null
+          unidade_id?: string | null
+          volume_esperado?: number | null
+        }
+        Update: {
+          acuracia_anterior?: number | null
+          created_at?: string | null
+          data_previsao?: string
+          horarios_pico?: Json | null
+          id?: string
+          recomendacoes?: Json | null
+          risco_sla?: string | null
+          setores_alta_demanda?: Json | null
+          unidade_id?: string | null
+          volume_esperado?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_preditiva_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mensagens: {
         Row: {
           autor: string

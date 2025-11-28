@@ -21,6 +21,8 @@ import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
 import { ApiWebhooksManager } from "./ApiWebhooksManager";
 import { ApiLogsViewer } from "./ApiLogsViewer";
 import { ApiDocsPanel } from "./ApiDocsPanel";
+import { IAConfigPanel } from "./IAConfigPanel";
+import { IAAlertasPanel } from "./IAAlertasPanel";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
 import { useUnidades, useCriarUnidade } from "@/hooks/useUnidades";
@@ -579,65 +581,46 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
               </p>
             </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações de IA</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Robô de Pré-atendimento</Label>
-                    <p className="text-sm text-muted-foreground">Captar dados antes de transferir</p>
-                  </div>
-                  <Switch
-                    checked={iaForm.robo_ativo}
-                    onCheckedChange={(checked) => setIaForm({ ...iaForm, robo_ativo: checked })}
-                  />
-                </div>
-                
-                <Separator />
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Assistente IA</Label>
-                    <p className="text-sm text-muted-foreground">Sugestões automáticas e análise</p>
-                  </div>
-                  <Switch
-                    checked={iaForm.ia_ativa}
-                    onCheckedChange={(checked) => setIaForm({ ...iaForm, ia_ativa: checked })}
-                  />
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-3">
-                  <Label>Funcionalidades de IA</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 border rounded-lg">
-                      <p className="font-medium text-sm">Sugestão de Respostas</p>
-                      <p className="text-xs text-muted-foreground">Baseado no contexto</p>
+            <Tabs defaultValue="config" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="config">Configurações</TabsTrigger>
+                <TabsTrigger value="alertas">Alertas IA</TabsTrigger>
+                <TabsTrigger value="mensageria">Mensageria</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="config">
+                <IAConfigPanel />
+              </TabsContent>
+
+              <TabsContent value="alertas">
+                <IAAlertasPanel />
+              </TabsContent>
+
+              <TabsContent value="mensageria">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Integrações de Mensageria</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="p-4 border rounded-lg space-y-2">
+                      <h4 className="font-semibold">WhatsApp Business</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Integração em desenvolvimento
+                      </p>
+                      <Badge variant="secondary">Em breve</Badge>
                     </div>
-                    <div className="p-3 border rounded-lg">
-                      <p className="font-medium text-sm">Análise de Sentimento</p>
-                      <p className="text-xs text-muted-foreground">Detecta urgência e humor</p>
+                    
+                    <div className="p-4 border rounded-lg space-y-2">
+                      <h4 className="font-semibold">Telegram</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Integração em desenvolvimento
+                      </p>
+                      <Badge variant="secondary">Em breve</Badge>
                     </div>
-                    <div className="p-3 border rounded-lg">
-                      <p className="font-medium text-sm">Extração de Dados</p>
-                      <p className="text-xs text-muted-foreground">CPF, nome, convênio</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                      <p className="font-medium text-sm">Classificação</p>
-                      <p className="text-xs text-muted-foreground">Identifica intenção</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button onClick={handleSalvarIA} className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Configurações de IA
-                </Button>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         );
 
