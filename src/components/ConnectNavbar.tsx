@@ -1,13 +1,16 @@
-import { Bell, Settings } from "lucide-react";
+import { useState } from "react";
+import { Bell, Settings, LayoutGrid } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
 import { PainelUnificado } from "./PainelUnificado";
+import { SystemMenu } from "./SystemMenu";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 export const ConnectNavbar = () => {
   const { atendenteLogado } = useAtendenteContext();
+  const [systemMenuOpen, setSystemMenuOpen] = useState(false);
 
   return (
     <nav className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
@@ -33,6 +36,10 @@ export const ConnectNavbar = () => {
         <ManualDialer />
         <PainelUnificado />
         <SetoresManagement />
+        <ConnectIconButton 
+          icon={LayoutGrid} 
+          onClick={() => setSystemMenuOpen(true)}
+        />
         <ConnectIconButton icon={Bell} />
         <ConnectIconButton icon={Settings} />
         <ConnectAvatar
@@ -40,6 +47,8 @@ export const ConnectNavbar = () => {
           image={atendenteLogado?.avatar || undefined}
         />
       </div>
+
+      <SystemMenu open={systemMenuOpen} onOpenChange={setSystemMenuOpen} />
     </nav>
   );
 };
