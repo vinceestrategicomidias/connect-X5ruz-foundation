@@ -40,6 +40,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
+import { ConfiguracoesFilaPanel } from "./ConfiguracoesFilaPanel";
+import { Settings } from "lucide-react";
+
 type SecaoPainel =
   | "dashboards"
   | "roteiros"
@@ -51,12 +54,14 @@ type SecaoPainel =
   | "feedback"
   | "indicadores"
   | "auditoria"
-  | "ideias";
+  | "ideias"
+  | "configuracoes";
 
 interface MenuItem {
   id: SecaoPainel;
   label: string;
   icon: any;
+  apenasGestor?: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -71,6 +76,7 @@ const menuItems: MenuItem[] = [
   { id: "indicadores", label: "Indicadores", icon: Activity },
   { id: "auditoria", label: "Auditoria de Ações", icon: History },
   { id: "ideias", label: "Ideias", icon: Lightbulb },
+  { id: "configuracoes", label: "Configurações", icon: Settings, apenasGestor: true },
 ];
 
 // Dados simulados de GRANDE EMPRESA
@@ -943,6 +949,9 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
           </div>
         );
 
+      case "configuracoes":
+        return <ConfiguracoesFilaPanel />;
+
       default:
         return <div>Seção em desenvolvimento</div>;
     }
@@ -968,7 +977,9 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-1">
-                {menuItems.map((item) => (
+                {menuItems
+                  .filter(item => !item.apenasGestor || isGestor || isCoordenacao)
+                  .map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setSecaoAtiva(item.id)}
