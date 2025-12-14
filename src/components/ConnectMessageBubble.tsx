@@ -88,10 +88,11 @@ export const ConnectMessageBubblePatient = ({
 export const ConnectMessageBubbleAttendant = ({
   content,
   time,
+  senderName,
   mensagemId,
   tipoConteudo,
   figurinhaId,
-}: Omit<ConnectMessageBubbleProps, "type" | "senderName">) => {
+}: Omit<ConnectMessageBubbleProps, "type">) => {
   const { data: anexos } = useAnexosByMensagem(mensagemId || null);
   
   const { data: figurinha } = useQuery({
@@ -114,6 +115,11 @@ export const ConnectMessageBubbleAttendant = ({
   return (
     <div className="flex justify-end mb-4">
       <div className="max-w-[70%]">
+        {senderName && (
+          <p className="text-xs text-primary font-semibold mb-1 px-1 text-right uppercase tracking-wide">
+            {senderName}
+          </p>
+        )}
         <div className="space-y-2">
           {anexos && anexos.length > 0 && (
             <div className="space-y-2">

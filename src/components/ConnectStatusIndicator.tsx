@@ -12,24 +12,31 @@ export const ConnectStatusIndicator = ({
   tempoLimite = 30 
 }: ConnectStatusIndicatorProps) => {
   const getStatusColor = () => {
-    // Se tempo excedido, mostrar vermelho
-    if (status === "espera" && tempoNaFila >= tempoLimite) {
-      return "#EF4444";
+    // Cores baseadas no tempo de espera para status "espera"
+    if (status === "espera") {
+      if (tempoNaFila >= tempoLimite) {
+        return "#EF4444"; // vermelho - alerta crítico
+      }
+      if (tempoNaFila >= 15) {
+        return "#F97316"; // laranja - atenção
+      }
+      if (tempoNaFila >= 10) {
+        return "#EAB308"; // amarelo - atenção leve
+      }
+      return "#22C55E"; // verde - chegou recentemente
     }
 
     switch (status) {
-      case "espera":
-        return "#EAB308"; // amarelo
       case "andamento":
         return "#22C55E"; // verde
       case "finalizado":
-        return "#2C2C2C"; // cinza
+        return "#6B7280"; // cinza
       case "online":
         return "#22C55E"; // verde
       case "offline":
-        return "#2C2C2C"; // cinza
+        return "#6B7280"; // cinza
       default:
-        return "#2C2C2C";
+        return "#6B7280";
     }
   };
 
@@ -38,11 +45,11 @@ export const ConnectStatusIndicator = ({
   return (
     <div className="flex items-center gap-1.5">
       <div
-        className={`w-2 h-2 rounded-full ${mostrarAlerta ? 'animate-pulse-alert' : ''}`}
+        className={`w-2.5 h-2.5 rounded-full ${mostrarAlerta ? 'animate-pulse' : ''}`}
         style={{ backgroundColor: getStatusColor() }}
       />
       {mostrarAlerta && (
-        <AlertCircle className="w-3 h-3 text-[#EF4444] animate-pulse-alert" />
+        <AlertCircle className="w-3.5 h-3.5 text-destructive animate-pulse" />
       )}
     </div>
   );
