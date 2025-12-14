@@ -38,6 +38,9 @@ export const useCriarSetor = () => {
       nome: string;
       descricao?: string;
       cor?: string;
+      unidade_id?: string | null;
+      recebe_mensagens?: boolean;
+      recebe_ligacoes?: boolean;
     }) => {
       const { data, error } = await supabase
         .from("setores")

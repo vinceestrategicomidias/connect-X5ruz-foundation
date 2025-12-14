@@ -396,6 +396,7 @@ export const ConnectColumn2 = () => {
                   key={msg.id}
                   content={msg.texto}
                   time={msg.horario}
+                  senderName={atendenteLogado?.nome?.split(' ')[0]?.toUpperCase()}
                   mensagemId={msg.id}
                   tipoConteudo={msg.tipo_conteudo || 'texto'}
                   figurinhaId={msg.figurinha_id}

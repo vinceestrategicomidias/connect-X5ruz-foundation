@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { ConnectAvatar } from "@/components/ConnectAvatar";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { MapaBrasilClientes } from "@/components/MapaBrasilClientes";
 
 interface DashboardMetrics {
   emAtendimento: number;
@@ -325,7 +326,7 @@ export default function DashboardMonitoramento() {
       </div>
 
       {/* Gráficos */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6 mb-6">
         <Card className="p-4">
           <h3 className="text-lg font-semibold mb-4">Atendimentos por hora (hoje)</h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -353,6 +354,11 @@ export default function DashboardMonitoramento() {
             </LineChart>
           </ResponsiveContainer>
         </Card>
+      </div>
+
+      {/* Mapa do Brasil */}
+      <div className="mb-6">
+        <MapaBrasilClientes />
       </div>
     </div>
   );
