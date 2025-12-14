@@ -11,7 +11,7 @@ import { useAtendentes } from "@/hooks/useAtendentes";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { ConnectAvatar } from "@/components/ConnectAvatar";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, ReferenceLine } from "recharts";
 import { MapaBrasilClientes } from "@/components/MapaBrasilClientes";
 
 interface DashboardMetrics {
@@ -163,6 +163,17 @@ export default function DashboardMonitoramento() {
     { hora: "15:00", tma: 3.6, tme: 4.4 },
   ];
 
+  const dadosVendas = [
+    { hora: "08:00", vendas: 8, meta: 10 },
+    { hora: "09:00", vendas: 15, meta: 10 },
+    { hora: "10:00", vendas: 22, meta: 10 },
+    { hora: "11:00", vendas: 12, meta: 10 },
+    { hora: "12:00", vendas: 6, meta: 10 },
+    { hora: "13:00", vendas: 14, meta: 10 },
+    { hora: "14:00", vendas: 18, meta: 10 },
+    { hora: "15:00", vendas: 16, meta: 10 },
+  ];
+
   const filaEmTempoReal = pacientes?.filter(p => p.status === "fila")
     .sort((a, b) => (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0))
     .slice(0, 10) || [];
@@ -269,18 +280,23 @@ export default function DashboardMonitoramento() {
           </ScrollArea>
         </Card>
 
-        {/* Ranking Top 3 - simplificado */}
+        {/* Ranking Top 3 - com fotos */}
         <Card className="p-4">
           <h3 className="text-lg font-semibold mb-4">Ranking Diário - Top 3</h3>
           <div className="space-y-4">
             {[
-              { posicao: 1, nome: "Emily", atendimentos: 36, tma: "3.2 min", nps: 94, cor: "text-yellow-500", bg: "bg-yellow-500/10" },
-              { posicao: 2, nome: "Geovana", atendimentos: 33, tma: "3.6 min", nps: 95, cor: "text-gray-400", bg: "bg-gray-400/10" },
-              { posicao: 3, nome: "Paloma", atendimentos: 29, tma: "3.9 min", nps: 92, cor: "text-orange-500", bg: "bg-orange-500/10" },
+              { posicao: 1, nome: "Emily", atendimentos: 36, tma: "3.2 min", nps: 94, cor: "text-yellow-500", bg: "bg-yellow-500/10", ring: "ring-yellow-400" },
+              { posicao: 2, nome: "Geovana", atendimentos: 33, tma: "3.6 min", nps: 95, cor: "text-gray-400", bg: "bg-gray-400/10", ring: "ring-gray-300" },
+              { posicao: 3, nome: "Paloma", atendimentos: 29, tma: "3.9 min", nps: 92, cor: "text-orange-500", bg: "bg-orange-500/10", ring: "ring-orange-400" },
             ].map((atendente) => (
               <div key={atendente.posicao} className={`flex items-center gap-4 p-4 rounded-lg ${atendente.bg}`}>
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full ${atendente.bg} ${atendente.cor} font-bold text-lg`}>
-                  {atendente.posicao}º
+                <div className="relative">
+                  <div className={`ring-2 ${atendente.ring} rounded-full`}>
+                    <ConnectAvatar name={atendente.nome} size="md" />
+                  </div>
+                  <div className={`absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full ${atendente.bg} ${atendente.cor} font-bold text-xs`}>
+                    {atendente.posicao}
+                  </div>
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-base">{atendente.nome}</p>
@@ -297,7 +313,7 @@ export default function DashboardMonitoramento() {
       </div>
 
       {/* Gráficos */}
-      <div className="grid grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-3 gap-6 mb-6">
         <Card className="p-4">
           <h3 className="text-lg font-semibold mb-4">Atendimentos por hora (hoje)</h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -323,6 +339,21 @@ export default function DashboardMonitoramento() {
               <Line type="monotone" dataKey="tma" stroke="hsl(var(--primary))" name="TMA (min)" />
               <Line type="monotone" dataKey="tme" stroke="hsl(var(--destructive))" name="TME (min)" />
             </LineChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold mb-4">Vendas por hora (hoje)</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={dadosVendas}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="hora" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="vendas" fill="hsl(142, 76%, 36%)" name="Vendas" />
+              <Line type="monotone" dataKey="meta" stroke="hsl(var(--destructive))" name="Meta" strokeDasharray="5 5" />
+            </BarChart>
           </ResponsiveContainer>
         </Card>
       </div>
