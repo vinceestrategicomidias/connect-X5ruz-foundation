@@ -167,9 +167,6 @@ export default function DashboardMonitoramento() {
     .sort((a, b) => (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0))
     .slice(0, 10) || [];
 
-  const atendimentosEmAndamento = pacientes?.filter(p => p.status === "em_atendimento")
-    .slice(0, 6) || [];
-
   return (
     <div className="min-h-screen bg-background p-4">
       {/* Header com filtros */}
@@ -245,8 +242,8 @@ export default function DashboardMonitoramento() {
       </div>
 
       {/* Painéis principais */}
-      <div className="grid grid-cols-3 gap-6 mb-6">
-        {/* Fila em tempo real */}
+      <div className="grid grid-cols-2 gap-6 mb-6">
+        {/* Fila em tempo real - simplificado */}
         <Card className="p-4">
           <h3 className="text-lg font-semibold mb-4">Fila em tempo real</h3>
           <ScrollArea className="h-[400px]">
@@ -254,16 +251,14 @@ export default function DashboardMonitoramento() {
               {filaEmTempoReal.map((paciente) => (
                 <div 
                   key={paciente.id}
-                  className={`p-3 rounded-lg border ${
-                    (paciente.tempo_na_fila || 0) > 15 ? 'border-destructive bg-destructive/5' : 'border-border'
-                  }`}
+                  className="p-3 rounded-lg border border-border"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <ConnectAvatar name={paciente.nome} size="sm" />
                       <span className="font-medium text-sm">{paciente.nome}</span>
                     </div>
-                    <Badge variant={(paciente.tempo_na_fila || 0) > 15 ? "destructive" : "secondary"}>
+                    <Badge variant="secondary">
                       {paciente.tempo_na_fila || 0} min
                     </Badge>
                   </div>
@@ -274,54 +269,30 @@ export default function DashboardMonitoramento() {
           </ScrollArea>
         </Card>
 
-        {/* Atendimentos em andamento */}
+        {/* Ranking Top 3 - simplificado */}
         <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-4">Atendimentos em andamento</h3>
-          <ScrollArea className="h-[400px]">
-            <div className="space-y-3">
-              {atendimentosEmAndamento.map((paciente) => {
-                const atendente = atendentes?.find(a => a.id === paciente.atendente_responsavel);
-                return (
-                  <div key={paciente.id} className="p-3 rounded-lg border border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-sm">{paciente.nome}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {atendente?.nome || "Não atribuído"}
-                        </p>
-                      </div>
-                      <Badge variant="outline">{paciente.tempo_na_fila || 0} min</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Pré-venda • Sede</p>
-                  </div>
-                );
-              })}
-            </div>
-          </ScrollArea>
-        </Card>
-
-        {/* Ranking de atendentes */}
-        <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-4">Ranking de atendentes</h3>
-          <ScrollArea className="h-[400px]">
-            <div className="space-y-2">
-              {atendentes?.slice(0, 10).map((atendente, idx) => (
-                <div key={atendente.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm">
-                    {idx + 1}
-                  </div>
-                  <ConnectAvatar name={atendente.nome} size="sm" image={atendente.avatar || undefined} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{atendente.nome}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {Math.floor(Math.random() * 30 + 20)} atend. • TMA: {(3 + Math.random() * 2).toFixed(1)}min
-                    </p>
-                  </div>
-                  <Badge variant="default">Online</Badge>
+          <h3 className="text-lg font-semibold mb-4">Ranking Diário - Top 3</h3>
+          <div className="space-y-4">
+            {[
+              { posicao: 1, nome: "Emily", atendimentos: 36, tma: "3.2 min", nps: 94, cor: "text-yellow-500", bg: "bg-yellow-500/10" },
+              { posicao: 2, nome: "Geovana", atendimentos: 33, tma: "3.6 min", nps: 95, cor: "text-gray-400", bg: "bg-gray-400/10" },
+              { posicao: 3, nome: "Paloma", atendimentos: 29, tma: "3.9 min", nps: 92, cor: "text-orange-500", bg: "bg-orange-500/10" },
+            ].map((atendente) => (
+              <div key={atendente.posicao} className={`flex items-center gap-4 p-4 rounded-lg ${atendente.bg}`}>
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full ${atendente.bg} ${atendente.cor} font-bold text-lg`}>
+                  {atendente.posicao}º
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
+                <div className="flex-1">
+                  <p className="font-semibold text-base">{atendente.nome}</p>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>{atendente.atendimentos} atend.</span>
+                    <span>TMA: {atendente.tma}</span>
+                    <span>NPS: {atendente.nps}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
 
