@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Save, Zap, MessageSquare, TrendingUp, Bell, ThumbsUp } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Brain, Save, Zap, MessageSquare, TrendingUp, Bell, ThumbsUp, Plus, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useIAConfig, useAtualizarIAConfig } from "@/hooks/useIAConfig";
 
@@ -26,6 +29,17 @@ export const IAConfigPanel = () => {
     limite_fila_alta: 12,
     limite_tma_minutos: 8,
     sensibilidade_alertas: 'media' as 'baixa' | 'media' | 'alta',
+  });
+
+  const [observacoesOpen, setObservacoesOpen] = useState(false);
+  const [observacoesNivel, setObservacoesNivel] = useState("");
+  const [concordoRegras, setConcordoRegras] = useState(true);
+  const [alertasAtivos, setAlertasAtivos] = useState({
+    fila_alta: true,
+    nps_baixo: true,
+    sem_resposta: true,
+    tma_acima: true,
+    ligacao_perdida: true,
   });
 
   useEffect(() => {
@@ -82,7 +96,46 @@ export const IAConfigPanel = () => {
           <Separator />
 
           <div className="space-y-3">
-            <Label>Nível de Atuação</Label>
+            <div className="flex items-center justify-between">
+              <Label>Nível de Atuação</Label>
+              <Dialog open={observacoesOpen} onOpenChange={setObservacoesOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 gap-1">
+                    <Plus className="h-3 w-3" />
+                    Observações
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Observações para {formData.nivel_atuacao === 'observador' ? 'Observador' : formData.nivel_atuacao === 'assistente' ? 'Assistente' : 'Automatizado'}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Textarea
+                      placeholder="Ex.: Tom acolhedor e objetivo; sempre pedir dados mínimos antes de orçamento..."
+                      value={observacoesNivel}
+                      onChange={(e) => setObservacoesNivel(e.target.value)}
+                      rows={4}
+                    />
+                    <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
+                        <div className="text-xs text-amber-800 dark:text-amber-200">
+                          <p className="font-medium mb-1">Políticas de uso da Thalí</p>
+                          <p>A Thalí deve ser sempre respeitosa, não agressiva, sem discriminação, seguindo LGPD e diretrizes de atendimento humano.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="concordo" checked={concordoRegras} onCheckedChange={(c) => setConcordoRegras(!!c)} />
+                      <label htmlFor="concordo" className="text-sm">Concordo com as regras de uso da Thalí</label>
+                    </div>
+                    <Button onClick={() => setObservacoesOpen(false)} className="w-full" disabled={!concordoRegras}>
+                      Salvar Observações
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setFormData({ ...formData, nivel_atuacao: 'observador' })}
@@ -119,6 +172,32 @@ export const IAConfigPanel = () => {
               </button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Notificações & Alertas</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[
+            { id: 'fila_alta', nome: 'Fila alta', ativo: alertasAtivos.fila_alta },
+            { id: 'nps_baixo', nome: 'NPS baixo', ativo: alertasAtivos.nps_baixo },
+            { id: 'sem_resposta', nome: 'Paciente sem resposta', ativo: alertasAtivos.sem_resposta },
+            { id: 'tma_acima', nome: 'Tempo médio acima da meta', ativo: alertasAtivos.tma_acima },
+            { id: 'ligacao_perdida', nome: 'Ligação perdida', ativo: alertasAtivos.ligacao_perdida },
+          ].map((alerta) => (
+            <div key={alerta.id} className="flex items-center justify-between py-2 border-b last:border-0">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">{alerta.nome}</span>
+              </div>
+              <Switch
+                checked={alerta.ativo}
+                onCheckedChange={(checked) => setAlertasAtivos(prev => ({ ...prev, [alerta.id]: checked }))}
+              />
+            </div>
+          ))}
         </CardContent>
       </Card>
 
