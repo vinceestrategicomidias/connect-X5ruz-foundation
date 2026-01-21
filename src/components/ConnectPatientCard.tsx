@@ -80,7 +80,7 @@ export const ConnectPatientCard = ({
         
         <div className="flex-1 min-w-0">
           {/* Linha 1: Nome do paciente | Horário */}
-          <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center justify-between gap-2 mb-0.5">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {mostrarBolinha && (
                 <span className={cn(
@@ -99,17 +99,17 @@ export const ConnectPatientCard = ({
             )}
           </div>
           
-          {/* Linha 2: Preview mensagem */}
-          <p className="text-xs text-muted-foreground truncate mb-2">
-            {formatarPreviewMensagem(lastMessage)}
-          </p>
-
-          {/* Linha 3: Tempo de espera colorido | Badge não lidas */}
-          {(mostrarTempo || (unread && unread > 0)) && (
-            <div className="flex items-center justify-end gap-2">
+          {/* Linha 2: Preview mensagem | Tempo + Badge */}
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground truncate flex-1">
+              {formatarPreviewMensagem(lastMessage)}
+            </p>
+            
+            {/* Container para tempo e não lidas - sempre alinhado à direita */}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               {mostrarTempo && tempoExibido > 0 && (
                 <span className={cn(
-                  "text-[11px] font-semibold px-2.5 py-1 rounded-md",
+                  "text-[10px] font-semibold px-2 py-0.5 rounded",
                   tempoExibido >= 30 
                     ? "bg-red-500 text-white"
                     : tempoExibido >= 15
@@ -120,12 +120,12 @@ export const ConnectPatientCard = ({
                 </span>
               )}
               {unread && unread > 0 && (
-                <span className="bg-green-500 text-white text-[11px] font-bold min-w-[22px] h-[22px] flex items-center justify-center rounded-md px-1.5">
+                <span className="bg-green-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded px-1">
                   {unread}
                 </span>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
