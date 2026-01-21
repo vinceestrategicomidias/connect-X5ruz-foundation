@@ -314,6 +314,20 @@ const PacientesLista = ({
     return tempoOriginal;
   };
 
+  // Função para obter quantidade de mensagens não lidas específico para protótipo
+  const getMensagensNaoLidas = (nome: string): number => {
+    const naoLidasEspecificas: Record<string, number> = {
+      "Lúcia Andrade": 3,
+      "Pedro Oliveira": 1,
+    };
+    
+    if (naoLidasEspecificas[nome] !== undefined) {
+      return naoLidasEspecificas[nome];
+    }
+    
+    return Math.floor(Math.random() * 4);
+  };
+
   return (
     <ScrollArea className="h-full px-4">
       <div className="space-y-2">
@@ -336,7 +350,7 @@ const PacientesLista = ({
               tempoNaFila={tempoFila}
               tempoSemResposta={tempoFila}
               tempoLimiteAlerta={config.tempoAlertaFila}
-              unread={Math.floor(Math.random() * 4)}
+              unread={getMensagensNaoLidas(paciente.nome)}
               onClick={() => handleClickPaciente(paciente)}
             />
           );
