@@ -281,32 +281,66 @@ const PacientesLista = ({
     return ordenacao === "decrescente" ? dateB - dateA : dateA - dateB;
   });
 
+  // Função para obter horário específico para pacientes do protótipo
+  const getHorarioMensagem = (nome: string, createdAt: string): string => {
+    // Horários específicos para Lúcia Andrade e Pedro Oliveira
+    const horariosEspecificos: Record<string, string> = {
+      "Lúcia Andrade": "08:05",
+      "Pedro Oliveira": "08:41",
+    };
+    
+    if (horariosEspecificos[nome]) {
+      return horariosEspecificos[nome];
+    }
+    
+    return new Date(createdAt || new Date()).toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  // Função para obter tempo na fila específico para pacientes do protótipo
+  const getTempoNaFila = (nome: string, tempoOriginal: number): number => {
+    // Tempos específicos para Lúcia Andrade e Pedro Oliveira
+    const temposEspecificos: Record<string, number> = {
+      "Lúcia Andrade": 35, // vermelho (>= 30min)
+      "Pedro Oliveira": 8, // verde (< 15min)
+    };
+    
+    if (temposEspecificos[nome] !== undefined) {
+      return temposEspecificos[nome];
+    }
+    
+    return tempoOriginal;
+  };
+
   return (
     <ScrollArea className="h-full px-4">
       <div className="space-y-2">
-        {pacientesOrdenados.map((paciente) => (
-          <ConnectPatientCard
-            key={paciente.id}
-            name={paciente.nome}
-            lastMessage={paciente.ultima_mensagem || undefined}
-            lastMessageTime={new Date(paciente.created_at || new Date()).toLocaleTimeString('pt-BR', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-            status={
-              status === "fila"
-                ? "espera"
-                : status === "em_atendimento"
-                ? "andamento"
-                : "finalizado"
-            }
-            tempoNaFila={paciente.tempo_na_fila || 0}
-            tempoSemResposta={paciente.tempo_na_fila || 0} // Usa tempo_na_fila como proxy
-            tempoLimiteAlerta={config.tempoAlertaFila}
-            unread={Math.floor(Math.random() * 4)} // Simular mensagens não lidas
-            onClick={() => handleClickPaciente(paciente)}
-          />
-        ))}
+        {pacientesOrdenados.map((paciente) => {
+          const tempoFila = getTempoNaFila(paciente.nome, paciente.tempo_na_fila || 0);
+          
+          return (
+            <ConnectPatientCard
+              key={paciente.id}
+              name={paciente.nome}
+              lastMessage={paciente.ultima_mensagem || undefined}
+              lastMessageTime={getHorarioMensagem(paciente.nome, paciente.created_at || "")}
+              status={
+                status === "fila"
+                  ? "espera"
+                  : status === "em_atendimento"
+                  ? "andamento"
+                  : "finalizado"
+              }
+              tempoNaFila={tempoFila}
+              tempoSemResposta={tempoFila}
+              tempoLimiteAlerta={config.tempoAlertaFila}
+              unread={Math.floor(Math.random() * 4)}
+              onClick={() => handleClickPaciente(paciente)}
+            />
+          );
+        })}
       </div>
     </ScrollArea>
   );
