@@ -71,22 +71,22 @@ export const EncaminharMensagemDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            <Forward className="h-5 w-5" />
+            <Forward className="h-5 w-5 text-primary" />
             Encaminhar mensagem
           </DialogTitle>
         </DialogHeader>
 
-        {/* Preview da mensagem */}
-        <div className="p-3 bg-muted rounded-lg border">
+        {/* Preview da mensagem (1-2 linhas) */}
+        <div className="p-3 bg-muted rounded-lg border flex-shrink-0">
           <p className="text-xs text-muted-foreground mb-1">Mensagem:</p>
-          <p className="text-sm">{formatarPreview(mensagem.texto)}</p>
+          <p className="text-sm line-clamp-2">{formatarPreview(mensagem.texto)}</p>
         </div>
 
         {/* Campo de busca */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Pesquisar contatos..."
@@ -97,8 +97,8 @@ export const EncaminharMensagemDialog = ({
         </div>
 
         {/* Lista de contatos */}
-        <ScrollArea className="h-[300px]">
-          <div className="space-y-1">
+        <ScrollArea className="flex-1 min-h-0 -mx-2 px-2">
+          <div className="space-y-1 py-1">
             {contatosFiltrados.length === 0 ? (
               <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">
                 {busca ? "Nenhum contato encontrado" : "Nenhum contato disponível"}
@@ -111,7 +111,7 @@ export const EncaminharMensagemDialog = ({
                   className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                     selecionados.includes(contato.id)
                       ? "bg-primary/10 border border-primary/30"
-                      : "hover:bg-muted"
+                      : "hover:bg-muted border border-transparent"
                   }`}
                 >
                   <ConnectAvatar name={contato.nome} size="md" />
@@ -129,8 +129,8 @@ export const EncaminharMensagemDialog = ({
           </div>
         </ScrollArea>
 
-        {/* Rodapé com contagem e botão */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        {/* Rodapé fixo com contagem e botão */}
+        <div className="flex items-center justify-between pt-3 border-t flex-shrink-0">
           <span className="text-sm text-muted-foreground">
             {selecionados.length} contato(s) selecionado(s)
           </span>
