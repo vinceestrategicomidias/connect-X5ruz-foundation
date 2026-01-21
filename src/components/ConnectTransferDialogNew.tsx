@@ -13,7 +13,7 @@ import { useAtendentes } from "@/hooks/useAtendentes";
 import { useTransferirAtendimento } from "@/hooks/useMutations";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { ConnectAvatar } from "./ConnectAvatar";
-import { Loader2, Users, Building2, Inbox, Globe } from "lucide-react";
+import { Loader2, Users, Building2, Inbox } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TransferenciaJustificativaDialog } from "./TransferenciaJustificativaDialog";
 import { toast } from "sonner";
@@ -44,7 +44,7 @@ export const ConnectTransferDialogNew = ({
   // Estados para justificativa
   const [justificativaOpen, setJustificativaOpen] = useState(false);
   const [destinoSelecionado, setDestinoSelecionado] = useState<{
-    tipo: "atendente" | "setor" | "fila" | "fila_geral";
+    tipo: "atendente" | "setor" | "fila";
     id?: string;
     nome: string;
   } | null>(null);
@@ -61,11 +61,6 @@ export const ConnectTransferDialogNew = ({
 
   const handleVoltarParaFila = () => {
     setDestinoSelecionado({ tipo: "fila", nome: "Fila do Setor" });
-    setJustificativaOpen(true);
-  };
-
-  const handleTransferirFilaGeral = () => {
-    setDestinoSelecionado({ tipo: "fila_geral", nome: "Fila Geral" });
     setJustificativaOpen(true);
   };
 
@@ -86,13 +81,6 @@ export const ConnectTransferDialogNew = ({
           conversaId,
         });
       } else if (destinoSelecionado.tipo === "fila") {
-        await transferir.mutateAsync({
-          pacienteId,
-          conversaId,
-          voltarParaFila: true,
-        });
-      } else if (destinoSelecionado.tipo === "fila_geral") {
-        // Transferir para fila geral (sem setor/atendente)
         await transferir.mutateAsync({
           pacienteId,
           conversaId,
@@ -120,7 +108,7 @@ export const ConnectTransferDialogNew = ({
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="atendentes">
                 <Users className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Atendentes</span>
@@ -132,10 +120,6 @@ export const ConnectTransferDialogNew = ({
               <TabsTrigger value="fila">
                 <Inbox className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Fila</span>
-              </TabsTrigger>
-              <TabsTrigger value="geral">
-                <Globe className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Geral</span>
               </TabsTrigger>
             </TabsList>
 
@@ -222,21 +206,6 @@ export const ConnectTransferDialogNew = ({
               </div>
             </TabsContent>
 
-            <TabsContent value="geral" className="mt-4">
-              <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                <Globe className="h-12 w-12 text-muted-foreground" />
-                <div className="text-center space-y-2">
-                  <p className="text-sm font-medium">Transferir sem destino definido</p>
-                  <p className="text-xs text-muted-foreground">
-                    O paciente será movido para a fila geral do sistema, sem setor ou atendente
-                    específico.
-                  </p>
-                </div>
-                <Button onClick={handleTransferirFilaGeral} variant="secondary" className="w-full">
-                  Transferir para Fila Geral
-                </Button>
-              </div>
-            </TabsContent>
           </Tabs>
         </DialogContent>
       </Dialog>

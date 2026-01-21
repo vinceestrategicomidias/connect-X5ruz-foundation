@@ -62,6 +62,7 @@ export const ConnectColumn1 = () => {
   const { data: setores } = useSetores();
   const [novaConversaOpen, setNovaConversaOpen] = useState(false);
   const { data: pacientesFila } = usePacientes("fila");
+  const { data: pacientesEmAtendimento } = usePacientes("em_atendimento");
   const config = useConfigFila();
   const [ordenacaoFila, setOrdenacaoFila] = useState<OrdenacaoFila>("decrescente");
   
@@ -69,6 +70,11 @@ export const ConnectColumn1 = () => {
   
   // Contar pacientes na fila do setor do atendente
   const countFila = pacientesFila?.filter(p => p.setor_id === atendenteLogado?.setor_id)?.length || 0;
+  
+  // Contar pacientes em atendimento pelo atendente
+  const countMeusAtendimentos = pacientesEmAtendimento?.filter(
+    p => p.setor_id === atendenteLogado?.setor_id && p.atendente_responsavel === atendenteLogado?.id
+  )?.length || 0;
 
   return (
     <div className="w-80 border-r border-border bg-card flex flex-col h-full relative">
@@ -138,7 +144,7 @@ export const ConnectColumn1 = () => {
               value="andamento" 
               className="text-xs font-medium py-2.5 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap"
             >
-              Meus Atend.
+              Meus Atend. {countMeusAtendimentos > 0 && `(${countMeusAtendimentos})`}
             </TabsTrigger>
             <TabsTrigger 
               value="finalizados" 
@@ -283,10 +289,12 @@ const PacientesLista = ({
 
   // Função para obter horário específico para pacientes do protótipo
   const getHorarioMensagem = (nome: string, createdAt: string): string => {
-    // Horários específicos para Lúcia Andrade e Pedro Oliveira
+    // Horários específicos conforme especificação
     const horariosEspecificos: Record<string, string> = {
       "Lúcia Andrade": "08:05",
       "Pedro Oliveira": "08:41",
+      "Ricardo Fernandes": "08:28", // meus atendimentos
+      "Vanessa Lima": "08:10", // meus atendimentos
     };
     
     if (horariosEspecificos[nome]) {
@@ -301,10 +309,12 @@ const PacientesLista = ({
 
   // Função para obter tempo na fila específico para pacientes do protótipo
   const getTempoNaFila = (nome: string, tempoOriginal: number): number => {
-    // Tempos específicos para Lúcia Andrade e Pedro Oliveira conforme imagem de referência
+    // Tempos específicos conforme especificação
     const temposEspecificos: Record<string, number> = {
-      "Lúcia Andrade": 35, // vermelho (>= 30min)
-      "Pedro Oliveira": 17, // amarelo (15-29min)
+      "Lúcia Andrade": 35, // vermelho (>= 30min) - na fila
+      "Pedro Oliveira": 17, // amarelo (15-29min) - na fila
+      "Ricardo Fernandes": 17, // amarelo (15-29min) - meus atendimentos
+      "Vanessa Lima": 35, // vermelho (>= 30min) - meus atendimentos
     };
     
     if (temposEspecificos[nome] !== undefined) {
@@ -319,6 +329,8 @@ const PacientesLista = ({
     const naoLidasEspecificas: Record<string, number> = {
       "Lúcia Andrade": 3,
       "Pedro Oliveira": 1,
+      "Ricardo Fernandes": 2, // meus atendimentos
+      "Vanessa Lima": 3, // meus atendimentos
     };
     
     if (naoLidasEspecificas[nome] !== undefined) {
@@ -327,18 +339,33 @@ const PacientesLista = ({
     
     return Math.floor(Math.random() * 4);
   };
+  
+  // Função para obter prévia de mensagem específica para protótipo
+  const getPreviewMensagem = (nome: string, mensagemOriginal?: string): string | undefined => {
+    const previasEspecificas: Record<string, string> = {
+      "Ricardo Fernandes": "Consegue me enviar a proposta com desconto?",
+      "Vanessa Lima": "Qual a forma de pagamento para confirmar hoje?",
+    };
+    
+    if (previasEspecificas[nome]) {
+      return previasEspecificas[nome];
+    }
+    
+    return mensagemOriginal;
+  };
 
   return (
     <ScrollArea className="h-full px-4">
       <div className="space-y-2">
         {pacientesOrdenados.map((paciente) => {
           const tempoFila = getTempoNaFila(paciente.nome, paciente.tempo_na_fila || 0);
+          const previewMensagem = getPreviewMensagem(paciente.nome, paciente.ultima_mensagem || undefined);
           
           return (
             <ConnectPatientCard
               key={paciente.id}
               name={paciente.nome}
-              lastMessage={paciente.ultima_mensagem || undefined}
+              lastMessage={previewMensagem}
               lastMessageTime={getHorarioMensagem(paciente.nome, paciente.created_at || "")}
               status={
                 status === "fila"
