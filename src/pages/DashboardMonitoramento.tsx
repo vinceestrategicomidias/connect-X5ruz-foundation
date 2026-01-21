@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Maximize2, Users, Clock, TrendingUp, Phone, MessageSquare, Timer, Target, Award, UserCheck, Coffee, ArrowLeft } from "lucide-react";
+import { Maximize2, Users, Clock, TrendingUp, Phone, MessageSquare, Timer, Target, Award, UserCheck, Coffee, ArrowLeft, ChevronUp, ChevronDown, Minus } from "lucide-react";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { usePacientes } from "@/hooks/usePacientes";
 import { useChamadas } from "@/hooks/useChamadas";
@@ -51,6 +51,28 @@ export default function DashboardMonitoramento() {
   const [setorFiltro, setSetorFiltro] = useState("todos");
   const [periodoFiltro, setPeriodoFiltro] = useState("agora");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [tamanhoFila, setTamanhoFila] = useState<"compacto" | "medio" | "expandido">("medio");
+
+  // Alturas do bloco Fila em tempo real
+  const alturasFila = {
+    compacto: "h-[250px]",
+    medio: "h-[400px]",
+    expandido: "h-[600px]"
+  };
+
+  const ciclarTamanhoFila = () => {
+    setTamanhoFila(prev => {
+      if (prev === "compacto") return "medio";
+      if (prev === "medio") return "expandido";
+      return "compacto";
+    });
+  };
+
+  const getIconeTamanho = () => {
+    if (tamanhoFila === "compacto") return <ChevronDown className="h-4 w-4" />;
+    if (tamanhoFila === "expandido") return <ChevronUp className="h-4 w-4" />;
+    return <Minus className="h-4 w-4" />;
+  };
 
   // Auto-refresh a cada 5 segundos
   useEffect(() => {
@@ -254,28 +276,48 @@ export default function DashboardMonitoramento() {
 
       {/* Painéis principais */}
       <div className="grid grid-cols-2 gap-6 mb-6">
-        {/* Fila em tempo real - simplificado */}
+        {/* Fila em tempo real - com controle de tamanho */}
         <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-4">Fila em tempo real</h3>
-          <ScrollArea className="h-[400px]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Fila em tempo real</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={ciclarTamanhoFila}
+              className="gap-1 text-xs"
+              title={`Tamanho: ${tamanhoFila} - Clique para alternar`}
+            >
+              {getIconeTamanho()}
+              <span className="text-muted-foreground capitalize">{tamanhoFila}</span>
+            </Button>
+          </div>
+          <ScrollArea className={alturasFila[tamanhoFila]}>
             <div className="space-y-2">
-              {filaEmTempoReal.map((paciente) => (
-                <div 
-                  key={paciente.id}
-                  className="p-3 rounded-lg border border-border"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <ConnectAvatar name={paciente.nome} size="sm" />
-                      <span className="font-medium text-sm">{paciente.nome}</span>
+              {filaEmTempoReal.map((paciente) => {
+                const tempo = paciente.tempo_na_fila || 0;
+                const corBadge = tempo >= 30 
+                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  : tempo >= 15
+                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+                return (
+                  <div 
+                    key={paciente.id}
+                    className="p-3 rounded-lg border border-border"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <ConnectAvatar name={paciente.nome} size="sm" />
+                        <span className="font-medium text-sm">{paciente.nome}</span>
+                      </div>
+                      <Badge className={corBadge}>
+                        {tempo} min
+                      </Badge>
                     </div>
-                    <Badge variant="secondary">
-                      {paciente.tempo_na_fila || 0} min
-                    </Badge>
+                    <p className="text-xs text-muted-foreground">Pré-venda • Sede - Vitória</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">Pré-venda • Sede - Vitória</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
         </Card>

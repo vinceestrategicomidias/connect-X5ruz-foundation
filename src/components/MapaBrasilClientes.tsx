@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Calendar, AlertTriangle, RefreshCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface LocalizacaoCliente {
   local: string;
@@ -10,9 +13,23 @@ interface LocalizacaoCliente {
   intensidade: "muito_baixa" | "baixa" | "média" | "alta" | "muito_alta";
   lat: number;
   lng: number;
+  temEndereco?: boolean;
+}
+
+interface PacienteSemEndereco {
+  id: string;
+  nome: string;
+  telefone: string;
 }
 
 const dadosLocalizacao: Record<string, LocalizacaoCliente[]> = {
+  "tempo_real": [
+    { local: "São Paulo", uf: "SP", clientes: 28, intensidade: "muito_alta", lat: -23.55, lng: -46.63 },
+    { local: "Vitória", uf: "ES", clientes: 14, intensidade: "alta", lat: -20.32, lng: -40.34 },
+    { local: "Rio de Janeiro", uf: "RJ", clientes: 12, intensidade: "alta", lat: -22.91, lng: -43.17 },
+    { local: "Brasília", uf: "DF", clientes: 7, intensidade: "média", lat: -15.79, lng: -47.88 },
+    { local: "Curitiba", uf: "PR", clientes: 5, intensidade: "baixa", lat: -25.43, lng: -49.27 },
+  ],
   "7dias": [
     { local: "São Paulo", uf: "SP", clientes: 145, intensidade: "muito_alta", lat: -23.55, lng: -46.63 },
     { local: "Vitória", uf: "ES", clientes: 72, intensidade: "alta", lat: -20.32, lng: -40.34 },
@@ -53,6 +70,46 @@ const dadosLocalizacao: Record<string, LocalizacaoCliente[]> = {
   ],
 };
 
+// Dados simulados de pacientes sem endereço por período
+const pacientesSemEndereco: Record<string, PacienteSemEndereco[]> = {
+  "tempo_real": [
+    { id: "1", nome: "Carlos Menezes", telefone: "(27) 99123-4567" },
+    { id: "2", nome: "Fernanda Costa", telefone: "(11) 98765-4321" },
+    { id: "3", nome: "Roberto Alves", telefone: "(21) 97654-3210" },
+  ],
+  "7dias": [
+    { id: "1", nome: "Carlos Menezes", telefone: "(27) 99123-4567" },
+    { id: "2", nome: "Fernanda Costa", telefone: "(11) 98765-4321" },
+    { id: "3", nome: "Roberto Alves", telefone: "(21) 97654-3210" },
+    { id: "4", nome: "Ana Beatriz", telefone: "(31) 96543-2109" },
+    { id: "5", nome: "Marcos Vinícius", telefone: "(41) 95432-1098" },
+  ],
+  "30dias": [
+    { id: "1", nome: "Carlos Menezes", telefone: "(27) 99123-4567" },
+    { id: "2", nome: "Fernanda Costa", telefone: "(11) 98765-4321" },
+    { id: "3", nome: "Roberto Alves", telefone: "(21) 97654-3210" },
+    { id: "4", nome: "Ana Beatriz", telefone: "(31) 96543-2109" },
+    { id: "5", nome: "Marcos Vinícius", telefone: "(41) 95432-1098" },
+    { id: "6", nome: "Patricia Oliveira", telefone: "(51) 94321-0987" },
+    { id: "7", nome: "Lucas Ferreira", telefone: "(61) 93210-9876" },
+    { id: "8", nome: "Juliana Santos", telefone: "(71) 92109-8765" },
+  ],
+  "ano": [
+    { id: "1", nome: "Carlos Menezes", telefone: "(27) 99123-4567" },
+    { id: "2", nome: "Fernanda Costa", telefone: "(11) 98765-4321" },
+    { id: "3", nome: "Roberto Alves", telefone: "(21) 97654-3210" },
+    { id: "4", nome: "Ana Beatriz", telefone: "(31) 96543-2109" },
+    { id: "5", nome: "Marcos Vinícius", telefone: "(41) 95432-1098" },
+    { id: "6", nome: "Patricia Oliveira", telefone: "(51) 94321-0987" },
+    { id: "7", nome: "Lucas Ferreira", telefone: "(61) 93210-9876" },
+    { id: "8", nome: "Juliana Santos", telefone: "(71) 92109-8765" },
+    { id: "9", nome: "Ricardo Lima", telefone: "(81) 91098-7654" },
+    { id: "10", nome: "Camila Rocha", telefone: "(85) 90987-6543" },
+    { id: "11", nome: "Diego Martins", telefone: "(92) 99876-5432" },
+    { id: "12", nome: "Larissa Pinto", telefone: "(62) 98765-4321" },
+  ],
+};
+
 const getIntensidadeCor = (intensidade: string) => {
   switch (intensidade) {
     case "muito_alta":
@@ -80,100 +137,184 @@ const coordToPosition = (lat: number, lng: number) => {
 
 export const MapaBrasilClientes = () => {
   const [periodo, setPeriodo] = useState("30dias");
+  const [dialogSemEnderecoOpen, setDialogSemEnderecoOpen] = useState(false);
+  const [ultimaAtualizacao, setUltimaAtualizacao] = useState(new Date());
+  
   const dados = dadosLocalizacao[periodo];
   const totalClientes = dados.reduce((acc, d) => acc + d.clientes, 0);
+  const semEndereco = pacientesSemEndereco[periodo] || [];
+
+  // Auto-refresh para tempo real
+  useEffect(() => {
+    if (periodo !== "tempo_real") return;
+    
+    const interval = setInterval(() => {
+      setUltimaAtualizacao(new Date());
+      // Aqui poderia fazer uma nova query para dados atualizados
+    }, 30000); // 30 segundos
+
+    return () => clearInterval(interval);
+  }, [periodo]);
+
+  const getLabelPeriodo = (p: string) => {
+    switch (p) {
+      case "tempo_real": return "Tempo real";
+      case "7dias": return "Últimos 7 dias";
+      case "30dias": return "Últimos 30 dias";
+      case "ano": return "Último ano";
+      default: return p;
+    }
+  };
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold">Distribuição de Clientes por Localização</h3>
-          <p className="text-sm text-muted-foreground">Total: {totalClientes.toLocaleString()} clientes</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <Select value={periodo} onValueChange={setPeriodo}>
-            <SelectTrigger className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7dias">Últimos 7 dias</SelectItem>
-              <SelectItem value="30dias">Últimos 30 dias</SelectItem>
-              <SelectItem value="ano">Último ano</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Mapa do Brasil estilizado */}
-      <div className="relative bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20 rounded-xl overflow-hidden" style={{ height: 400 }}>
-        {/* SVG simplificado do Brasil */}
-        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full opacity-20">
-          <path
-            d="M 45 5 L 75 10 L 85 25 L 90 45 L 85 65 L 70 80 L 50 90 L 30 85 L 20 70 L 15 50 L 20 30 L 35 15 Z"
-            fill="currentColor"
-            className="text-primary/30"
-          />
-        </svg>
-
-        {/* Marcadores de cidades */}
-        {dados.map((loc) => {
-          const pos = coordToPosition(loc.lat, loc.lng);
-          const style = getIntensidadeCor(loc.intensidade);
-          
-          return (
-            <div
-              key={loc.local}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-              style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-            >
-              <div className={`${style.bg} ${style.size} rounded-full opacity-70 animate-pulse shadow-lg flex items-center justify-center`}>
-                <span className="text-white text-[8px] font-bold">
-                  {loc.clientes >= 1000 ? `${(loc.clientes / 1000).toFixed(1)}k` : loc.clientes}
-                </span>
-              </div>
-              
-              {/* Tooltip */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-popover border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                <p className="font-semibold text-sm">{loc.local} - {loc.uf}</p>
-                <p className={`text-sm ${style.text} font-medium`}>{loc.clientes.toLocaleString()} clientes</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Legenda */}
-      <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t">
-        {[
-          { label: "Muito baixa", cor: "bg-blue-300" },
-          { label: "Baixa", cor: "bg-blue-400" },
-          { label: "Média", cor: "bg-yellow-500" },
-          { label: "Alta", cor: "bg-orange-500" },
-          { label: "Muito alta", cor: "bg-red-500" },
-        ].map((item) => (
-          <div key={item.label} className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${item.cor}`} />
-            <span className="text-xs text-muted-foreground">{item.label}</span>
+    <>
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Distribuição de Clientes por Localização</h3>
+            <p className="text-sm text-muted-foreground">Total: {totalClientes.toLocaleString()} clientes</p>
           </div>
-        ))}
-      </div>
-
-      {/* Lista resumida */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-        {dados.slice(0, 8).map((loc) => {
-          const style = getIntensidadeCor(loc.intensidade);
-          return (
-            <div key={loc.local} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-              <div className={`w-2.5 h-2.5 rounded-full ${style.bg}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">{loc.local}</p>
-                <p className="text-xs text-muted-foreground">{loc.clientes.toLocaleString()}</p>
+          <div className="flex items-center gap-3">
+            {/* Tag de pacientes sem endereço */}
+            {semEndereco.length > 0 && (
+              <Badge 
+                variant="outline" 
+                className="cursor-pointer hover:bg-muted flex items-center gap-1.5 py-1 px-2"
+                onClick={() => setDialogSemEnderecoOpen(true)}
+              >
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-xs">Sem endereço: {semEndereco.length}</span>
+              </Badge>
+            )}
+            
+            {/* Indicador de tempo real */}
+            {periodo === "tempo_real" && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                <span>Atualizado {ultimaAtualizacao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Select value={periodo} onValueChange={setPeriodo}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tempo_real">Tempo real</SelectItem>
+                  <SelectItem value="7dias">Últimos 7 dias</SelectItem>
+                  <SelectItem value="30dias">Últimos 30 dias</SelectItem>
+                  <SelectItem value="ano">Último ano</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          );
-        })}
-      </div>
-    </Card>
+          </div>
+        </div>
+
+        {/* Mapa do Brasil estilizado */}
+        <div className="relative bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20 rounded-xl overflow-hidden" style={{ height: 400 }}>
+          {/* SVG simplificado do Brasil */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full opacity-20">
+            <path
+              d="M 45 5 L 75 10 L 85 25 L 90 45 L 85 65 L 70 80 L 50 90 L 30 85 L 20 70 L 15 50 L 20 30 L 35 15 Z"
+              fill="currentColor"
+              className="text-primary/30"
+            />
+          </svg>
+
+          {/* Marcadores de cidades */}
+          {dados.map((loc) => {
+            const pos = coordToPosition(loc.lat, loc.lng);
+            const style = getIntensidadeCor(loc.intensidade);
+            
+            return (
+              <div
+                key={loc.local}
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
+                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+              >
+                <div className={`${style.bg} ${style.size} rounded-full opacity-70 animate-pulse shadow-lg flex items-center justify-center`}>
+                  <span className="text-white text-[8px] font-bold">
+                    {loc.clientes >= 1000 ? `${(loc.clientes / 1000).toFixed(1)}k` : loc.clientes}
+                  </span>
+                </div>
+                
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-popover border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                  <p className="font-semibold text-sm">{loc.local} - {loc.uf}</p>
+                  <p className={`text-sm ${style.text} font-medium`}>{loc.clientes.toLocaleString()} clientes</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Legenda */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t">
+          {[
+            { label: "Muito baixa", cor: "bg-blue-300" },
+            { label: "Baixa", cor: "bg-blue-400" },
+            { label: "Média", cor: "bg-yellow-500" },
+            { label: "Alta", cor: "bg-orange-500" },
+            { label: "Muito alta", cor: "bg-red-500" },
+            { label: "Sem endereço", cor: "bg-gray-400", icone: true },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-2">
+              {item.icone ? (
+                <AlertTriangle className="w-3 h-3 text-gray-400" />
+              ) : (
+                <div className={`w-3 h-3 rounded-full ${item.cor}`} />
+              )}
+              <span className="text-xs text-muted-foreground">{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Lista resumida */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+          {dados.slice(0, 8).map((loc) => {
+            const style = getIntensidadeCor(loc.intensidade);
+            return (
+              <div key={loc.local} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                <div className={`w-2.5 h-2.5 rounded-full ${style.bg}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{loc.local}</p>
+                  <p className="text-xs text-muted-foreground">{loc.clientes.toLocaleString()}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Dialog de pacientes sem endereço */}
+      <Dialog open={dialogSemEnderecoOpen} onOpenChange={setDialogSemEnderecoOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Pacientes sem endereço cadastrado
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">
+            Período: {getLabelPeriodo(periodo)} • {semEndereco.length} paciente(s)
+          </p>
+          <ScrollArea className="h-[300px]">
+            <div className="space-y-2">
+              {semEndereco.map((paciente) => (
+                <div 
+                  key={paciente.id}
+                  className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                >
+                  <p className="font-medium text-sm">{paciente.nome}</p>
+                  <p className="text-xs text-muted-foreground">{paciente.telefone}</p>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
