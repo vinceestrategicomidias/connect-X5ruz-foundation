@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,7 +24,6 @@ import {
   Star,
   ThumbsUp,
   ThumbsDown,
-  Send,
   Award,
   MessageCircle,
   HelpCircle,
@@ -34,12 +32,16 @@ import {
   Clock,
   XCircle,
   Sparkles,
+  Eye,
+  Users,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 type TipoEnvio = "ideia" | "sugestao" | "duvida" | "solicitacao";
 type StatusIdeia = "pendente" | "aprovada" | "rejeitada" | "implementada";
+type Visibilidade = "coordenacao" | "publico";
 
 interface Ideia {
   id: string;
@@ -49,6 +51,7 @@ interface Ideia {
   titulo: string;
   descricao: string;
   status: StatusIdeia;
+  visibilidade: Visibilidade;
   curtidas: number;
   descurtidas: number;
   meuVoto?: "up" | "down";
@@ -65,6 +68,7 @@ const ideiasSimuladas: Ideia[] = [
     titulo: "Scripts automáticos de resposta rápida",
     descricao: "Criar templates de respostas rápidas que podem ser personalizados por cada atendente, agilizando o atendimento.",
     status: "implementada",
+    visibilidade: "publico",
     curtidas: 15,
     descurtidas: 1,
     dataEnvio: "15/01/2026",
@@ -77,6 +81,7 @@ const ideiasSimuladas: Ideia[] = [
     titulo: "Otimizar fila com Thalí",
     descricao: "Utilizar a IA para redistribuir automaticamente pacientes quando um atendente fica sobrecarregado.",
     status: "aprovada",
+    visibilidade: "publico",
     curtidas: 12,
     descurtidas: 2,
     dataEnvio: "12/01/2026",
@@ -89,6 +94,7 @@ const ideiasSimuladas: Ideia[] = [
     titulo: "Modo escuro mais suave",
     descricao: "Ajustar as cores do modo escuro para serem mais confortáveis durante uso prolongado.",
     status: "aprovada",
+    visibilidade: "publico",
     curtidas: 8,
     descurtidas: 0,
     dataEnvio: "10/01/2026",
@@ -100,6 +106,7 @@ const ideiasSimuladas: Ideia[] = [
     titulo: "Como acessar relatórios antigos?",
     descricao: "Gostaria de saber onde encontro os relatórios de meses anteriores.",
     status: "aprovada",
+    visibilidade: "coordenacao",
     curtidas: 3,
     descurtidas: 0,
     dataEnvio: "08/01/2026",
@@ -112,9 +119,22 @@ const ideiasSimuladas: Ideia[] = [
     titulo: "Solicitar férias em Março",
     descricao: "Gostaria de solicitar férias no período de 15/03 a 30/03.",
     status: "pendente",
+    visibilidade: "coordenacao",
     curtidas: 0,
     descurtidas: 0,
     dataEnvio: "05/01/2026",
+  },
+  {
+    id: "6",
+    autor: "Pedro",
+    tipo: "ideia",
+    titulo: "Atalhos de teclado personalizados",
+    descricao: "Permitir que cada atendente configure seus próprios atalhos de teclado para ações frequentes.",
+    status: "pendente",
+    visibilidade: "publico",
+    curtidas: 5,
+    descurtidas: 1,
+    dataEnvio: "18/01/2026",
   },
 ];
 
@@ -133,75 +153,55 @@ const statusConfig = {
 };
 
 export const CentralIdeiasPanel = () => {
-  const { atendenteLogado, isCoordenacao, isGestor } = useAtendenteContext();
+  const { isCoordenacao, isGestor } = useAtendenteContext();
   const [ideias, setIdeias] = useState<Ideia[]>(ideiasSimuladas);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>("todas");
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
+  const [filtroVisibilidade, setFiltroVisibilidade] = useState<string>("todas");
   
-  const [novaIdeia, setNovaIdeia] = useState({
-    tipo: "ideia" as TipoEnvio,
-    titulo: "",
-    descricao: "",
-  });
+  // Dialog para responder/feedback
+  const [feedbackDialog, setFeedbackDialog] = useState<{
+    open: boolean;
+    ideiaId: string;
+    acao: "aprovar" | "reprovar";
+  }>({ open: false, ideiaId: "", acao: "aprovar" });
+  const [feedbackTexto, setFeedbackTexto] = useState("");
 
-  const handleVoto = (ideiaId: string, tipo: "up" | "down") => {
+  const handleAprovar = (ideiaId: string) => {
+    setFeedbackDialog({ open: true, ideiaId, acao: "aprovar" });
+    setFeedbackTexto("");
+  };
+
+  const handleReprovar = (ideiaId: string) => {
+    setFeedbackDialog({ open: true, ideiaId, acao: "reprovar" });
+    setFeedbackTexto("");
+  };
+
+  const confirmarAcao = () => {
     setIdeias(prev => prev.map(ideia => {
-      if (ideia.id === ideiaId) {
-        const votoAnterior = ideia.meuVoto;
-        let novasCurtidas = ideia.curtidas;
-        let novasDescurtidas = ideia.descurtidas;
-
-        // Remover voto anterior
-        if (votoAnterior === "up") novasCurtidas--;
-        if (votoAnterior === "down") novasDescurtidas--;
-
-        // Adicionar novo voto (ou remover se clicou no mesmo)
-        if (votoAnterior !== tipo) {
-          if (tipo === "up") novasCurtidas++;
-          if (tipo === "down") novasDescurtidas++;
-        }
-
+      if (ideia.id === feedbackDialog.ideiaId) {
         return {
           ...ideia,
-          curtidas: novasCurtidas,
-          descurtidas: novasDescurtidas,
-          meuVoto: votoAnterior === tipo ? undefined : tipo,
+          status: feedbackDialog.acao === "aprovar" ? "aprovada" : "rejeitada",
+          respostaCoordenador: feedbackTexto.trim() || undefined,
         };
       }
       return ideia;
     }));
-  };
-
-  const handleEnviarIdeia = () => {
-    if (!novaIdeia.titulo.trim() || !novaIdeia.descricao.trim()) return;
-
-    const nova: Ideia = {
-      id: Date.now().toString(),
-      autor: atendenteLogado?.nome || "Você",
-      avatar: atendenteLogado?.avatar,
-      tipo: novaIdeia.tipo,
-      titulo: novaIdeia.titulo,
-      descricao: novaIdeia.descricao,
-      status: "pendente",
-      curtidas: 0,
-      descurtidas: 0,
-      dataEnvio: new Date().toLocaleDateString("pt-BR"),
-    };
-
-    setIdeias(prev => [nova, ...prev]);
-    setNovaIdeia({ tipo: "ideia", titulo: "", descricao: "" });
-    setDialogOpen(false);
+    setFeedbackDialog({ open: false, ideiaId: "", acao: "aprovar" });
+    setFeedbackTexto("");
   };
 
   const ideiasFiltradas = ideias.filter(ideia => {
     if (filtroStatus !== "todas" && ideia.status !== filtroStatus) return false;
     if (filtroTipo !== "todos" && ideia.tipo !== filtroTipo) return false;
+    if (filtroVisibilidade !== "todas" && ideia.visibilidade !== filtroVisibilidade) return false;
     return true;
   });
 
   const ideiasDestaque = ideias.filter(i => i.destaque && (i.status === "aprovada" || i.status === "implementada"));
   const reconhecimentoSemana = { usuario: "Emilly", motivo: "Melhor evolução de NPS" };
+  const totalPendentes = ideias.filter(i => i.status === "pendente").length;
 
   return (
     <div className="space-y-6">
@@ -210,16 +210,15 @@ export const CentralIdeiasPanel = () => {
         <div className="flex items-center gap-2">
           <Lightbulb className="h-6 w-6 text-[#0A2647]" />
           <h3 className="text-2xl font-bold text-[#0A2647]">
-            Central de Ideias
+            Central de Ideias - Gestão
           </h3>
         </div>
-        <Button 
-          className="bg-[#0A2647] hover:bg-[#144272]"
-          onClick={() => setDialogOpen(true)}
-        >
-          <Send className="h-4 w-4 mr-2" />
-          Enviar Nova
-        </Button>
+        {totalPendentes > 0 && (
+          <Badge className="bg-yellow-500 text-white px-3 py-1">
+            <Clock className="h-4 w-4 mr-1" />
+            {totalPendentes} pendente{totalPendentes > 1 ? "s" : ""}
+          </Badge>
+        )}
       </div>
 
       {/* Reconhecimento da Semana */}
@@ -276,17 +275,42 @@ export const CentralIdeiasPanel = () => {
       )}
 
       {/* Tabs e Filtros */}
-      <Tabs defaultValue="todas" className="space-y-4">
+      <Tabs defaultValue="pendentes" className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <TabsList>
+            <TabsTrigger value="pendentes" className="gap-1">
+              <Clock className="h-4 w-4" />
+              Pendentes
+              {totalPendentes > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {totalPendentes}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="todas">Todas</TabsTrigger>
-            <TabsTrigger value="minhas">Minhas</TabsTrigger>
-            {(isCoordenacao || isGestor) && (
-              <TabsTrigger value="pendentes">Pendentes</TabsTrigger>
-            )}
+            <TabsTrigger value="aprovadas">Aprovadas</TabsTrigger>
           </TabsList>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Select value={filtroVisibilidade} onValueChange={setFiltroVisibilidade}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Visibilidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas</SelectItem>
+                <SelectItem value="coordenacao">
+                  <span className="flex items-center gap-1">
+                    <Lock className="h-3 w-3" /> Coordenação
+                  </span>
+                </SelectItem>
+                <SelectItem value="publico">
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" /> Público
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
             <Select value={filtroTipo} onValueChange={setFiltroTipo}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Tipo" />
@@ -316,112 +340,105 @@ export const CentralIdeiasPanel = () => {
           </div>
         </div>
 
+        <TabsContent value="pendentes" className="space-y-3">
+          {ideiasFiltradas
+            .filter(i => i.status === "pendente")
+            .map((ideia) => (
+              <IdeiaCardGestao 
+                key={ideia.id} 
+                ideia={ideia}
+                onAprovar={handleAprovar}
+                onReprovar={handleReprovar}
+              />
+            ))}
+          {ideiasFiltradas.filter(i => i.status === "pendente").length === 0 && (
+            <Card className="p-8 text-center text-muted-foreground">
+              <CheckCircle className="h-12 w-12 mx-auto mb-3 text-green-500" />
+              <p className="font-medium">Nenhuma ideia pendente!</p>
+              <p className="text-sm">Todas as ideias foram analisadas.</p>
+            </Card>
+          )}
+        </TabsContent>
+
         <TabsContent value="todas" className="space-y-3">
           {ideiasFiltradas.map((ideia) => (
-            <IdeiaCard 
+            <IdeiaCardGestao 
               key={ideia.id} 
-              ideia={ideia} 
-              onVoto={handleVoto}
-              isCoordenacao={isCoordenacao || isGestor}
+              ideia={ideia}
+              onAprovar={ideia.status === "pendente" ? handleAprovar : undefined}
+              onReprovar={ideia.status === "pendente" ? handleReprovar : undefined}
             />
           ))}
         </TabsContent>
 
-        <TabsContent value="minhas" className="space-y-3">
+        <TabsContent value="aprovadas" className="space-y-3">
           {ideiasFiltradas
-            .filter(i => i.autor === atendenteLogado?.nome)
+            .filter(i => i.status === "aprovada" || i.status === "implementada")
             .map((ideia) => (
-              <IdeiaCard 
+              <IdeiaCardGestao 
                 key={ideia.id} 
-                ideia={ideia} 
-                onVoto={handleVoto}
-                isCoordenacao={isCoordenacao || isGestor}
+                ideia={ideia}
               />
             ))}
         </TabsContent>
-
-        {(isCoordenacao || isGestor) && (
-          <TabsContent value="pendentes" className="space-y-3">
-            {ideiasFiltradas
-              .filter(i => i.status === "pendente")
-              .map((ideia) => (
-                <IdeiaCard 
-                  key={ideia.id} 
-                  ideia={ideia} 
-                  onVoto={handleVoto}
-                  isCoordenacao={true}
-                  showAcoes={true}
-                />
-              ))}
-          </TabsContent>
-        )}
       </Tabs>
 
-      {/* Dialog Enviar Ideia */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Dialog Feedback/Resposta */}
+      <Dialog open={feedbackDialog.open} onOpenChange={(open) => !open && setFeedbackDialog({ open: false, ideiaId: "", acao: "aprovar" })}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5 text-primary" />
-              Enviar para Coordenação
+              {feedbackDialog.acao === "aprovar" ? (
+                <>
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Aprovar Ideia
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-5 w-5 text-red-600" />
+                  Reprovar Ideia
+                </>
+              )}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Tipo</label>
-              <div className="grid grid-cols-2 gap-2">
-                {tiposEnvio.map(tipo => {
-                  const Icon = tipo.icon;
-                  return (
-                    <Button
-                      key={tipo.value}
-                      variant={novaIdeia.tipo === tipo.value ? "default" : "outline"}
-                      className={cn(
-                        "justify-start",
-                        novaIdeia.tipo === tipo.value && "bg-[#0A2647]"
-                      )}
-                      onClick={() => setNovaIdeia({ ...novaIdeia, tipo: tipo.value as TipoEnvio })}
-                    >
-                      <Icon className={cn("h-4 w-4 mr-2", novaIdeia.tipo !== tipo.value && tipo.cor)} />
-                      {tipo.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Título</label>
-              <Input
-                placeholder="Resumo breve..."
-                value={novaIdeia.titulo}
-                onChange={(e) => setNovaIdeia({ ...novaIdeia, titulo: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Descrição</label>
+              <label className="text-sm font-medium mb-2 block">
+                Feedback para o autor (opcional)
+              </label>
               <Textarea
-                placeholder="Descreva com detalhes..."
+                placeholder={
+                  feedbackDialog.acao === "aprovar" 
+                    ? "Parabéns! Sua ideia foi muito bem recebida..."
+                    : "Explique o motivo da reprovação..."
+                }
                 rows={4}
-                value={novaIdeia.descricao}
-                onChange={(e) => setNovaIdeia({ ...novaIdeia, descricao: e.target.value })}
+                value={feedbackTexto}
+                onChange={(e) => setFeedbackTexto(e.target.value)}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setFeedbackDialog({ open: false, ideiaId: "", acao: "aprovar" })}>
               Cancelar
             </Button>
             <Button 
-              className="bg-[#0A2647] hover:bg-[#144272]"
-              onClick={handleEnviarIdeia}
-              disabled={!novaIdeia.titulo.trim() || !novaIdeia.descricao.trim()}
+              className={feedbackDialog.acao === "aprovar" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+              onClick={confirmarAcao}
             >
-              <Send className="h-4 w-4 mr-2" />
-              Enviar
+              {feedbackDialog.acao === "aprovar" ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Confirmar Aprovação
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Confirmar Reprovação
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -430,14 +447,13 @@ export const CentralIdeiasPanel = () => {
   );
 };
 
-interface IdeiaCardProps {
+interface IdeiaCardGestaoProps {
   ideia: Ideia;
-  onVoto: (id: string, tipo: "up" | "down") => void;
-  isCoordenacao?: boolean;
-  showAcoes?: boolean;
+  onAprovar?: (id: string) => void;
+  onReprovar?: (id: string) => void;
 }
 
-const IdeiaCard = ({ ideia, onVoto, isCoordenacao, showAcoes }: IdeiaCardProps) => {
+const IdeiaCardGestao = ({ ideia, onAprovar, onReprovar }: IdeiaCardGestaoProps) => {
   const tipoInfo = tiposEnvio.find(t => t.value === ideia.tipo);
   const TipoIcon = tipoInfo?.icon || Lightbulb;
   const StatusIcon = statusConfig[ideia.status].icon;
@@ -445,7 +461,8 @@ const IdeiaCard = ({ ideia, onVoto, isCoordenacao, showAcoes }: IdeiaCardProps) 
   return (
     <Card className={cn(
       "p-4 transition-all hover:shadow-md",
-      ideia.destaque && "border-primary/30 bg-primary/5"
+      ideia.destaque && "border-primary/30 bg-primary/5",
+      ideia.status === "pendente" && "border-yellow-200 bg-yellow-50/50"
     )}>
       <div className="flex items-start gap-4">
         <Avatar className="h-10 w-10 flex-shrink-0">
@@ -466,6 +483,19 @@ const IdeiaCard = ({ ideia, onVoto, isCoordenacao, showAcoes }: IdeiaCardProps) 
               <StatusIcon className="h-3 w-3 mr-1" />
               {statusConfig[ideia.status].label}
             </Badge>
+            <Badge variant="outline" className="text-xs gap-1">
+              {ideia.visibilidade === "publico" ? (
+                <>
+                  <Users className="h-3 w-3" />
+                  Público
+                </>
+              ) : (
+                <>
+                  <Lock className="h-3 w-3" />
+                  Coordenação
+                </>
+              )}
+            </Badge>
             <span className="text-xs text-muted-foreground">{ideia.dataEnvio}</span>
           </div>
 
@@ -483,40 +513,33 @@ const IdeiaCard = ({ ideia, onVoto, isCoordenacao, showAcoes }: IdeiaCardProps) 
           )}
 
           <div className="flex items-center justify-between mt-3">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-8 px-2",
-                  ideia.meuVoto === "up" && "text-green-600 bg-green-50"
-                )}
-                onClick={() => onVoto(ideia.id, "up")}
-              >
-                <ThumbsUp className="h-4 w-4 mr-1" />
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <ThumbsUp className="h-4 w-4" />
                 {ideia.curtidas}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-8 px-2",
-                  ideia.meuVoto === "down" && "text-red-600 bg-red-50"
-                )}
-                onClick={() => onVoto(ideia.id, "down")}
-              >
-                <ThumbsDown className="h-4 w-4 mr-1" />
+              </span>
+              <span className="flex items-center gap-1">
+                <ThumbsDown className="h-4 w-4" />
                 {ideia.descurtidas}
-              </Button>
+              </span>
             </div>
 
-            {showAcoes && isCoordenacao && ideia.status === "pendente" && (
+            {onAprovar && onReprovar && ideia.status === "pendente" && (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="h-8 text-red-600 hover:bg-red-50">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+                  onClick={() => onReprovar(ideia.id)}
+                >
                   <XCircle className="h-4 w-4 mr-1" />
-                  Rejeitar
+                  Reprovar
                 </Button>
-                <Button size="sm" className="h-8 bg-green-600 hover:bg-green-700">
+                <Button 
+                  size="sm" 
+                  className="h-8 bg-green-600 hover:bg-green-700"
+                  onClick={() => onAprovar(ideia.id)}
+                >
                   <CheckCircle className="h-4 w-4 mr-1" />
                   Aprovar
                 </Button>
