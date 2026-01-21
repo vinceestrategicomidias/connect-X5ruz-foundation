@@ -28,6 +28,7 @@ const getCorBolinha = (minutos: number): string => {
   if (minutos >= 15) {
     return "bg-orange-500";
   }
+  // Verde para <= 5 min (ou qualquer valor abaixo de 15)
   return "bg-green-500";
 };
 
