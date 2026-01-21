@@ -81,46 +81,46 @@ export const ConnectPatientCard = ({
         <div className="flex-1 min-w-0">
           {/* Linha 1: Nome do paciente | Horário */}
           <div className="flex items-center justify-between gap-2 mb-0.5">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              {mostrarBolinha && (
-                <span className={cn(
-                  "w-2.5 h-2.5 rounded-full flex-shrink-0",
-                  getCorBolinha(tempoExibido)
-                )} />
-              )}
-              <h4 className="font-medium text-sm text-foreground truncate">
-                {name}
-              </h4>
-            </div>
-            {lastMessageTime && (
-              <span className="text-[11px] text-muted-foreground flex-shrink-0">
-                {lastMessageTime}
-              </span>
-            )}
+            <h4 className="font-medium text-sm text-foreground truncate flex-1">
+              {name}
+            </h4>
           </div>
           
-          {/* Linha 2: Preview mensagem | Tempo + Badge */}
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground truncate flex-1">
-              {formatarPreviewMensagem(lastMessage)}
-            </p>
-            
-            {/* Container para tempo e não lidas - sempre alinhado à direita */}
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Linha 2: Preview mensagem */}
+          <p className="text-xs text-muted-foreground truncate">
+            {formatarPreviewMensagem(lastMessage)}
+          </p>
+          
+          {/* Linha 3: Bolinha tempo + Tempo formatado | Horário mensagem | Não lidas */}
+          <div className="flex items-center justify-between gap-2 mt-1">
+            {/* Bolinha colorida + tempo de espera */}
+            <div className="flex items-center gap-1.5">
               {mostrarTempo && tempoExibido > 0 && (
-                <span className={cn(
-                  "text-[10px] font-semibold px-2 py-0.5 rounded",
-                  tempoExibido >= 30 
-                    ? "bg-red-500 text-white"
-                    : tempoExibido >= 15
-                      ? "bg-yellow-500 text-white"
-                      : "bg-green-500 text-white"
-                )}>
-                  {formatarTempoEspera(tempoExibido)}
+                <>
+                  <span className={cn(
+                    "w-2.5 h-2.5 rounded-full flex-shrink-0",
+                    tempoExibido >= 30 
+                      ? "bg-red-500"
+                      : tempoExibido >= 15
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
+                  )} />
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    {formatarTempoEspera(tempoExibido)}
+                  </span>
+                </>
+              )}
+            </div>
+            
+            {/* Horário da mensagem + Badge não lidas (bolinha azul) */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {lastMessageTime && (
+                <span className="text-[11px] text-muted-foreground">
+                  {lastMessageTime}
                 </span>
               )}
               {unread && unread > 0 && (
-                <span className="bg-green-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded px-1">
+                <span className="bg-blue-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
                   {unread}
                 </span>
               )}
