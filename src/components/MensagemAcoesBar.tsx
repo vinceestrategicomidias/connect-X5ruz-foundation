@@ -29,6 +29,7 @@ interface MensagemAcoesBarProps {
   onEncaminhar?: () => void;
   onReagir?: (emoji: string) => void;
   onFavoritar?: (opcao: "historico" | "nota", nota?: string) => void;
+  onOpenEncaminharDialog?: () => void;
 }
 
 const EMOJIS_RAPIDOS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
@@ -39,6 +40,7 @@ export const MensagemAcoesBar = ({
   onEncaminhar,
   onReagir,
   onFavoritar,
+  onOpenEncaminharDialog,
 }: MensagemAcoesBarProps) => {
   const [favoritoDialogOpen, setFavoritoDialogOpen] = useState(false);
   const [opcaoFavorito, setOpcaoFavorito] = useState<"historico" | "nota">("historico");
@@ -87,7 +89,11 @@ export const MensagemAcoesBar = ({
           variant="ghost"
           size="sm"
           onClick={() => {
-            onEncaminhar?.();
+            if (onOpenEncaminharDialog) {
+              onOpenEncaminharDialog();
+            } else {
+              onEncaminhar?.();
+            }
             onClose();
           }}
           className="flex items-center gap-2"

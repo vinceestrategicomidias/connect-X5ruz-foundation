@@ -31,6 +31,8 @@ import { CriarUsuarioDialog } from "./CriarUsuarioDialog";
 import { EditarUsuarioDialog } from "./EditarUsuarioDialog";
 import { CriarPerfilAcessoDialog } from "./CriarPerfilAcessoDialog";
 import { EditarPerfilAcessoDialog } from "./EditarPerfilAcessoDialog";
+import { EditarUnidadeDialog } from "./EditarUnidadeDialog";
+import { MonitoramentoAtendentesPanel } from "./MonitoramentoAtendentesPanel";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
 import { useUnidades, useCriarUnidade } from "@/hooks/useUnidades";
@@ -134,6 +136,9 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
     endereco: "",
     fuso_horario: "GMT-3",
   });
+  
+  const [unidadeParaEditar, setUnidadeParaEditar] = useState<any>(null);
+  const [monitoramentoOpen, setMonitoramentoOpen] = useState(false);
   
   const [uraForm, setUraForm] = useState({
     mensagem_boas_vindas: "",
@@ -327,9 +332,18 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
                       <div key={unidade.id} className="p-4 border rounded-lg space-y-2">
                         <div className="flex items-center justify-between">
                           <h4 className="font-semibold">{unidade.nome}</h4>
-                          <Badge variant={unidade.ativo ? "default" : "secondary"}>
-                            {unidade.ativo ? "Ativa" : "Inativa"}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={unidade.ativo ? "default" : "secondary"}>
+                              {unidade.ativo ? "Ativa" : "Inativa"}
+                            </Badge>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => setUnidadeParaEditar(unidade)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
                           Código: {unidade.codigo_interno || "—"}
@@ -343,6 +357,12 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
                 </ScrollArea>
               </CardContent>
             </Card>
+            
+            <EditarUnidadeDialog
+              open={!!unidadeParaEditar}
+              onOpenChange={(open) => !open && setUnidadeParaEditar(null)}
+              unidade={unidadeParaEditar}
+            />
           </div>
         );
 
