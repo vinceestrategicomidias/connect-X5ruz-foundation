@@ -2,7 +2,7 @@ import { Search, Loader2, ChevronRight, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTodosPacientes } from "@/hooks/usePacientes";
-import { ConnectPatientCard } from "./ConnectPatientCard";
+import { ConnectPatientCardSimple } from "./ConnectPatientCardSimple";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useState, useEffect } from "react";
@@ -122,7 +122,7 @@ export const ConnectColumn3 = () => {
         ) : (
           <div className="space-y-2">
             {pacientesOrdenados.map((paciente) => (
-              <ConnectPatientCard
+              <ConnectPatientCardSimple
                 key={paciente.id}
                 name={paciente.nome}
                 lastMessage={paciente.ultima_mensagem || undefined}
@@ -130,14 +130,6 @@ export const ConnectColumn3 = () => {
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
-                status={
-                  paciente.status === "fila"
-                    ? "espera"
-                    : paciente.status === "em_atendimento"
-                    ? "andamento"
-                    : "finalizado"
-                }
-                tempoNaFila={paciente.tempo_na_fila || 0}
                 onClick={() => setPacienteSelecionado(paciente)}
               />
             ))}
