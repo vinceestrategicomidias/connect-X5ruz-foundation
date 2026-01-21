@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useSetores } from "@/hooks/useSetores";
 import { NovaConversaDialog } from "./NovaConversaDialog";
+import { useAvatarPaciente } from "@/hooks/useAvatarPaciente";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -276,6 +277,9 @@ const PacientesLista = ({
   // Buscar mensagens não lidas para os pacientes filtrados
   const pacienteIds = pacientesFiltrados?.map(p => p.id) || [];
   const { data: mensagensNaoLidas } = useMensagensNaoLidas(pacienteIds);
+  
+  // Hook para avatares
+  const { getAvatar } = useAvatarPaciente();
 
   const handleClickPaciente = (paciente: any) => {
     setPacienteSelecionado(paciente);
@@ -443,6 +447,7 @@ const PacientesLista = ({
               tempoSemResposta={tempoSemResposta}
               tempoLimiteAlerta={config.tempoAlertaFila}
               unread={naoLidas}
+              avatar={getAvatar(paciente.nome)}
               onClick={() => handleClickPaciente(paciente)}
             />
           );

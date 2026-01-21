@@ -1,5 +1,5 @@
-import { ConnectAvatar } from "./ConnectAvatar";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ConnectPatientCardProps {
   name: string;
@@ -9,8 +9,9 @@ interface ConnectPatientCardProps {
   unread?: number;
   onClick?: () => void;
   tempoNaFila?: number;
-  tempoSemResposta?: number; // Novo: para Meus Atendimentos
+  tempoSemResposta?: number;
   tempoLimiteAlerta?: number;
+  avatar?: string;
 }
 
 const formatarTempoEspera = (minutos: number): string => {
@@ -22,22 +23,9 @@ const formatarTempoEspera = (minutos: number): string => {
   return mins > 0 ? `${horas}h${mins.toString().padStart(2, '0')}` : `${horas}h`;
 };
 
-// Cores de intensidade: verde 0-14min, amarelo 15-29min, vermelho 30+ min
-const getCorBolinha = (minutos: number): string => {
-  if (minutos >= 30) {
-    return "bg-red-500";
-  }
-  if (minutos >= 15) {
-    return "bg-yellow-500";
-  }
-  // Verde para 0-14 min
-  return "bg-green-500";
-};
-
 const formatarPreviewMensagem = (mensagem: string | undefined): string => {
   if (!mensagem) return "";
   
-  // Detectar tipos de anexo
   if (mensagem.includes("[DOCUMENTO]") || mensagem.includes("[PDF]")) return "📎 Documento";
   if (mensagem.includes("[AUDIO]") || mensagem.includes("[ÁUDIO]")) return "🎤 Áudio";
   if (mensagem.includes("[IMAGEM]") || mensagem.includes("[FOTO]")) return "🖼️ Imagem";
@@ -45,11 +33,41 @@ const formatarPreviewMensagem = (mensagem: string | undefined): string => {
   if (mensagem.includes("[VIDEO]") || mensagem.includes("[VÍDEO]")) return "🎬 Vídeo";
   if (mensagem.includes("[CONTATO]")) return "👤 Contato";
   
-  // Truncar texto longo
-  if (mensagem.length > 50) {
-    return mensagem.substring(0, 50) + "...";
+  if (mensagem.length > 40) {
+    return mensagem.substring(0, 40) + "...";
   }
   return mensagem;
+};
+
+// Gera iniciais do nome
+const getInitials = (name: string): string => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+// Gera uma cor de fundo baseada no nome para o avatar
+const getAvatarColor = (name: string): string => {
+  const colors = [
+    "bg-blue-500",
+    "bg-green-500",
+    "bg-purple-500",
+    "bg-pink-500",
+    "bg-orange-500",
+    "bg-teal-500",
+    "bg-indigo-500",
+    "bg-rose-500",
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  return colors[Math.abs(hash) % colors.length];
 };
 
 export const ConnectPatientCard = ({
@@ -61,52 +79,63 @@ export const ConnectPatientCard = ({
   onClick,
   tempoNaFila = 0,
   tempoSemResposta = 0,
+  avatar,
 }: ConnectPatientCardProps) => {
   const isEspera = status === "espera";
   const isAndamento = status === "andamento";
   
-  // Usa tempoNaFila para Fila e tempoSemResposta para Meus Atendimentos
   const tempoExibido = isEspera ? tempoNaFila : (isAndamento ? tempoSemResposta : 0);
   const mostrarTempo = isEspera || isAndamento;
   const mostrarBolinha = mostrarTempo && tempoExibido > 0;
+  const avatarColor = getAvatarColor(name);
   
   return (
     <div
       onClick={onClick}
       className="p-3 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm"
     >
-      <div className="flex items-start gap-2">
-        {/* Bolinha de status (tempo de espera) */}
-        {mostrarBolinha && (
-          <span className={cn(
-            "w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1",
-            tempoExibido >= 30 
-              ? "bg-destructive"
-              : tempoExibido >= 15
-                ? "bg-yellow-500"
-                : "bg-green-500"
-          )} />
-        )}
+      <div className="flex items-center gap-3">
+        {/* Avatar do paciente */}
+        <div className="relative flex-shrink-0">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={avatar} alt={name} />
+            <AvatarFallback className={cn("text-white text-sm font-medium", avatarColor)}>
+              {getInitials(name)}
+            </AvatarFallback>
+          </Avatar>
+          
+          {/* Bolinha de status sobreposta ao avatar */}
+          {mostrarBolinha && (
+            <span className={cn(
+              "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card",
+              tempoExibido >= 30 
+                ? "bg-destructive"
+                : tempoExibido >= 15
+                  ? "bg-yellow-500"
+                  : "bg-green-500"
+            )} />
+          )}
+        </div>
         
         {/* Conteúdo principal */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           {/* Linha 1: Nome e metadados */}
           <div className="flex items-center justify-between gap-2">
-            <h4 className="font-medium text-sm text-foreground truncate">
+            <h4 className="font-medium text-sm text-foreground truncate flex-1 min-w-0">
               {name}
             </h4>
             
             {/* Horário e Tempo */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               {lastMessageTime && (
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                <span className="text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
                   {lastMessageTime}
                 </span>
               )}
               {mostrarTempo && tempoExibido > 0 && (
                 <>
                   <span className="text-[10px] text-muted-foreground">|</span>
-                  <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                  <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap tabular-nums">
                     {formatarTempoEspera(tempoExibido)}
                   </span>
                 </>
@@ -121,7 +150,7 @@ export const ConnectPatientCard = ({
           </div>
           
           {/* Linha 2: Preview mensagem */}
-          <p className="text-xs text-muted-foreground truncate mt-0.5">
+          <p className="text-xs text-muted-foreground truncate mt-0.5 pr-1">
             {formatarPreviewMensagem(lastMessage)}
           </p>
         </div>

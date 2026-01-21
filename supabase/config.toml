@@ -1,1 +1,4 @@
 project_id = "gcynyoxblhocmaewvqin"
+
+[functions.gerar-avatar-paciente]
+verify_jwt = false
