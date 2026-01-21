@@ -1,4 +1,4 @@
-import { Send, Paperclip, Mic, UserCog, Phone, MoreVertical, Smile, Pencil } from "lucide-react";
+import { Send, Paperclip, Mic, UserCog, Phone, MoreVertical, Smile, Pencil, Search, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,7 +8,7 @@ import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConversas";
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
 import { useEnviarMensagem, useAtualizarStatusPaciente, useAtualizarNomePaciente } from "@/hooks/useMutations";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ConnectTransferDialogNew } from "./ConnectTransferDialogNew";
 import { supabase } from "@/integrations/supabase/client";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
@@ -22,14 +22,25 @@ import { useUploadAnexo } from "@/hooks/useAnexos";
 import { EmojiStickerPicker } from "./EmojiStickerPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EditarNomeDialog } from "./EditarNomeDialog";
+import { FinalizarConversaDialog } from "./FinalizarConversaDialog";
+import { BuscaConversaBar } from "./BuscaConversaBar";
+import { MensagemAcoesBar } from "./MensagemAcoesBar";
+import { useFinalizarAtendimento } from "@/hooks/useFinalizarAtendimento";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const ConnectColumn2 = () => {
-  const { pacienteSelecionado } = usePacienteContext();
+  const { pacienteSelecionado, setPacienteSelecionado } = usePacienteContext();
   const { atendenteLogado } = useAtendenteContext();
   const { data: conversa } = useConversaByPaciente(pacienteSelecionado?.id || null);
   const { data: mensagens } = useMensagensByConversa(conversa?.id || null);
   const enviarMensagem = useEnviarMensagem();
   const atualizarStatus = useAtualizarStatusPaciente();
+  const finalizarAtendimento = useFinalizarAtendimento();
   const iniciarChamada = useIniciarChamada();
   const { setChamadaAtiva } = useChamadaContext();
   const [mensagemTexto, setMensagemTexto] = useState("");
@@ -39,6 +50,12 @@ export const ConnectColumn2 = () => {
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [editarNomeOpen, setEditarNomeOpen] = useState(false);
+  const [finalizarDialogOpen, setFinalizarDialogOpen] = useState(false);
+  const [buscaOpen, setBuscaOpen] = useState(false);
+  const [mensagemDestacadaId, setMensagemDestacadaId] = useState<string | null>(null);
+  const [mensagemSelecionada, setMensagemSelecionada] = useState<any>(null);
+  const [reacoes, setReacoes] = useState<Record<string, string>>({});
+  const [favoritas, setFavoritas] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadAnexo = useUploadAnexo();
@@ -108,7 +125,6 @@ export const ConnectColumn2 = () => {
     setMensagemTexto(newText);
     setEmojiPickerOpen(false);
     
-    // Focar no input após inserir emoji
     setTimeout(() => {
       inputRef.current?.focus();
       inputRef.current?.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
@@ -118,7 +134,6 @@ export const ConnectColumn2 = () => {
   const handleStickerSelect = async (stickerUrl: string, stickerName: string) => {
     if (!conversa?.id || !pacienteSelecionado) return;
 
-    // Se for a primeira mensagem do atendente e o paciente está na fila, mudar status
     const ehPrimeiraMensagemAtendente = !mensagens?.some(m => m.autor === "atendente");
     if (ehPrimeiraMensagemAtendente && pacienteSelecionado.status === "fila" && atendenteLogado) {
       await atualizarStatus.mutateAsync({
@@ -128,7 +143,6 @@ export const ConnectColumn2 = () => {
       });
     }
 
-    // Buscar o ID da figurinha pela URL
     const { data: figurinha } = await supabase
       .from('figurinhas')
       .select('id')
@@ -140,7 +154,6 @@ export const ConnectColumn2 = () => {
       return;
     }
 
-    // Enviar como mensagem de figurinha
     const { error } = await supabase
       .from('mensagens')
       .insert({
@@ -168,7 +181,6 @@ export const ConnectColumn2 = () => {
     }
 
     try {
-      // Criar mensagem vazia para anexar o arquivo
       const { data: mensagem, error } = await supabase
         .from('mensagens')
         .insert({
@@ -188,7 +200,6 @@ export const ConnectColumn2 = () => {
         throw new Error(error?.message || 'Erro ao criar mensagem');
       }
 
-      // Upload do arquivo
       await uploadAnexo.mutateAsync({
         mensagemId: mensagem.id,
         file,
@@ -208,12 +219,10 @@ export const ConnectColumn2 = () => {
     }
 
     try {
-      // Criar arquivo do blob
       const audioFile = new File([audioBlob], `audio_${Date.now()}.webm`, {
         type: 'audio/webm;codecs=opus'
       });
 
-      // Criar mensagem vazia para anexar o áudio
       const { data: mensagem, error } = await supabase
         .from('mensagens')
         .insert({
@@ -233,7 +242,6 @@ export const ConnectColumn2 = () => {
         throw new Error(error?.message || 'Erro ao criar mensagem');
       }
 
-      // Upload do áudio
       await uploadAnexo.mutateAsync({
         mensagemId: mensagem.id,
         file: audioFile,
@@ -293,8 +301,63 @@ export const ConnectColumn2 = () => {
     });
   };
 
+  const handleFinalizarConversa = async (dados: {
+    motivo: string;
+    submotivo?: string;
+    observacao?: string;
+  }) => {
+    if (!pacienteSelecionado || !atendenteLogado) return;
+
+    await finalizarAtendimento.mutateAsync({
+      pacienteId: pacienteSelecionado.id,
+      pacienteNome: pacienteSelecionado.nome,
+      atendenteId: atendenteLogado.id,
+      atendenteNome: atendenteLogado.nome,
+      motivo: dados.motivo,
+      submotivo: dados.submotivo,
+      observacao: dados.observacao,
+    });
+
+    setPacienteSelecionado(null);
+  };
+
+  const handleBuscaResultado = useCallback((mensagemId: string, index: number) => {
+    setMensagemDestacadaId(mensagemId);
+    
+    // Scroll até a mensagem
+    const element = document.querySelector(`[data-message-id="${mensagemId}"]`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
+
+  const handleMensagemClick = (mensagem: any) => {
+    setMensagemSelecionada(mensagem);
+  };
+
+  const handleReagir = (emoji: string) => {
+    if (mensagemSelecionada) {
+      setReacoes(prev => ({
+        ...prev,
+        [mensagemSelecionada.id]: emoji,
+      }));
+    }
+  };
+
+  const handleFavoritar = (opcao: "historico" | "nota", nota?: string) => {
+    if (mensagemSelecionada) {
+      setFavoritas(prev => new Set(prev).add(mensagemSelecionada.id));
+      
+      if (opcao === "historico") {
+        toast.success("Mensagem adicionada ao histórico");
+      } else if (opcao === "nota" && nota) {
+        toast.success("Nota adicionada ao paciente");
+      }
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col bg-muted/20">
+    <div className="flex-1 flex flex-col bg-muted/20 relative">
       {/* Header com Avatar e Status */}
       <div className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
         <div className="flex items-center gap-3">
@@ -322,15 +385,26 @@ export const ConnectColumn2 = () => {
                 )}
               </div>
               {pacienteSelecionado && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setEditarNomeOpen(true)}
-                  title="Editar nome do contato"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setEditarNomeOpen(true)}
+                    title="Editar nome do contato"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setBuscaOpen(true)}
+                    title="Pesquisar na conversa"
+                  >
+                    <Search className="h-3.5 w-3.5" />
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -352,16 +426,55 @@ export const ConnectColumn2 = () => {
               <UserCog className="h-4 w-4 mr-2" />
               Transferir
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setPerfilOpen(true)}
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setPerfilOpen(true)}>
+                  Ver perfil do paciente
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setFinalizarDialogOpen(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Finalizar conversa
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
+
+      {/* Barra de busca */}
+      <BuscaConversaBar
+        open={buscaOpen}
+        onClose={() => {
+          setBuscaOpen(false);
+          setMensagemDestacadaId(null);
+        }}
+        mensagens={mensagens?.map(m => ({
+          id: m.id,
+          texto: m.texto,
+          autor: m.autor,
+          horario: m.horario,
+        })) || []}
+        onResultadoClick={handleBuscaResultado}
+      />
+
+      {/* Barra de ações de mensagem */}
+      {mensagemSelecionada && (
+        <MensagemAcoesBar
+          mensagem={mensagemSelecionada}
+          onClose={() => setMensagemSelecionada(null)}
+          onEncaminhar={() => setShowTransferDialog(true)}
+          onReagir={handleReagir}
+          onFavoritar={handleFavoritar}
+        />
+      )}
 
       {/* Área de Mensagens */}
       <ScrollArea className="flex-1 p-6" ref={scrollRef}>
@@ -380,7 +493,11 @@ export const ConnectColumn2 = () => {
         ) : (
           <div>
             {mensagens.map((mensagem) => {
-              const msg = mensagem as any; // Cast necessário pois tipos são auto-gerados
+              const msg = mensagem as any;
+              const destacada = mensagemDestacadaId === msg.id;
+              const reacao = reacoes[msg.id];
+              const favoritada = favoritas.has(msg.id);
+              
               return msg.autor === "paciente" ? (
                 <ConnectMessageBubblePatient
                   key={msg.id}
@@ -390,6 +507,10 @@ export const ConnectColumn2 = () => {
                   mensagemId={msg.id}
                   tipoConteudo={msg.tipo_conteudo || 'texto'}
                   figurinhaId={msg.figurinha_id}
+                  destacada={destacada}
+                  reacao={reacao}
+                  favoritada={favoritada}
+                  onClick={() => handleMensagemClick(msg)}
                 />
               ) : (
                 <ConnectMessageBubbleAttendant
@@ -400,6 +521,10 @@ export const ConnectColumn2 = () => {
                   mensagemId={msg.id}
                   tipoConteudo={msg.tipo_conteudo || 'texto'}
                   figurinhaId={msg.figurinha_id}
+                  destacada={destacada}
+                  reacao={reacao}
+                  favoritada={favoritada}
+                  onClick={() => handleMensagemClick(msg)}
                 />
               );
             })}
@@ -498,20 +623,28 @@ export const ConnectColumn2 = () => {
         />
       )}
 
-      {/* Perfil do Paciente */}
+      {/* Sheet de Perfil */}
       <PerfilPacienteSheet
         open={perfilOpen}
         onOpenChange={setPerfilOpen}
         paciente={pacienteSelecionado}
       />
 
-      {/* Editar Nome do Paciente */}
+      {/* Dialog de Editar Nome */}
+      <EditarNomeDialog
+        open={editarNomeOpen}
+        onOpenChange={setEditarNomeOpen}
+        nomeAtual={pacienteSelecionado?.nome || ""}
+        onSalvar={handleSalvarNome}
+      />
+
+      {/* Dialog de Finalizar Conversa */}
       {pacienteSelecionado && (
-        <EditarNomeDialog
-          open={editarNomeOpen}
-          onOpenChange={setEditarNomeOpen}
-          nomeAtual={pacienteSelecionado.nome}
-          onSalvar={handleSalvarNome}
+        <FinalizarConversaDialog
+          open={finalizarDialogOpen}
+          onOpenChange={setFinalizarDialogOpen}
+          pacienteNome={pacienteSelecionado.nome}
+          onConfirmar={handleFinalizarConversa}
         />
       )}
     </div>
