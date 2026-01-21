@@ -843,11 +843,60 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "auditoria":
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <History className="h-6 w-6 text-[#0A2647]" />
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Auditoria de Ações
-              </h3>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <History className="h-6 w-6 text-[#0A2647]" />
+                <h3 className="text-2xl font-bold text-[#0A2647]">
+                  Auditoria de Ações
+                </h3>
+              </div>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+            </div>
+
+            {/* Filtros de Auditoria */}
+            <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
+              <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+              <Select defaultValue="7dias">
+                <SelectTrigger className="w-32">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <SelectValue placeholder="Data" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hoje">Hoje</SelectItem>
+                  <SelectItem value="7dias">7 dias</SelectItem>
+                  <SelectItem value="30dias">30 dias</SelectItem>
+                  <SelectItem value="90dias">90 dias</SelectItem>
+                  <SelectItem value="custom">Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select defaultValue="todas">
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Tipo de Ação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as Ações</SelectItem>
+                  <SelectItem value="alteracao_ura">Alteração de URA</SelectItem>
+                  <SelectItem value="edicao_roteiro">Edição de Roteiro</SelectItem>
+                  <SelectItem value="validacao_perfil">Validação de Perfil</SelectItem>
+                  <SelectItem value="config_mensageria">Config. Mensageria</SelectItem>
+                  <SelectItem value="config_fila">Config. Filas</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select defaultValue="todos">
+                <SelectTrigger className="w-36">
+                  <Users className="h-3 w-3 mr-1" />
+                  <SelectValue placeholder="Usuário" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="gestor">Gestor</SelectItem>
+                  <SelectItem value="coordenacao">Coordenação</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <Card className="p-6 overflow-hidden">

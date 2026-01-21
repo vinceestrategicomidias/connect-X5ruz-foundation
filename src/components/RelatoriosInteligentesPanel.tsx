@@ -932,7 +932,7 @@ export const RelatoriosInteligentesPanel = () => {
 
             {/* Relatório Geral por Atendente */}
             <TabsContent value="relatorio_geral_atendente" className="mt-0 space-y-4">
-              {/* Filtro de Atendente */}
+              {/* Filtros completos */}
               <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
                 <Filter className="h-4 w-4 text-muted-foreground mt-2" />
                 <Select value={atendenteRelatorio} onValueChange={setAtendenteRelatorio}>
@@ -946,6 +946,61 @@ export const RelatoriosInteligentesPanel = () => {
                     <SelectItem value="emilly">Emilly Oliveira</SelectItem>
                     <SelectItem value="marcos">Marcos Souza</SelectItem>
                     <SelectItem value="bianca">Bianca Lima</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select defaultValue="7dias">
+                  <SelectTrigger className="w-32">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="Data" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hoje">Hoje</SelectItem>
+                    <SelectItem value="7dias">7 dias</SelectItem>
+                    <SelectItem value="30dias">30 dias</SelectItem>
+                    <SelectItem value="90dias">90 dias</SelectItem>
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select defaultValue="jan">
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Mês" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="jan">Janeiro</SelectItem>
+                    <SelectItem value="fev">Fevereiro</SelectItem>
+                    <SelectItem value="mar">Março</SelectItem>
+                    <SelectItem value="abr">Abril</SelectItem>
+                    <SelectItem value="mai">Maio</SelectItem>
+                    <SelectItem value="jun">Junho</SelectItem>
+                    <SelectItem value="jul">Julho</SelectItem>
+                    <SelectItem value="ago">Agosto</SelectItem>
+                    <SelectItem value="set">Setembro</SelectItem>
+                    <SelectItem value="out">Outubro</SelectItem>
+                    <SelectItem value="nov">Novembro</SelectItem>
+                    <SelectItem value="dez">Dezembro</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select defaultValue="2026">
+                  <SelectTrigger className="w-28">
+                    <SelectValue placeholder="Ano" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2024">2024</SelectItem>
+                    <SelectItem value="2025">2025</SelectItem>
+                    <SelectItem value="2026">2026</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select defaultValue="todos">
+                  <SelectTrigger className="w-40">
+                    <Target className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="Atributos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os Atributos</SelectItem>
+                    <SelectItem value="nps">NPS</SelectItem>
+                    <SelectItem value="resolutividade">Resolutividade</SelectItem>
+                    <SelectItem value="tempo_espera">Tempo de Espera</SelectItem>
+                    <SelectItem value="tma">TMA</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
