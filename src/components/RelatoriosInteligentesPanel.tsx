@@ -2,7 +2,8 @@ import { useState } from "react";
 import { 
   Download, Filter, Calendar, Users, Building2, Package,
   TrendingUp, TrendingDown, Target, BarChart3, PieChart as PieChartIcon,
-  ArrowUpRight, ArrowDownRight, Clock, DollarSign, UserCheck, FileText
+  ArrowUpRight, ArrowDownRight, Clock, DollarSign, UserCheck, FileText,
+  Star, Lightbulb, CheckCircle2, Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,8 +34,14 @@ import {
   FunnelChart,
   Funnel,
   LabelList,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { ThaliAvatar } from "./ThaliAvatar";
 
 // Mock data para os relatórios
 const mockData = {
@@ -132,6 +139,189 @@ const mockData = {
       { nome: "Marcos", pendentes: 52, realizados: 267, taxa: 61 },
       { nome: "Bianca", pendentes: 57, realizados: 245, taxa: 58 },
     ],
+  },
+};
+
+// Dados para Relatório Geral por Atendente
+const relatorioGeralAtendente: Record<string, any> = {
+  geovana: {
+    nome: "Geovana Silva",
+    dataCadastro: "15/03/2023",
+    setor: "Pré-venda",
+    tempoEmpresa: "1 ano e 10 meses",
+    nps: 95,
+    resolutividade: 92,
+    tma: "3m 21s",
+    totalAtendimentos: 4287,
+    ideias: {
+      adicionadas: 12,
+      aprovadas: 8,
+      lista: [
+        { titulo: "Automação de follow-up", status: "Aprovada" },
+        { titulo: "Template de orçamento", status: "Aprovada" },
+        { titulo: "Integração com agenda", status: "Em análise" },
+      ]
+    },
+    radarData: [
+      { metric: "NPS", valor: 95, media: 88 },
+      { metric: "Resolutividade", valor: 92, media: 85 },
+      { metric: "TMA", valor: 88, media: 75 },
+      { metric: "Follow-up", valor: 85, media: 70 },
+      { metric: "Conversão", valor: 68, media: 55 },
+    ],
+    analiseThalí: {
+      elogios: [
+        "Geovana mantém consistentemente o maior NPS da equipe (95%), demonstrando excelente capacidade de relacionamento.",
+        "Seu TMA de 3m 21s está 15% abaixo da média do setor, evidenciando eficiência.",
+        "Análise de sentimento indica que 94% das conversas terminam com tom positivo."
+      ],
+      sugestoes: [
+        "Compartilhar técnicas de atendimento com a equipe para elevar o NPS geral.",
+        "Considerar mentoria para novos colaboradores do setor."
+      ]
+    }
+  },
+  paloma: {
+    nome: "Paloma Santos",
+    dataCadastro: "22/06/2023",
+    setor: "Pré-venda",
+    tempoEmpresa: "1 ano e 7 meses",
+    nps: 93,
+    resolutividade: 89,
+    tma: "4m 01s",
+    totalAtendimentos: 3892,
+    ideias: {
+      adicionadas: 8,
+      aprovadas: 5,
+      lista: [
+        { titulo: "Dashboard de métricas", status: "Aprovada" },
+        { titulo: "Alertas automáticos", status: "Aprovada" },
+      ]
+    },
+    radarData: [
+      { metric: "NPS", valor: 93, media: 88 },
+      { metric: "Resolutividade", valor: 89, media: 85 },
+      { metric: "TMA", valor: 82, media: 75 },
+      { metric: "Follow-up", valor: 78, media: 70 },
+      { metric: "Conversão", valor: 62, media: 55 },
+    ],
+    analiseThalí: {
+      elogios: [
+        "Paloma apresenta NPS consistente de 93%, entre os melhores da equipe.",
+        "Taxa de resolutividade de 89% demonstra competência técnica.",
+      ],
+      sugestoes: [
+        "Trabalhar a redução do TMA em atendimentos mais complexos.",
+        "Aumentar taxa de follow-up para melhorar conversões."
+      ]
+    }
+  },
+  emilly: {
+    nome: "Emilly Oliveira",
+    dataCadastro: "10/09/2023",
+    setor: "Pré-venda",
+    tempoEmpresa: "1 ano e 4 meses",
+    nps: 92,
+    resolutividade: 91,
+    tma: "3m 48s",
+    totalAtendimentos: 3654,
+    ideias: {
+      adicionadas: 15,
+      aprovadas: 11,
+      lista: [
+        { titulo: "Modo escuro suave", status: "Aprovada" },
+        { titulo: "Notificações personalizadas", status: "Aprovada" },
+        { titulo: "Filtros avançados", status: "Em análise" },
+      ]
+    },
+    radarData: [
+      { metric: "NPS", valor: 92, media: 88 },
+      { metric: "Resolutividade", valor: 91, media: 85 },
+      { metric: "TMA", valor: 85, media: 75 },
+      { metric: "Follow-up", valor: 80, media: 70 },
+      { metric: "Conversão", valor: 65, media: 55 },
+    ],
+    analiseThalí: {
+      elogios: [
+        "Emilly é a colaboradora mais ativa na Central de Ideias com 11 ideias aprovadas.",
+        "Excelente evolução de NPS nos últimos 3 meses, subindo de 87 para 92.",
+        "Melhor resolutividade da equipe com 91%."
+      ],
+      sugestoes: [
+        "Continuar compartilhando insights e práticas com a equipe.",
+      ]
+    }
+  },
+  marcos: {
+    nome: "Marcos Souza",
+    dataCadastro: "05/01/2024",
+    setor: "Pré-venda",
+    tempoEmpresa: "1 ano",
+    nps: 74,
+    resolutividade: 78,
+    tma: "5m 12s",
+    totalAtendimentos: 2876,
+    ideias: {
+      adicionadas: 3,
+      aprovadas: 1,
+      lista: [
+        { titulo: "Otimizar fila com Thalí", status: "Implementada" },
+      ]
+    },
+    radarData: [
+      { metric: "NPS", valor: 74, media: 88 },
+      { metric: "Resolutividade", valor: 78, media: 85 },
+      { metric: "TMA", valor: 62, media: 75 },
+      { metric: "Follow-up", valor: 65, media: 70 },
+      { metric: "Conversão", valor: 50, media: 55 },
+    ],
+    analiseThalí: {
+      elogios: [
+        "Marcos demonstra proatividade ao sugerir melhorias no sistema.",
+        "Bom potencial de crescimento identificado nos últimos atendimentos."
+      ],
+      sugestoes: [
+        "Reduzir TMA que está 30% acima da média do setor.",
+        "Trabalhar técnicas de rapport para melhorar NPS.",
+        "Aumentar engajamento na Central de Ideias.",
+        "Análise de sentimento indica necessidade de melhorar tom nas conversas."
+      ]
+    }
+  },
+  bianca: {
+    nome: "Bianca Lima",
+    dataCadastro: "18/04/2024",
+    setor: "Pré-venda",
+    tempoEmpresa: "9 meses",
+    nps: 88,
+    resolutividade: 85,
+    tma: "4m 32s",
+    totalAtendimentos: 2234,
+    ideias: {
+      adicionadas: 6,
+      aprovadas: 4,
+      lista: [
+        { titulo: "Tags automáticas", status: "Aprovada" },
+        { titulo: "Resumo diário", status: "Aprovada" },
+      ]
+    },
+    radarData: [
+      { metric: "NPS", valor: 88, media: 88 },
+      { metric: "Resolutividade", valor: 85, media: 85 },
+      { metric: "TMA", valor: 75, media: 75 },
+      { metric: "Follow-up", valor: 72, media: 70 },
+      { metric: "Conversão", valor: 52, media: 55 },
+    ],
+    analiseThalí: {
+      elogios: [
+        "Bianca apresenta desempenho na média da equipe com apenas 9 meses.",
+        "Boa aderência às práticas da equipe.",
+      ],
+      sugestoes: [
+        "Continuar desenvolvimento para superar métricas médias.",
+        "Investir em técnicas de conversão de leads."
+      ]
+    }
   },
 };
 
@@ -241,10 +431,13 @@ const FiltrosRelatorio = ({ filtros }: { filtros: string[] }) => {
 
 export const RelatoriosInteligentesPanel = () => {
   const [activeTab, setActiveTab] = useState("orcamentos_enviados");
+  const [atendenteRelatorio, setAtendenteRelatorio] = useState("geovana");
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   };
+
+  const dadosAtendente = relatorioGeralAtendente[atendenteRelatorio];
 
   return (
     <div className="space-y-4">
@@ -295,6 +488,10 @@ export const RelatoriosInteligentesPanel = () => {
           <TabsTrigger value="follow_up" className="text-xs">
             <Target className="h-3 w-3 mr-1" />
             Follow-up
+          </TabsTrigger>
+          <TabsTrigger value="relatorio_geral_atendente" className="text-xs">
+            <Brain className="h-3 w-3 mr-1" />
+            Relatório Atendente
           </TabsTrigger>
         </TabsList>
 
@@ -731,6 +928,212 @@ export const RelatoriosInteligentesPanel = () => {
                   ))}
                 </div>
               </Card>
+            </TabsContent>
+
+            {/* Relatório Geral por Atendente */}
+            <TabsContent value="relatorio_geral_atendente" className="mt-0 space-y-4">
+              {/* Filtro de Atendente */}
+              <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
+                <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+                <Select value={atendenteRelatorio} onValueChange={setAtendenteRelatorio}>
+                  <SelectTrigger className="w-44">
+                    <Users className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="Atendente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="geovana">Geovana Silva</SelectItem>
+                    <SelectItem value="paloma">Paloma Santos</SelectItem>
+                    <SelectItem value="emilly">Emilly Oliveira</SelectItem>
+                    <SelectItem value="marcos">Marcos Souza</SelectItem>
+                    <SelectItem value="bianca">Bianca Lima</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {dadosAtendente && (
+                <>
+                  {/* Informações do Colaborador */}
+                  <Card className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <UserCheck className="h-8 w-8 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-xl font-bold text-foreground">{dadosAtendente.nome}</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                          <div>
+                            <div className="text-xs text-muted-foreground">Data de Cadastro</div>
+                            <div className="text-sm font-medium">{dadosAtendente.dataCadastro}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">Setor</div>
+                            <div className="text-sm font-medium">{dadosAtendente.setor}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">Tempo de Empresa</div>
+                            <div className="text-sm font-medium">{dadosAtendente.tempoEmpresa}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">Total Atendimentos</div>
+                            <div className="text-sm font-medium">{dadosAtendente.totalAtendimentos.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* KPIs principais */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Star className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm text-muted-foreground">NPS</span>
+                      </div>
+                      <div className={cn(
+                        "text-3xl font-bold",
+                        dadosAtendente.nps >= 85 ? "text-green-600" : dadosAtendente.nps >= 70 ? "text-yellow-600" : "text-destructive"
+                      )}>
+                        {dadosAtendente.nps}%
+                      </div>
+                    </Card>
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <span className="text-sm text-muted-foreground">Resolutividade</span>
+                      </div>
+                      <div className={cn(
+                        "text-3xl font-bold",
+                        dadosAtendente.resolutividade >= 85 ? "text-green-600" : "text-yellow-600"
+                      )}>
+                        {dadosAtendente.resolutividade}%
+                      </div>
+                    </Card>
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">TMA</span>
+                      </div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {dadosAtendente.tma}
+                      </div>
+                    </Card>
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Lightbulb className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm text-muted-foreground">Ideias Aprovadas</span>
+                      </div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {dadosAtendente.ideias.aprovadas}/{dadosAtendente.ideias.adicionadas}
+                      </div>
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Gráfico Radar */}
+                    <Card className="p-4">
+                      <h4 className="font-semibold mb-4">Métricas vs Média da Equipe</h4>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart data={dadosAtendente.radarData}>
+                            <PolarGrid />
+                            <PolarAngleAxis dataKey="metric" />
+                            <PolarRadiusAxis domain={[0, 100]} />
+                            <Radar
+                              name={dadosAtendente.nome.split(' ')[0]}
+                              dataKey="valor"
+                              stroke="#0A2647"
+                              fill="#0A2647"
+                              fillOpacity={0.5}
+                            />
+                            <Radar
+                              name="Média Equipe"
+                              dataKey="media"
+                              stroke="#9CA3AF"
+                              fill="#9CA3AF"
+                              fillOpacity={0.3}
+                            />
+                            <Legend />
+                            <Tooltip />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </Card>
+
+                    {/* Central de Ideias */}
+                    <Card className="p-4">
+                      <h4 className="font-semibold mb-4 flex items-center gap-2">
+                        <Lightbulb className="h-4 w-4 text-yellow-500" />
+                        Central de Ideias
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="p-3 bg-muted/50 rounded-lg text-center">
+                          <div className="text-2xl font-bold">{dadosAtendente.ideias.adicionadas}</div>
+                          <div className="text-xs text-muted-foreground">Ideias Enviadas</div>
+                        </div>
+                        <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-green-600">{dadosAtendente.ideias.aprovadas}</div>
+                          <div className="text-xs text-muted-foreground">Aprovadas</div>
+                        </div>
+                      </div>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {dadosAtendente.ideias.lista.map((ideia: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between p-2 border rounded-lg">
+                            <span className="text-sm truncate flex-1">{ideia.titulo}</span>
+                            <Badge variant={ideia.status === "Aprovada" || ideia.status === "Implementada" ? "default" : "secondary"} className="text-xs ml-2">
+                              {ideia.status}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  </div>
+
+                  {/* Análise da Thalí */}
+                  <Card className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <ThaliAvatar size="sm" expression="pensativa" />
+                      <div>
+                        <h4 className="font-semibold">Análise da Thalí</h4>
+                        <p className="text-xs text-muted-foreground">Baseada em TMA, Análise de Sentimento, NPS e Resolutividade</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {/* Elogios */}
+                      <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="h-5 w-5 text-green-600" />
+                          <h5 className="font-semibold text-green-700 dark:text-green-400">Pontos Fortes</h5>
+                        </div>
+                        <ul className="space-y-2">
+                          {dadosAtendente.analiseThalí.elogios.map((elogio: string, idx: number) => (
+                            <li key={idx} className="text-sm text-green-800 dark:text-green-300 flex items-start gap-2">
+                              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                              <span>{elogio}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Sugestões de Melhoria */}
+                      <div className="p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-900">
+                        <div className="flex items-center gap-2 mb-3">
+                          <TrendingUp className="h-5 w-5 text-yellow-600" />
+                          <h5 className="font-semibold text-yellow-700 dark:text-yellow-400">Sugestões de Melhoria</h5>
+                        </div>
+                        <ul className="space-y-2">
+                          {dadosAtendente.analiseThalí.sugestoes.map((sugestao: string, idx: number) => (
+                            <li key={idx} className="text-sm text-yellow-800 dark:text-yellow-300 flex items-start gap-2">
+                              <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                              <span>{sugestao}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </Card>
+                </>
+              )}
             </TabsContent>
           </div>
         </ScrollArea>
