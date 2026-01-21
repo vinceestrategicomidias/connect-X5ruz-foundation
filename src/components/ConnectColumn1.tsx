@@ -399,11 +399,30 @@ const PacientesLista = ({
     return mensagemOriginal;
   };
 
+  // Função para calcular tempo sem resposta (desde última mensagem do paciente)
+  const calcularTempoSemResposta = (paciente: any): number => {
+    // Para protótipos específicos
+    const temposEspecificosAtendimento: Record<string, number> = {
+      "Lúcia Andrade": 12,
+      "Pedro Oliveira": 5,
+      "Ricardo Fernandes": 8,
+      "Vanessa Lima": 15,
+    };
+    
+    if (temposEspecificosAtendimento[paciente.nome] !== undefined) {
+      return temposEspecificosAtendimento[paciente.nome];
+    }
+    
+    // Calcular baseado no updated_at ou tempo_na_fila
+    return paciente.tempo_na_fila || 0;
+  };
+
   return (
     <ScrollArea className="h-full px-4">
       <div className="space-y-2">
         {pacientesOrdenados.map((paciente) => {
           const tempoFila = getTempoNaFila(paciente.nome, paciente.tempo_na_fila || 0);
+          const tempoSemResposta = calcularTempoSemResposta(paciente);
           const previewMensagem = getPreviewMensagem(paciente.nome, paciente.ultima_mensagem || undefined);
           const naoLidas = getMensagensNaoLidas(paciente.id, paciente.nome);
           
@@ -421,7 +440,7 @@ const PacientesLista = ({
                   : "finalizado"
               }
               tempoNaFila={tempoFila}
-              tempoSemResposta={tempoFila}
+              tempoSemResposta={tempoSemResposta}
               tempoLimiteAlerta={config.tempoAlertaFila}
               unread={naoLidas}
               onClick={() => handleClickPaciente(paciente)}
