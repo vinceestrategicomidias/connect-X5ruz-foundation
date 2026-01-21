@@ -79,7 +79,7 @@ export const ConnectPatientCard = ({
         <ConnectAvatar name={name} size="md" />
         
         <div className="flex-1 min-w-0">
-          {/* Linha 1: Bolinha + Nome | Horário */}
+          {/* Linha 1: Nome do paciente | Horário */}
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {mostrarBolinha && (
@@ -99,30 +99,30 @@ export const ConnectPatientCard = ({
             )}
           </div>
           
-          {/* Linha 2: Preview mensagem | Tempo + Badge não lidas */}
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground truncate flex-1">
-              {formatarPreviewMensagem(lastMessage)}
-            </p>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {mostrarTempo && tempoExibido > 0 && (
-                <span className={cn(
-                  "text-[10px] font-medium px-1.5 py-0.5 rounded",
-                  tempoExibido >= 30 
-                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                    : tempoExibido >= 15
-                      ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                      : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                )}>
-                  {formatarTempoEspera(tempoExibido)}
-                </span>
-              )}
-              {unread && unread > 0 && (
-                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
-                  {unread}
-                </span>
-              )}
-            </div>
+          {/* Linha 2: Preview mensagem */}
+          <p className="text-xs text-muted-foreground truncate mb-1.5">
+            {formatarPreviewMensagem(lastMessage)}
+          </p>
+
+          {/* Linha 3: Tempo de espera colorido | Badge não lidas */}
+          <div className="flex items-center justify-end gap-2">
+            {mostrarTempo && tempoExibido > 0 && (
+              <span className={cn(
+                "text-[11px] font-semibold px-2 py-0.5 rounded-full",
+                tempoExibido >= 30 
+                  ? "bg-red-500 text-white"
+                  : tempoExibido >= 15
+                    ? "bg-yellow-500 text-white"
+                    : "bg-green-500 text-white"
+              )}>
+                {formatarTempoEspera(tempoExibido)}
+              </span>
+            )}
+            {unread && unread > 0 && (
+              <span className="bg-green-500 text-white text-[11px] font-bold min-w-[20px] h-[20px] flex items-center justify-center rounded-full px-1.5">
+                {unread}
+              </span>
+            )}
           </div>
         </div>
       </div>
