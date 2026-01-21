@@ -247,3 +247,39 @@ export const useAtualizarNomePaciente = () => {
     },
   });
 };
+
+export const useAtualizarContatoPaciente = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      pacienteId,
+      novoNome,
+      novoTelefone,
+    }: {
+      pacienteId: string;
+      novoNome: string;
+      novoTelefone: string;
+    }) => {
+      const { data, error } = await supabase
+        .from("pacientes")
+        .update({ 
+          nome: novoNome,
+          telefone: novoTelefone,
+        })
+        .eq("id", pacienteId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pacientes"] });
+      queryClient.invalidateQueries({ queryKey: ["conversa"] });
+    },
+    onError: () => {
+      toast.error("Erro ao atualizar contato");
+    },
+  });
+};
