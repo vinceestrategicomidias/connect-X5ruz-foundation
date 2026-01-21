@@ -25,8 +25,10 @@ import { ApiLogsViewer } from "./ApiLogsViewer";
 import { ApiDocsPanel } from "./ApiDocsPanel";
 import { IAConfigPanel } from "./IAConfigPanel";
 import { FigurinhasManagement } from "./FigurinhasManagement";
+import { DocumentosThaliPanel } from "./DocumentosThaliPanel";
 import { CriarSetorDialog } from "./CriarSetorDialog";
 import { CriarUsuarioDialog } from "./CriarUsuarioDialog";
+import { EditarUsuarioDialog } from "./EditarUsuarioDialog";
 import { CriarPerfilAcessoDialog } from "./CriarPerfilAcessoDialog";
 import { EditarPerfilAcessoDialog } from "./EditarPerfilAcessoDialog";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
@@ -97,6 +99,8 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
   const [validacoesOpen, setValidacoesOpen] = useState(false);
   const [criarSetorOpen, setCriarSetorOpen] = useState(false);
   const [criarUsuarioOpen, setCriarUsuarioOpen] = useState(false);
+  const [editarUsuarioOpen, setEditarUsuarioOpen] = useState(false);
+  const [usuarioParaEditar, setUsuarioParaEditar] = useState<any>(null);
   const [criarPerfilOpen, setCriarPerfilOpen] = useState(false);
   const [editarPerfilOpen, setEditarPerfilOpen] = useState(false);
   const [perfilParaEditar, setPerfilParaEditar] = useState<PerfilAcesso | null>(null);
@@ -427,12 +431,25 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
                         <div className="flex-1">
                           <h4 className="font-semibold">{usuario.nome}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {usuario.cargo}
+                            {usuario.email}
                           </p>
                         </div>
-                        <Badge variant="secondary">
+                        <Badge variant={usuario.ativo ? "default" : "secondary"}>
+                          {usuario.ativo ? "Ativo" : "Inativo"}
+                        </Badge>
+                        <Badge variant="outline">
                           {usuario.cargo}
                         </Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => {
+                            setUsuarioParaEditar(usuario);
+                            setEditarUsuarioOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -624,14 +641,19 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
             </div>
             
             <Tabs defaultValue="config" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="config">Configurações</TabsTrigger>
+                <TabsTrigger value="documentos">Documentos</TabsTrigger>
                 <TabsTrigger value="figurinhas">Figurinhas</TabsTrigger>
                 <TabsTrigger value="mensageria">Mensageria</TabsTrigger>
               </TabsList>
 
               <TabsContent value="config">
                 <IAConfigPanel />
+              </TabsContent>
+
+              <TabsContent value="documentos">
+                <DocumentosThaliPanel />
               </TabsContent>
 
               <TabsContent value="figurinhas">
@@ -927,6 +949,11 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
       <ValidacoesPerfilPanel open={validacoesOpen} onOpenChange={setValidacoesOpen} />
       <CriarSetorDialog open={criarSetorOpen} onOpenChange={setCriarSetorOpen} />
       <CriarUsuarioDialog open={criarUsuarioOpen} onOpenChange={setCriarUsuarioOpen} />
+      <EditarUsuarioDialog 
+        open={editarUsuarioOpen} 
+        onOpenChange={setEditarUsuarioOpen} 
+        usuario={usuarioParaEditar} 
+      />
       <CriarPerfilAcessoDialog open={criarPerfilOpen} onOpenChange={setCriarPerfilOpen} />
       <EditarPerfilAcessoDialog 
         open={editarPerfilOpen} 
