@@ -8,21 +8,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Users,
-  Phone,
-  MessageCircle,
-  Clock,
   Send,
-  Eye,
   ArrowRightLeft,
   Search,
-  Circle,
   Inbox,
+  Building2,
+  Loader2,
 } from "lucide-react";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { useAtendentes } from "@/hooks/useAtendentes";
@@ -30,7 +26,14 @@ import { useTodosPacientes } from "@/hooks/usePacientes";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { TransferenciaJustificativaDialog } from "./TransferenciaJustificativaDialog";
 import { useTransferirAtendimento } from "@/hooks/useMutations";
+import { useSetores } from "@/hooks/useSetores";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface MonitoramentoAtendentesPanelProps {
   open: boolean;
@@ -135,6 +138,8 @@ export const MonitoramentoAtendentesPanel = ({
 }: MonitoramentoAtendentesPanelProps) => {
   const { atendenteLogado } = useAtendenteContext();
   const { data: pacientes } = useTodosPacientes();
+  const { data: setores, isLoading: loadingSetores } = useSetores();
+  const { data: atendentesReais, isLoading: loadingAtendentesReais } = useAtendentes(atendenteLogado?.setor_id);
   const transferir = useTransferirAtendimento();
 
   const [atendenteSelecionado, setAtendenteSelecionado] = useState<AtendenteMock | null>(null);
@@ -143,8 +148,17 @@ export const MonitoramentoAtendentesPanel = ({
   const [buscaAtendente, setBuscaAtendente] = useState("");
   const [buscaFila, setBuscaFila] = useState("");
   const [activeTab, setActiveTab] = useState("atendentes");
+  
+  // Estados para transferência com seleção de destino
+  const [transferSelectorOpen, setTransferSelectorOpen] = useState(false);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [pacienteParaTransferir, setPacienteParaTransferir] = useState<any>(null);
+  const [transferTab, setTransferTab] = useState<"atendentes" | "setores" | "fila">("atendentes");
+  const [destinoSelecionado, setDestinoSelecionado] = useState<{
+    tipo: "atendente" | "setor" | "fila";
+    id?: string;
+    nome: string;
+  } | null>(null);
 
   const isGestor = atendenteLogado?.cargo === "gestor";
   const isCoordenacao = atendenteLogado?.cargo === "coordenacao";
@@ -163,18 +177,35 @@ export const MonitoramentoAtendentesPanel = ({
     setMensagemResposta("");
   };
 
-  // Estado para tipo de destino selecionado
-  const [tipoDestinoTransferencia, setTipoDestinoTransferencia] = useState<"setor" | "atendente" | "fila">("fila");
-
   const handleAbrirTransferencia = (paciente: any) => {
     setPacienteParaTransferir(paciente);
-    setTipoDestinoTransferencia("fila");
+    setDestinoSelecionado(null);
+    setTransferTab("atendentes");
+    setTransferSelectorOpen(true);
+  };
+
+  const handleSelecionarDestinoAtendente = (atendenteId: string, nome: string) => {
+    setDestinoSelecionado({ tipo: "atendente", id: atendenteId, nome });
+    setTransferSelectorOpen(false);
+    setTransferDialogOpen(true);
+  };
+
+  const handleSelecionarDestinoSetor = (setorId: string, nome: string) => {
+    setDestinoSelecionado({ tipo: "setor", id: setorId, nome });
+    setTransferSelectorOpen(false);
+    setTransferDialogOpen(true);
+  };
+
+  const handleSelecionarDestinoFila = () => {
+    setDestinoSelecionado({ tipo: "fila", nome: "Fila do Setor" });
+    setTransferSelectorOpen(false);
     setTransferDialogOpen(true);
   };
 
   const handleConfirmarTransferencia = (motivo: string, observacao?: string) => {
-    toast.success(`${pacienteParaTransferir?.nome} transferido. Motivo: ${motivo}`);
+    toast.success(`${pacienteParaTransferir?.nome} transferido para ${destinoSelecionado?.nome}. Motivo: ${motivo}`);
     setPacienteParaTransferir(null);
+    setDestinoSelecionado(null);
     setTransferDialogOpen(false);
   };
 
@@ -446,13 +477,109 @@ export const MonitoramentoAtendentesPanel = ({
         </SheetContent>
       </Sheet>
 
+      {/* Dialog de seleção de destino */}
+      <Dialog open={transferSelectorOpen} onOpenChange={setTransferSelectorOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Transferir {pacienteParaTransferir?.nome}</DialogTitle>
+          </DialogHeader>
+
+          <Tabs value={transferTab} onValueChange={(v) => setTransferTab(v as any)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="atendentes" className="gap-1 text-xs">
+                <Users className="h-3 w-3" />
+                Atendente
+              </TabsTrigger>
+              <TabsTrigger value="setores" className="gap-1 text-xs">
+                <Building2 className="h-3 w-3" />
+                Setor
+              </TabsTrigger>
+              <TabsTrigger value="fila" className="gap-1 text-xs">
+                <Inbox className="h-3 w-3" />
+                Fila
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="atendentes" className="mt-4">
+              <ScrollArea className="h-[250px]">
+                {loadingAtendentesReais ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {atendentesReais
+                      ?.filter((a) => a.id !== atendenteLogado?.id)
+                      .map((atendente) => (
+                        <Button
+                          key={atendente.id}
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={() => handleSelecionarDestinoAtendente(atendente.id, atendente.nome)}
+                        >
+                          <ConnectAvatar name={atendente.nome} image={atendente.avatar || undefined} size="sm" />
+                          <div className="ml-3 text-left">
+                            <p className="font-medium">{atendente.nome}</p>
+                            <p className="text-xs text-muted-foreground capitalize">{atendente.cargo}</p>
+                          </div>
+                        </Button>
+                      ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="setores" className="mt-4">
+              <ScrollArea className="h-[250px]">
+                {loadingSetores ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {setores
+                      ?.filter((s) => s.id !== atendenteLogado?.setor_id)
+                      .map((setor) => (
+                        <Button
+                          key={setor.id}
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={() => handleSelecionarDestinoSetor(setor.id, setor.nome)}
+                        >
+                          <div className="w-4 h-4 rounded-full mr-3" style={{ backgroundColor: setor.cor || "#888" }} />
+                          <div className="text-left">
+                            <p className="font-medium">{setor.nome}</p>
+                            {setor.descricao && <p className="text-xs text-muted-foreground">{setor.descricao}</p>}
+                          </div>
+                        </Button>
+                      ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="fila" className="mt-4">
+              <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                <Inbox className="h-12 w-12 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Enviar {pacienteParaTransferir?.nome} de volta para a fila do setor
+                </p>
+                <Button onClick={handleSelecionarDestinoFila} className="w-full">
+                  Enviar para Fila do Setor
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
       {/* Dialog de justificativa */}
       <TransferenciaJustificativaDialog
         open={transferDialogOpen}
         onOpenChange={setTransferDialogOpen}
         pacienteNome={pacienteParaTransferir?.nome || ""}
-        destinoNome="Fila do Setor"
-        tipoDestino={tipoDestinoTransferencia}
+        destinoNome={destinoSelecionado?.nome || ""}
+        tipoDestino={destinoSelecionado?.tipo || "fila"}
         onConfirmar={handleConfirmarTransferencia}
       />
     </>
