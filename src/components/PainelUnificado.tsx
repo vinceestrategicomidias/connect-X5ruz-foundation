@@ -21,6 +21,7 @@ import {
   Lightbulb,
   X,
   Award,
+  Settings,
 } from "lucide-react";
 import {
   BarChart,
@@ -41,7 +42,8 @@ import { cn } from "@/lib/utils";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 
 import { ConfiguracoesFilaPanel } from "./ConfiguracoesFilaPanel";
-import { Settings } from "lucide-react";
+import { EditorRoteirosPanel } from "./EditorRoteirosPanel";
+import { RelatoriosInteligentesPanel } from "./RelatoriosInteligentesPanel";
 
 type SecaoPainel =
   | "dashboards"
@@ -416,149 +418,10 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
         );
 
       case "roteiros":
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Roteiros de Atendimento
-              </h3>
-              {(isCoordenacao || isGestor) && (
-                <Button className="bg-[#0A2647] hover:bg-[#144272]">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Criar Novo Roteiro
-                </Button>
-              )}
-            </div>
-
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg">Setor: Pré-venda</h4>
-              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                <div className="p-4 border border-border rounded-lg">
-                  <h5 className="font-semibold mb-2">Roteiro Particular</h5>
-                  <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Mensagem inicial</li>
-                    <li>Solicitar documentos</li>
-                    <li>Enviar orçamento</li>
-                    <li>Confirmação</li>
-                  </ol>
-                  {(isCoordenacao || isGestor) && (
-                    <div className="flex gap-2 mt-3">
-                      <Button size="sm" variant="outline">Editar</Button>
-                      <Button size="sm" variant="outline" className="text-destructive">Excluir</Button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 border border-border rounded-lg">
-                  <h5 className="font-semibold mb-2">Roteiro Convênio</h5>
-                  <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Mensagem inicial</li>
-                    <li>Solicitar dados do plano</li>
-                    <li>Enviar orientações</li>
-                    <li>Agendamento</li>
-                  </ol>
-                  {(isCoordenacao || isGestor) && (
-                    <div className="flex gap-2 mt-3">
-                      <Button size="sm" variant="outline">Editar</Button>
-                      <Button size="sm" variant="outline" className="text-destructive">Excluir</Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          </div>
-        );
+        return <EditorRoteirosPanel onClose={() => {}} />;
 
       case "relatorios":
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Relatórios Inteligentes
-              </h3>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar PDF
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar Excel
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">NPS Geral</div>
-                <div className="text-4xl font-bold text-[#0A2647] truncate">
-                  {dadosEmpresaGrande.npsGeral}
-                </div>
-              </Card>
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">
-                  Tempo Médio Atendimento
-                </div>
-                <div className="text-4xl font-bold text-[#144272] truncate">
-                  {dadosEmpresaGrande.tmaSetor}
-                </div>
-              </Card>
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">
-                  % Transferências
-                </div>
-                <div className="text-4xl font-bold text-[#205295] truncate">
-                  {dadosEmpresaGrande.porcentagemTransferencia}%
-                </div>
-              </Card>
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">
-                  Taxa Reabertura
-                </div>
-                <div className="text-4xl font-bold text-[#2C74B3] truncate">
-                  {dadosEmpresaGrande.taxaReabertura}%
-                </div>
-              </Card>
-            </div>
-
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg">Ranking Top 3 Atendentes</h4>
-              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                {dadosEmpresaGrande.rankingTop3.map((atendente, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-muted/30 to-transparent hover:from-muted/50 transition-all"
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div
-                        className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg flex-shrink-0",
-                          idx === 0 && "bg-gradient-to-br from-yellow-400 to-yellow-600",
-                          idx === 1 && "bg-gradient-to-br from-gray-300 to-gray-500",
-                          idx === 2 && "bg-gradient-to-br from-orange-400 to-orange-600"
-                        )}
-                      >
-                        {idx + 1}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-lg truncate">{atendente.atendente}</div>
-                        <div className="text-sm text-muted-foreground truncate">
-                          {atendente.atendimentos} atendimentos • TMA: {atendente.tempoMedio}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-4">
-                      <div className="text-2xl font-bold text-[#0A2647]">
-                        {atendente.nps}
-                      </div>
-                      <div className="text-xs text-muted-foreground">NPS</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        );
+        return <RelatoriosInteligentesPanel />;
 
       case "transferencias":
         return (

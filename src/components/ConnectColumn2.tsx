@@ -372,10 +372,20 @@ export const ConnectColumn2 = () => {
       {/* Header com Avatar e Status */}
       <div className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
         <div className="flex items-center gap-3">
-          <ConnectAvatar 
-            name={pacienteSelecionado?.nome || "Selecione um paciente"} 
-            image={pacienteSelecionado?.avatar || undefined}
-          />
+          {/* Avatar clicável para abrir perfil */}
+          <button 
+            onClick={() => pacienteSelecionado && setPerfilOpen(true)}
+            className="relative group cursor-pointer"
+            title={pacienteSelecionado ? "Ver perfil do paciente" : undefined}
+          >
+            <ConnectAvatar 
+              name={pacienteSelecionado?.nome || "Selecione um paciente"} 
+              image={pacienteSelecionado?.avatar || undefined}
+            />
+            {pacienteSelecionado && (
+              <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/10 transition-colors" />
+            )}
+          </button>
           <div className="flex items-center gap-2">
             <ConnectStatusIndicator 
               status={getStatusBadge()} 
