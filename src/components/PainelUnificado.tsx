@@ -7,11 +7,17 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   LayoutGrid,
   BarChart3,
   FileText,
   Download,
-  ArrowRightLeft,
   ThumbsUp,
   Bell,
   TrendingUp,
@@ -22,6 +28,9 @@ import {
   X,
   Award,
   Settings,
+  Filter,
+  Users,
+  Calendar,
 } from "lucide-react";
 import {
   BarChart,
@@ -49,7 +58,6 @@ type SecaoPainel =
   | "dashboards"
   | "roteiros"
   | "relatorios"
-  | "transferencias"
   | "nps"
   | "alertas"
   | "preditiva"
@@ -70,7 +78,6 @@ const menuItems: MenuItem[] = [
   { id: "dashboards", label: "Dashboards", icon: LayoutGrid },
   { id: "roteiros", label: "Roteiros", icon: FileText },
   { id: "relatorios", label: "Relatórios Inteligentes", icon: BarChart3 },
-  { id: "transferencias", label: "Transferências", icon: ArrowRightLeft },
   { id: "nps", label: "NPS Feedback", icon: ThumbsUp },
   { id: "alertas", label: "Alertas", icon: Bell },
   { id: "preditiva", label: "Thalí Preditiva", icon: TrendingUp },
@@ -80,6 +87,30 @@ const menuItems: MenuItem[] = [
   { id: "ideias", label: "Ideias", icon: Lightbulb },
   { id: "configuracoes", label: "Configurações", icon: Settings, apenasGestor: true },
 ];
+
+// Dados NPS comparativos
+const npsComparativo = {
+  porAtendente: [
+    { nome: "Geovana", nps: 95, atendimentos: 314 },
+    { nome: "Emilly", nps: 92, atendimentos: 298 },
+    { nome: "Paloma", nps: 93, atendimentos: 283 },
+    { nome: "Marcos", nps: 74, atendimentos: 251 },
+    { nome: "Bianca", nps: 88, atendimentos: 229 },
+  ],
+  evolucaoMensal: [
+    { mes: "Jul", nps: 87 },
+    { mes: "Ago", nps: 89 },
+    { mes: "Set", nps: 91 },
+    { mes: "Out", nps: 90 },
+    { mes: "Nov", nps: 92 },
+    { mes: "Dez", nps: 92 },
+  ],
+  distribuicao: [
+    { name: "Promotores", value: 168, color: "#22C55E" },
+    { name: "Neutros", value: 22, color: "#F59E0B" },
+    { name: "Detratores", value: 18, color: "#EF4444" },
+  ]
+};
 
 // Dados simulados de GRANDE EMPRESA
 const dadosEmpresaGrande = {
@@ -423,45 +454,70 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "relatorios":
         return <RelatoriosInteligentesPanel />;
 
-      case "transferencias":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">
-              Transferências - Auditoria Diária
-            </h3>
-            <Card className="p-6 overflow-hidden">
-              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                {dadosEmpresaGrande.transferencias.map((trans, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors gap-4"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="text-sm font-mono text-muted-foreground flex-shrink-0">
-                        {trans.hora}
-                      </div>
-                      <ArrowRightLeft className="h-4 w-4 text-primary flex-shrink-0" />
-                      <div className="text-sm min-w-0 flex-1 truncate">
-                        <span className="font-medium">{trans.de}</span>
-                        <span className="text-muted-foreground mx-1">→</span>
-                        <span className="font-medium">{trans.para}</span>
-                      </div>
-                    </div>
-                    <div className="text-sm font-medium flex-shrink-0">{trans.paciente}</div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        );
-
       case "nps":
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#0A2647]">
-              NPS e Feedback dos Pacientes
-            </h3>
+            {/* Header com botão de relatório */}
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="text-2xl font-bold text-[#0A2647]">
+                NPS e Feedback dos Pacientes
+              </h3>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Gerar Relatório
+              </Button>
+            </div>
 
+            {/* Filtros */}
+            <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
+              <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+              <Select defaultValue="todos">
+                <SelectTrigger className="w-36">
+                  <Users className="h-3 w-3 mr-1" />
+                  <SelectValue placeholder="Atendente" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="geovana">Geovana</SelectItem>
+                  <SelectItem value="paloma">Paloma</SelectItem>
+                  <SelectItem value="emilly">Emilly</SelectItem>
+                  <SelectItem value="marcos">Marcos</SelectItem>
+                  <SelectItem value="bianca">Bianca</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select defaultValue="jan">
+                <SelectTrigger className="w-32">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <SelectValue placeholder="Mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="jan">Janeiro</SelectItem>
+                  <SelectItem value="fev">Fevereiro</SelectItem>
+                  <SelectItem value="mar">Março</SelectItem>
+                  <SelectItem value="abr">Abril</SelectItem>
+                  <SelectItem value="mai">Maio</SelectItem>
+                  <SelectItem value="jun">Junho</SelectItem>
+                  <SelectItem value="jul">Julho</SelectItem>
+                  <SelectItem value="ago">Agosto</SelectItem>
+                  <SelectItem value="set">Setembro</SelectItem>
+                  <SelectItem value="out">Outubro</SelectItem>
+                  <SelectItem value="nov">Novembro</SelectItem>
+                  <SelectItem value="dez">Dezembro</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select defaultValue="2026">
+                <SelectTrigger className="w-28">
+                  <SelectValue placeholder="Ano" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2024">2024</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
+                  <SelectItem value="2026">2026</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Cards de métricas */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-6 overflow-hidden">
                 <div className="text-sm text-muted-foreground mb-1 truncate">
@@ -491,33 +547,108 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 <div className="text-sm text-muted-foreground mb-1 truncate">
                   Detratores
                 </div>
-                <div className="text-4xl font-bold text-red-600 truncate">
+                <div className="text-4xl font-bold text-destructive truncate">
                   {dadosEmpresaGrande.nps.detratores}
                 </div>
               </Card>
             </div>
 
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg">Feedbacks Recentes</h4>
-              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                {dadosEmpresaGrande.nps.feedbacksRecentes.map((feedback, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-lg border border-border"
-                  >
-                    <div className="flex items-center justify-between mb-2 gap-4">
-                      <span className="font-semibold truncate">{feedback.atendente}</span>
-                      <span className="text-2xl font-bold text-[#0A2647] flex-shrink-0">
-                        {feedback.nota}/10
-                      </span>
+            {/* Gráficos comparativos */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* NPS por Atendente */}
+              <Card className="p-6 overflow-hidden">
+                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                  NPS por Atendente
+                </h4>
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={npsComparativo.porAtendente}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="nome" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip />
+                      <Bar dataKey="nps" fill="#0A2647" radius={[8, 8, 0, 0]} name="NPS" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Evolução Mensal do NPS */}
+              <Card className="p-6 overflow-hidden">
+                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                  Evolução Mensal do NPS
+                </h4>
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={npsComparativo.evolucaoMensal}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="mes" />
+                      <YAxis domain={[80, 100]} />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="nps"
+                        stroke="#0A2647"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#0A2647" }}
+                        name="NPS"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Distribuição Promotores/Neutros/Detratores */}
+              <Card className="p-6 overflow-hidden">
+                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
+                  Distribuição de Respostas
+                </h4>
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={npsComparativo.distribuicao}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`}
+                        outerRadius={90}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {npsComparativo.distribuicao.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Feedbacks Recentes */}
+              <Card className="p-6 overflow-hidden">
+                <h4 className="font-semibold mb-4 text-lg">Feedbacks Recentes</h4>
+                <div className="space-y-3 max-h-[240px] overflow-y-auto pr-2">
+                  {dadosEmpresaGrande.nps.feedbacksRecentes.map((feedback, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-lg border border-border"
+                    >
+                      <div className="flex items-center justify-between mb-2 gap-4">
+                        <span className="font-semibold truncate">{feedback.atendente}</span>
+                        <span className="text-2xl font-bold text-[#0A2647] flex-shrink-0">
+                          {feedback.nota}/10
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground italic line-clamp-2">
+                        "{feedback.comentario}"
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground italic line-clamp-2">
-                      "{feedback.comentario}"
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </Card>
+                  ))}
+                </div>
+              </Card>
+            </div>
           </div>
         );
 
