@@ -109,6 +109,27 @@ const PACIENTES_POR_ATENDENTE: Record<string, { id: string; nome: string; telefo
   ],
 };
 
+// Mock de mensagens dos últimos 30 dias para visualização
+const MENSAGENS_MOCK: Record<string, { id: string; autor: "paciente" | "atendente"; texto: string; horario: string; data: string }[]> = {
+  "p1": [
+    { id: "m1", autor: "paciente", texto: "Olá, bom dia! Gostaria de saber sobre os procedimentos disponíveis.", horario: "08:15", data: "2026-01-21" },
+    { id: "m2", autor: "atendente", texto: "Bom dia! Claro, temos diversas opções. Qual área você tem interesse?", horario: "08:17", data: "2026-01-21" },
+    { id: "m3", autor: "paciente", texto: "Estou interessado na área de estética. Vocês fazem harmonização?", horario: "08:20", data: "2026-01-21" },
+    { id: "m4", autor: "atendente", texto: "Sim, fazemos! Temos preenchimento, botox e diversos outros procedimentos.", horario: "08:22", data: "2026-01-21" },
+    { id: "m5", autor: "paciente", texto: "Consegue me enviar a proposta com desconto?", horario: "08:28", data: "2026-01-21" },
+  ],
+  "p2": [
+    { id: "m6", autor: "paciente", texto: "Boa tarde! Vi a promoção de vocês no Instagram.", horario: "07:50", data: "2026-01-21" },
+    { id: "m7", autor: "atendente", texto: "Boa tarde! Que bom que viu! A promoção está válida até sexta-feira.", horario: "07:55", data: "2026-01-21" },
+    { id: "m8", autor: "paciente", texto: "Qual a forma de pagamento para confirmar hoje?", horario: "08:10", data: "2026-01-21" },
+  ],
+  "p3": [
+    { id: "m9", autor: "paciente", texto: "Recebi a proposta, muito obrigado!", horario: "08:58", data: "2026-01-21" },
+    { id: "m10", autor: "atendente", texto: "Por nada! Qualquer dúvida estamos à disposição.", horario: "08:59", data: "2026-01-21" },
+    { id: "m11", autor: "paciente", texto: "Obrigado!", horario: "09:01", data: "2026-01-21" },
+  ],
+};
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case "online": return "bg-green-500";
@@ -161,6 +182,10 @@ export const MonitoramentoAtendentesPanel = ({
     id?: string;
     nome: string;
   } | null>(null);
+  
+  // Estado para visualização de conversa em mini tela
+  const [conversaDialogOpen, setConversaDialogOpen] = useState(false);
+  const [pacienteParaVisualizar, setPacienteParaVisualizar] = useState<any>(null);
 
   const isGestor = atendenteLogado?.cargo === "gestor";
   const isCoordenacao = atendenteLogado?.cargo === "coordenacao";
@@ -209,6 +234,24 @@ export const MonitoramentoAtendentesPanel = ({
     setPacienteParaTransferir(null);
     setDestinoSelecionado(null);
     setTransferDialogOpen(false);
+  };
+
+  const handleAbrirConversaPreview = (paciente: any) => {
+    setPacienteParaVisualizar(paciente);
+    setConversaDialogOpen(true);
+  };
+
+  // Filtrar mensagens dos últimos 30 dias
+  const getMensagens30Dias = (pacienteId: string) => {
+    const hoje = new Date();
+    const limite = new Date(hoje);
+    limite.setDate(limite.getDate() - 30);
+    
+    const mensagens = MENSAGENS_MOCK[pacienteId] || [];
+    return mensagens.filter(m => {
+      const dataMensagem = new Date(m.data);
+      return dataMensagem >= limite;
+    });
   };
 
   return (
@@ -323,7 +366,21 @@ export const MonitoramentoAtendentesPanel = ({
                               >
                                 <div className="flex items-center justify-between">
                                   <p className="font-medium text-sm">{paciente.nome}</p>
-                                  <span className="text-xs text-muted-foreground">{paciente.horario}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">{paciente.horario}</span>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      title="Visualizar conversa"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAbrirConversaPreview(paciente);
+                                      }}
+                                    >
+                                      <Eye className="h-3 w-3" />
+                                    </Button>
+                                  </div>
                                 </div>
                                 <div className="flex items-center justify-between mt-1">
                                   <p className="text-xs text-muted-foreground truncate flex-1">{paciente.ultima_msg}</p>
@@ -620,6 +677,82 @@ export const MonitoramentoAtendentesPanel = ({
         tipoDestino={destinoSelecionado?.tipo || "fila"}
         onConfirmar={handleConfirmarTransferencia}
       />
+
+      {/* Dialog de visualização de conversa em tempo real */}
+      <Dialog open={conversaDialogOpen} onOpenChange={setConversaDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col p-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle className="flex items-center gap-3">
+              <ConnectAvatar name={pacienteParaVisualizar?.nome || ""} size="sm" />
+              <div>
+                <span>{pacienteParaVisualizar?.nome}</span>
+                <p className="text-xs font-normal text-muted-foreground">
+                  {pacienteParaVisualizar?.telefone}
+                </p>
+              </div>
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              <MessageSquare className="h-3 w-3 inline mr-1" />
+              Mensagens dos últimos 30 dias
+            </p>
+          </DialogHeader>
+          
+          <ScrollArea className="flex-1 p-4 max-h-[400px]">
+            <div className="space-y-3">
+              {pacienteParaVisualizar && getMensagens30Dias(pacienteParaVisualizar.id).length > 0 ? (
+                getMensagens30Dias(pacienteParaVisualizar.id).map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.autor === "paciente" ? "justify-start" : "justify-end"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        msg.autor === "paciente"
+                          ? "bg-muted"
+                          : "bg-primary text-primary-foreground"
+                      }`}
+                    >
+                      <p className="text-sm">{msg.texto}</p>
+                      <p className={`text-[10px] mt-1 ${
+                        msg.autor === "paciente" ? "text-muted-foreground" : "text-primary-foreground/70"
+                      }`}>
+                        {msg.data} às {msg.horario}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <MessageSquare className="h-10 w-10 mb-2 opacity-50" />
+                  <p className="text-sm">Nenhuma mensagem nos últimos 30 dias</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+          
+          {(isGestor || isCoordenacao) && (
+            <div className="p-4 border-t">
+              <div className="flex gap-2">
+                <Textarea
+                  value={mensagemResposta}
+                  onChange={(e) => setMensagemResposta(e.target.value)}
+                  placeholder="Responder como gestor..."
+                  rows={2}
+                  className="flex-1"
+                />
+                <Button size="icon" onClick={() => {
+                  if (mensagemResposta.trim()) {
+                    toast.success(`Mensagem enviada para ${pacienteParaVisualizar?.nome}`);
+                    setMensagemResposta("");
+                  }
+                }}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
