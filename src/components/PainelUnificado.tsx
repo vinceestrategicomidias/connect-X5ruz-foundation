@@ -53,6 +53,8 @@ import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { ConfiguracoesFilaPanel } from "./ConfiguracoesFilaPanel";
 import { EditorRoteirosPanel } from "./EditorRoteirosPanel";
 import { RelatoriosInteligentesPanel } from "./RelatoriosInteligentesPanel";
+import { CentralIdeiasPanel } from "./CentralIdeiasPanel";
+import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 
 type SecaoPainel =
   | "dashboards"
@@ -841,156 +843,10 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
         );
 
       case "auditoria":
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <History className="h-6 w-6 text-[#0A2647]" />
-                <h3 className="text-2xl font-bold text-[#0A2647]">
-                  Auditoria de Ações
-                </h3>
-              </div>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
-            </div>
-
-            {/* Filtros de Auditoria */}
-            <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
-              <Filter className="h-4 w-4 text-muted-foreground mt-2" />
-              <Select defaultValue="7dias">
-                <SelectTrigger className="w-32">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  <SelectValue placeholder="Data" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hoje">Hoje</SelectItem>
-                  <SelectItem value="7dias">7 dias</SelectItem>
-                  <SelectItem value="30dias">30 dias</SelectItem>
-                  <SelectItem value="90dias">90 dias</SelectItem>
-                  <SelectItem value="custom">Personalizado</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select defaultValue="todas">
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Tipo de Ação" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas as Ações</SelectItem>
-                  <SelectItem value="alteracao_ura">Alteração de URA</SelectItem>
-                  <SelectItem value="edicao_roteiro">Edição de Roteiro</SelectItem>
-                  <SelectItem value="validacao_perfil">Validação de Perfil</SelectItem>
-                  <SelectItem value="config_mensageria">Config. Mensageria</SelectItem>
-                  <SelectItem value="config_fila">Config. Filas</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select defaultValue="todos">
-                <SelectTrigger className="w-36">
-                  <Users className="h-3 w-3 mr-1" />
-                  <SelectValue placeholder="Usuário" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="gestor">Gestor</SelectItem>
-                  <SelectItem value="coordenacao">Coordenação</SelectItem>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Card className="p-6 overflow-hidden">
-              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                {dadosEmpresaGrande.auditoria.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors gap-4"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <History className="h-4 w-4 text-primary flex-shrink-0" />
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{item.acao}</div>
-                        <div className="text-sm text-muted-foreground truncate">
-                          Por: {item.por}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right text-sm flex-shrink-0">
-                      <div className="font-medium">{item.data}</div>
-                      <div className="text-muted-foreground">{item.horario}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        );
+        return <AuditoriaAcoesPanel />;
 
       case "ideias":
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="h-6 w-6 text-[#0A2647]" />
-                <h3 className="text-2xl font-bold text-[#0A2647]">
-                  Ideias e Sugestões
-                </h3>
-              </div>
-              <Button className="bg-[#0A2647] hover:bg-[#144272]">
-                <Lightbulb className="h-4 w-4 mr-2" />
-                Enviar Ideia
-              </Button>
-            </div>
-
-            <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 overflow-hidden">
-              <h4 className="font-semibold mb-3 text-lg flex items-center gap-2">
-                <Award className="h-5 w-5 text-yellow-600 flex-shrink-0" />
-                <span className="truncate">Reconhecimento da Semana</span>
-              </h4>
-              <div className="p-4 bg-white rounded-lg">
-                <div className="font-bold text-lg mb-1 truncate">
-                  {dadosEmpresaGrande.reconhecimentoSemana.usuario}
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {dadosEmpresaGrande.reconhecimentoSemana.motivo}
-                </p>
-              </div>
-            </Card>
-
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg">Ideias Enviadas</h4>
-              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                {dadosEmpresaGrande.ideias.map((ideia, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-lg border border-border hover:bg-muted/20 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-semibold">{ideia.usuario}</span>
-                          <span
-                            className={cn(
-                              "px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
-                              ideia.status === "Implementada" && "bg-green-100 text-green-700",
-                              ideia.status === "Aprovada" && "bg-blue-100 text-blue-700",
-                              ideia.status === "Em análise" && "bg-yellow-100 text-yellow-700"
-                            )}
-                          >
-                            {ideia.status}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {ideia.ideia}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        );
+        return <CentralIdeiasPanel />;
 
       case "configuracoes":
         return <ConfiguracoesFilaPanel />;
