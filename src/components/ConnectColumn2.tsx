@@ -25,6 +25,7 @@ import { EditarContatoDialog } from "./EditarContatoDialog";
 import { FinalizarConversaDialog } from "./FinalizarConversaDialog";
 import { BuscaConversaBar } from "./BuscaConversaBar";
 import { MensagemAcoesBar } from "./MensagemAcoesBar";
+import { EncaminharMensagemDialog } from "./EncaminharMensagemDialog";
 import { useFinalizarAtendimento } from "@/hooks/useFinalizarAtendimento";
 import {
   DropdownMenu,
@@ -54,6 +55,7 @@ export const ConnectColumn2 = () => {
   const [buscaOpen, setBuscaOpen] = useState(false);
   const [mensagemDestacadaId, setMensagemDestacadaId] = useState<string | null>(null);
   const [mensagemSelecionada, setMensagemSelecionada] = useState<any>(null);
+  const [encaminharDialogOpen, setEncaminharDialogOpen] = useState(false);
   const [reacoes, setReacoes] = useState<Record<string, string>>({});
   const [favoritas, setFavoritas] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -357,6 +359,14 @@ export const ConnectColumn2 = () => {
     }
   };
 
+  const handleEncaminharMensagem = (contatosIds: string[]) => {
+    // Lógica para encaminhar mensagem para os contatos selecionados
+    console.log("Encaminhando mensagem para:", contatosIds);
+    // TODO: Implementar envio real via Supabase
+    setEncaminharDialogOpen(false);
+    setMensagemSelecionada(null);
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-muted/20 relative">
       {/* Header com Avatar e Status */}
@@ -471,7 +481,7 @@ export const ConnectColumn2 = () => {
         <MensagemAcoesBar
           mensagem={mensagemSelecionada}
           onClose={() => setMensagemSelecionada(null)}
-          onEncaminhar={() => setShowTransferDialog(true)}
+          onOpenEncaminharDialog={() => setEncaminharDialogOpen(true)}
           onReagir={handleReagir}
           onFavoritar={handleFavoritar}
         />
@@ -647,6 +657,16 @@ export const ConnectColumn2 = () => {
           onOpenChange={setFinalizarDialogOpen}
           pacienteNome={pacienteSelecionado.nome}
           onConfirmar={handleFinalizarConversa}
+        />
+      )}
+
+      {/* Dialog de Encaminhar Mensagem */}
+      {mensagemSelecionada && (
+        <EncaminharMensagemDialog
+          open={encaminharDialogOpen}
+          onOpenChange={setEncaminharDialogOpen}
+          mensagem={mensagemSelecionada}
+          onEncaminhar={handleEncaminharMensagem}
         />
       )}
     </div>
