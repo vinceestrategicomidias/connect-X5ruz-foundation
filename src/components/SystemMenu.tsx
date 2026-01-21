@@ -17,19 +17,23 @@ import {
   Plus,
   Copy,
   RefreshCw,
+  Pencil,
 } from "lucide-react";
 import { ValidacoesPerfilPanel } from "./ValidacoesPerfilPanel";
 import { ApiWebhooksManager } from "./ApiWebhooksManager";
 import { ApiLogsViewer } from "./ApiLogsViewer";
 import { ApiDocsPanel } from "./ApiDocsPanel";
 import { IAConfigPanel } from "./IAConfigPanel";
-import { IAAlertasPanel } from "./IAAlertasPanel";
 import { FigurinhasManagement } from "./FigurinhasManagement";
+import { CriarSetorDialog } from "./CriarSetorDialog";
+import { CriarUsuarioDialog } from "./CriarUsuarioDialog";
+import { CriarPerfilAcessoDialog } from "./CriarPerfilAcessoDialog";
+import { EditarPerfilAcessoDialog } from "./EditarPerfilAcessoDialog";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
 import { useUnidades, useCriarUnidade } from "@/hooks/useUnidades";
 import { useSetores } from "@/hooks/useSetores";
-import { usePerfisAcesso } from "@/hooks/usePerfisAcesso";
+import { usePerfisAcesso, PerfilAcesso } from "@/hooks/usePerfisAcesso";
 import { useAtendentes } from "@/hooks/useAtendentes";
 import { useMensageriaConfig, useAtualizarMensageriaConfig } from "@/hooks/useMensageriaConfig";
 import { useUraConfig, useAtualizarUraConfig } from "@/hooks/useUraConfig";
@@ -91,6 +95,11 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
   const navigate = useNavigate();
   const [selectedSection, setSelectedSection] = useState<MenuSection>("empresa");
   const [validacoesOpen, setValidacoesOpen] = useState(false);
+  const [criarSetorOpen, setCriarSetorOpen] = useState(false);
+  const [criarUsuarioOpen, setCriarUsuarioOpen] = useState(false);
+  const [criarPerfilOpen, setCriarPerfilOpen] = useState(false);
+  const [editarPerfilOpen, setEditarPerfilOpen] = useState(false);
+  const [perfilParaEditar, setPerfilParaEditar] = useState<PerfilAcesso | null>(null);
   
   // Hooks de dados
   const { data: empresas } = useEmpresas();
@@ -336,11 +345,17 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
       case "setores":
         return (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold">Gestão de Setores</h3>
-              <p className="text-sm text-muted-foreground">
-                Setores cadastrados no sistema
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Gestão de Setores</h3>
+                <p className="text-sm text-muted-foreground">
+                  Setores cadastrados no sistema
+                </p>
+              </div>
+              <Button onClick={() => setCriarSetorOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo setor
+              </Button>
             </div>
             
             <Card>
@@ -383,11 +398,17 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
       case "usuarios":
         return (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold">Gestão de Usuários</h3>
-              <p className="text-sm text-muted-foreground">
-                Usuários cadastrados no sistema ({atendentes?.length || 0})
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Gestão de Usuários</h3>
+                <p className="text-sm text-muted-foreground">
+                  Usuários cadastrados no sistema ({atendentes?.length || 0})
+                </p>
+              </div>
+              <Button onClick={() => setCriarUsuarioOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo usuário
+              </Button>
             </div>
             
             <Card>
@@ -424,11 +445,17 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
       case "perfis":
         return (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold">Perfis de Acesso</h3>
-              <p className="text-sm text-muted-foreground">
-                Configure permissões por perfil
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Perfis de Acesso</h3>
+                <p className="text-sm text-muted-foreground">
+                  Configure permissões por perfil
+                </p>
+              </div>
+              <Button onClick={() => setCriarPerfilOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo perfil
+              </Button>
             </div>
             
             <Card>
@@ -441,7 +468,19 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
                     <div key={perfil.id} className="p-4 border rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
                         <h4 className="font-semibold">{perfil.nome}</h4>
-                        <Badge>{perfil.nome}</Badge>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => {
+                              setPerfilParaEditar(perfil);
+                              setEditarPerfilOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Badge>{perfil.nome}</Badge>
+                        </div>
                       </div>
                       {perfil.descricao && (
                         <p className="text-sm text-muted-foreground">{perfil.descricao}</p>
@@ -585,19 +624,14 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
             </div>
             
             <Tabs defaultValue="config" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="config">Configurações</TabsTrigger>
-                <TabsTrigger value="alertas">Alertas da Thalí</TabsTrigger>
                 <TabsTrigger value="figurinhas">Figurinhas</TabsTrigger>
                 <TabsTrigger value="mensageria">Mensageria</TabsTrigger>
               </TabsList>
 
               <TabsContent value="config">
                 <IAConfigPanel />
-              </TabsContent>
-
-              <TabsContent value="alertas">
-                <IAAlertasPanel />
               </TabsContent>
 
               <TabsContent value="figurinhas">
@@ -891,6 +925,14 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
       </Drawer>
       
       <ValidacoesPerfilPanel open={validacoesOpen} onOpenChange={setValidacoesOpen} />
+      <CriarSetorDialog open={criarSetorOpen} onOpenChange={setCriarSetorOpen} />
+      <CriarUsuarioDialog open={criarUsuarioOpen} onOpenChange={setCriarUsuarioOpen} />
+      <CriarPerfilAcessoDialog open={criarPerfilOpen} onOpenChange={setCriarPerfilOpen} />
+      <EditarPerfilAcessoDialog 
+        open={editarPerfilOpen} 
+        onOpenChange={setEditarPerfilOpen} 
+        perfil={perfilParaEditar} 
+      />
     </>
   );
 };
