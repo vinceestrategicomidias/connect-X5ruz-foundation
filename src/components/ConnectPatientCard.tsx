@@ -76,39 +76,19 @@ export const ConnectPatientCard = ({
       className="p-3 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm"
     >
       <div className="flex items-start gap-3">
-        {/* Bolinha de tempo de espera (maior, 10-12px) */}
-        {mostrarTempo && tempoExibido > 0 && (
-          <span className={cn(
-            "w-3 h-3 rounded-full flex-shrink-0 mt-1",
-            tempoExibido >= 30 
-              ? "bg-red-500"
-              : tempoExibido >= 15
-                ? "bg-yellow-500"
-                : "bg-green-500"
-          )} />
-        )}
-        
         <div className="flex-1 min-w-0">
-          {/* Linha 1: Nome + HH:mm | X min | Badge */}
+          {/* Linha 1: Nome + HH:mm + Badge */}
           <div className="flex items-center justify-between gap-2 mb-0.5">
             <h4 className="font-medium text-sm text-foreground truncate">
               {name}
             </h4>
             
-            {/* Direita: Horário | Tempo | Badge não lidas */}
+            {/* Direita: Horário + Badge não lidas */}
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {lastMessageTime && (
                 <span className="text-[10px] text-muted-foreground">
                   {lastMessageTime}
                 </span>
-              )}
-              {mostrarTempo && tempoExibido > 0 && (
-                <>
-                  <span className="text-[10px] text-muted-foreground">|</span>
-                  <span className="text-[10px] text-muted-foreground font-medium">
-                    {formatarTempoEspera(tempoExibido)}
-                  </span>
-                </>
               )}
               {unread && unread > 0 && (
                 <span className="bg-blue-500 text-white text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center rounded-full px-1 ml-1.5">
