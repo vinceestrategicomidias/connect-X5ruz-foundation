@@ -8,7 +8,7 @@ import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { Loader2, MessageSquarePlus, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useSetores } from "@/hooks/useSetores";
 import { NovaConversaDialog } from "./NovaConversaDialog";
 import {
@@ -17,6 +17,46 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+// Hook para buscar contagem de mensagens não lidas por paciente
+const useMensagensNaoLidas = (pacienteIds: string[]) => {
+  return useQuery({
+    queryKey: ["mensagens-nao-lidas", pacienteIds],
+    queryFn: async () => {
+      if (pacienteIds.length === 0) return {};
+
+      // Buscar conversas e mensagens de pacientes
+      const { data: conversas } = await supabase
+        .from("conversas")
+        .select("id, paciente_id")
+        .in("paciente_id", pacienteIds);
+
+      if (!conversas || conversas.length === 0) return {};
+
+      const conversaIds = conversas.map(c => c.id);
+      
+      // Buscar mensagens dos pacientes (não lidas = mensagens do paciente)
+      const { data: mensagens } = await supabase
+        .from("mensagens")
+        .select("conversa_id, autor")
+        .in("conversa_id", conversaIds)
+        .eq("autor", "paciente");
+
+      if (!mensagens) return {};
+
+      // Agrupar por paciente
+      const contagem: Record<string, number> = {};
+      conversas.forEach(conversa => {
+        const mensagensPaciente = mensagens.filter(m => m.conversa_id === conversa.id);
+        contagem[conversa.paciente_id] = mensagensPaciente.length;
+      });
+
+      return contagem;
+    },
+    enabled: pacienteIds.length > 0,
+    refetchInterval: 10000, // Atualizar a cada 10 segundos
+  });
+};
 
 // Hook para obter configurações salvas
 const useConfigFila = () => {
@@ -195,7 +235,6 @@ const PacientesLista = ({
     const intervalMs = getIntervalMs(config.atualizacaoTempoReal);
     const timer = setInterval(() => {
       setTick(t => t + 1);
-      // Também invalida a query para buscar dados atualizados
       queryClient.invalidateQueries({ queryKey: ["pacientes"] });
     }, intervalMs);
 
@@ -224,6 +263,20 @@ const PacientesLista = ({
     };
   }, [queryClient]);
 
+  // Filtrar pacientes por setor e atendente
+  const pacientesFiltrados =
+    status === "em_atendimento"
+      ? pacientes?.filter(
+          (p) =>
+            p.setor_id === atendenteLogado?.setor_id &&
+            p.atendente_responsavel === atendenteLogado?.id
+        )
+      : pacientes?.filter((p) => p.setor_id === atendenteLogado?.setor_id);
+
+  // Buscar mensagens não lidas para os pacientes filtrados
+  const pacienteIds = pacientesFiltrados?.map(p => p.id) || [];
+  const { data: mensagensNaoLidas } = useMensagensNaoLidas(pacienteIds);
+
   const handleClickPaciente = (paciente: any) => {
     setPacienteSelecionado(paciente);
   };
@@ -235,16 +288,6 @@ const PacientesLista = ({
       </div>
     );
   }
-
-  // Filtrar pacientes por setor e por atendente para "Meus Atendimentos"
-  const pacientesFiltrados =
-    status === "em_atendimento"
-      ? pacientes?.filter(
-          (p) =>
-            p.setor_id === atendenteLogado?.setor_id &&
-            p.atendente_responsavel === atendenteLogado?.id
-        )
-      : pacientes?.filter((p) => p.setor_id === atendenteLogado?.setor_id);
 
   if (!pacientesFiltrados || pacientesFiltrados.length === 0) {
     const mensagens = {
@@ -289,12 +332,11 @@ const PacientesLista = ({
 
   // Função para obter horário específico para pacientes do protótipo
   const getHorarioMensagem = (nome: string, createdAt: string): string => {
-    // Horários específicos conforme especificação
     const horariosEspecificos: Record<string, string> = {
       "Lúcia Andrade": "08:05",
       "Pedro Oliveira": "08:41",
-      "Ricardo Fernandes": "08:28", // meus atendimentos
-      "Vanessa Lima": "08:10", // meus atendimentos
+      "Ricardo Fernandes": "08:28",
+      "Vanessa Lima": "08:10",
     };
     
     if (horariosEspecificos[nome]) {
@@ -307,14 +349,13 @@ const PacientesLista = ({
     });
   };
 
-  // Função para obter tempo na fila específico para pacientes do protótipo
+  // Função para obter tempo na fila
   const getTempoNaFila = (nome: string, tempoOriginal: number): number => {
-    // Tempos específicos conforme especificação
     const temposEspecificos: Record<string, number> = {
-      "Lúcia Andrade": 35, // vermelho (>= 30min) - na fila
-      "Pedro Oliveira": 17, // amarelo (15-29min) - na fila
-      "Ricardo Fernandes": 17, // amarelo (15-29min) - meus atendimentos
-      "Vanessa Lima": 35, // vermelho (>= 30min) - meus atendimentos
+      "Lúcia Andrade": 35,
+      "Pedro Oliveira": 17,
+      "Ricardo Fernandes": 17,
+      "Vanessa Lima": 35,
     };
     
     if (temposEspecificos[nome] !== undefined) {
@@ -324,25 +365,29 @@ const PacientesLista = ({
     return tempoOriginal;
   };
 
-  // Função para obter quantidade de mensagens não lidas específico para protótipo
-  const getMensagensNaoLidas = (nome: string): number => {
+  // Função para obter quantidade de mensagens não lidas
+  const getMensagensNaoLidas = (pacienteId: string, nome: string): number => {
+    // Primeiro verifica se há dados reais do banco
+    if (mensagensNaoLidas && typeof mensagensNaoLidas[pacienteId] === 'number') {
+      return mensagensNaoLidas[pacienteId];
+    }
+    
+    // Fallback para dados de protótipo
     const naoLidasEspecificas: Record<string, number> = {
       "Lúcia Andrade": 3,
       "Pedro Oliveira": 1,
-      "Ricardo Fernandes": 2, // meus atendimentos
-      "Vanessa Lima": 3, // meus atendimentos
+      "Ricardo Fernandes": 2,
+      "Vanessa Lima": 3,
     };
     
-    if (naoLidasEspecificas[nome] !== undefined) {
-      return naoLidasEspecificas[nome];
-    }
-    
-    return Math.floor(Math.random() * 4);
+    return naoLidasEspecificas[nome] ?? 0;
   };
   
-  // Função para obter prévia de mensagem específica para protótipo
+  // Função para obter prévia de mensagem
   const getPreviewMensagem = (nome: string, mensagemOriginal?: string): string | undefined => {
     const previasEspecificas: Record<string, string> = {
+      "Lúcia Andrade": "Bom dia, gostaria de saber sobre os...",
+      "Pedro Oliveira": "Olá, preciso de informações",
       "Ricardo Fernandes": "Consegue me enviar a proposta com desconto?",
       "Vanessa Lima": "Qual a forma de pagamento para confirmar hoje?",
     };
@@ -360,6 +405,7 @@ const PacientesLista = ({
         {pacientesOrdenados.map((paciente) => {
           const tempoFila = getTempoNaFila(paciente.nome, paciente.tempo_na_fila || 0);
           const previewMensagem = getPreviewMensagem(paciente.nome, paciente.ultima_mensagem || undefined);
+          const naoLidas = getMensagensNaoLidas(paciente.id, paciente.nome);
           
           return (
             <ConnectPatientCard
@@ -377,7 +423,7 @@ const PacientesLista = ({
               tempoNaFila={tempoFila}
               tempoSemResposta={tempoFila}
               tempoLimiteAlerta={config.tempoAlertaFila}
-              unread={getMensagensNaoLidas(paciente.nome)}
+              unread={naoLidas}
               onClick={() => handleClickPaciente(paciente)}
             />
           );
