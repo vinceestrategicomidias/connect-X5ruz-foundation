@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,17 +13,29 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnidades } from "@/hooks/useUnidades";
 import { useSetores } from "@/hooks/useSetores";
 import { usePerfisAcesso } from "@/hooks/usePerfisAcesso";
 import { toast } from "sonner";
-import { Loader2, Plus, User, Shield } from "lucide-react";
+import { Loader2, Save, User, Shield, KeyRound } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
-interface CriarUsuarioDialogProps {
+interface EditarUsuarioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  usuario: {
+    id: string;
+    nome: string;
+    email: string;
+    telefone?: string | null;
+    unidade_id?: string | null;
+    setor_id?: string | null;
+    perfil_id?: string | null;
+    cargo: string;
+    ativo: boolean;
+  } | null;
 }
 
 interface UsuarioFormData {
@@ -34,7 +46,7 @@ interface UsuarioFormData {
   setor_id: string;
   perfil_id: string;
   cargo: string;
-  senha: string;
+  ativo: boolean;
   permissoes_personalizadas: string[];
 }
 
@@ -51,12 +63,14 @@ const permissoesDisponiveis = [
   { id: "gerenciar_setores", label: "Gerenciar setores" },
 ];
 
-export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogProps) => {
+export const EditarUsuarioDialog = ({ open, onOpenChange, usuario }: EditarUsuarioDialogProps) => {
   const queryClient = useQueryClient();
   const { data: unidades } = useUnidades();
   const { data: setores } = useSetores();
   const { data: perfis } = usePerfisAcesso();
   const [isLoading, setIsLoading] = useState(false);
+  const [redefinirSenhaOpen, setRedefinirSenhaOpen] = useState(false);
+  const [novaSenha, setNovaSenha] = useState("");
 
   const [formData, setFormData] = useState<UsuarioFormData>({
     nome: "",
@@ -66,11 +80,28 @@ export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogPro
     setor_id: "",
     perfil_id: "",
     cargo: "atendente",
-    senha: "",
+    ativo: true,
     permissoes_personalizadas: [],
   });
 
+  useEffect(() => {
+    if (usuario) {
+      setFormData({
+        nome: usuario.nome || "",
+        email: usuario.email || "",
+        telefone: usuario.telefone || "",
+        unidade_id: usuario.unidade_id || "",
+        setor_id: usuario.setor_id || "",
+        perfil_id: usuario.perfil_id || "",
+        cargo: usuario.cargo || "atendente",
+        ativo: usuario.ativo ?? true,
+        permissoes_personalizadas: [],
+      });
+    }
+  }, [usuario]);
+
   const handleSubmit = async () => {
+    if (!usuario) return;
     if (!formData.nome.trim()) {
       toast.error("Nome é obrigatório");
       return;
@@ -82,36 +113,49 @@ export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogPro
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.from("atendentes").insert({
+      const { error } = await supabase.from("atendentes").update({
         nome: formData.nome,
         email: formData.email,
-        senha: formData.senha || null,
         setor_id: formData.setor_id || null,
         unidade_id: formData.unidade_id || null,
         perfil_id: formData.perfil_id || null,
         cargo: formData.cargo as any,
-        ativo: true,
-      });
+        ativo: formData.ativo,
+      }).eq("id", usuario.id);
 
       if (error) throw error;
 
-      toast.success("Usuário criado com sucesso!");
+      toast.success("Usuário atualizado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["atendentes"] });
       onOpenChange(false);
-      setFormData({
-        nome: "",
-        email: "",
-        telefone: "",
-        unidade_id: "",
-        setor_id: "",
-        perfil_id: "",
-        cargo: "atendente",
-        senha: "",
-        permissoes_personalizadas: [],
-      });
     } catch (error) {
       console.error(error);
-      toast.error("Erro ao criar usuário");
+      toast.error("Erro ao atualizar usuário");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRedefinirSenha = async () => {
+    if (!usuario || !novaSenha.trim()) {
+      toast.error("Digite a nova senha");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.from("atendentes").update({
+        senha: novaSenha,
+      }).eq("id", usuario.id);
+
+      if (error) throw error;
+
+      toast.success("Senha redefinida com sucesso!");
+      setNovaSenha("");
+      setRedefinirSenhaOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao redefinir senha");
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +171,9 @@ export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogPro
   };
 
   const perfilSelecionado = perfis?.find((p) => p.id === formData.perfil_id);
+  const mostrarPermissoesExtras = !!formData.perfil_id;
+
+  if (!usuario) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -134,15 +181,29 @@ export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogPro
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Criar Novo Usuário
+            Editar Usuário
           </DialogTitle>
           <DialogDescription>
-            Adicione um novo usuário ao sistema com as permissões adequadas
+            Edite os dados do usuário {usuario.nome}
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-6">
+            {/* Status */}
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/20">
+              <div>
+                <Label className="font-medium">Status do Usuário</Label>
+                <p className="text-sm text-muted-foreground">
+                  {formData.ativo ? "Usuário ativo no sistema" : "Usuário inativo"}
+                </p>
+              </div>
+              <Switch
+                checked={formData.ativo}
+                onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
+              />
+            </div>
+
             {/* Dados Pessoais */}
             <div className="space-y-4">
               <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
@@ -184,14 +245,32 @@ export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogPro
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="senha">Senha Inicial</Label>
-                  <Input
-                    id="senha"
-                    type="password"
-                    value={formData.senha}
-                    onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                    placeholder="••••••••"
-                  />
+                  <Label>Senha</Label>
+                  {redefinirSenhaOpen ? (
+                    <div className="flex gap-2">
+                      <Input
+                        type="password"
+                        value={novaSenha}
+                        onChange={(e) => setNovaSenha(e.target.value)}
+                        placeholder="Nova senha"
+                      />
+                      <Button size="sm" onClick={handleRedefinirSenha} disabled={isLoading}>
+                        Salvar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setRedefinirSenhaOpen(false)}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setRedefinirSenhaOpen(true)}
+                    >
+                      <KeyRound className="h-4 w-4 mr-2" />
+                      Redefinir Senha
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -292,23 +371,23 @@ export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogPro
                 </div>
               </div>
 
-              {formData.perfil_id && (
+              {mostrarPermissoesExtras && (
                 <div className="space-y-3 p-4 rounded-lg border bg-muted/20">
                   <div className="space-y-1">
                     <h5 className="text-sm font-medium">Permissões extras (além do perfil)</h5>
                     <p className="text-xs text-muted-foreground">
-                      Selecione permissões adicionais para este usuário, além das permissões do perfil "{perfilSelecionado?.nome || 'selecionado'}".
+                      Selecione permissões adicionais para este usuário, além das permissões do perfil "{perfilSelecionado?.nome}".
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {permissoesDisponiveis.map((perm) => (
                       <div key={perm.id} className="flex items-center space-x-2">
                         <Checkbox
-                          id={perm.id}
+                          id={`edit-${perm.id}`}
                           checked={formData.permissoes_personalizadas.includes(perm.id)}
                           onCheckedChange={() => togglePermissao(perm.id)}
                         />
-                        <Label htmlFor={perm.id} className="text-sm font-normal cursor-pointer">
+                        <Label htmlFor={`edit-${perm.id}`} className="text-sm font-normal cursor-pointer">
                           {perm.label}
                         </Label>
                       </div>
@@ -332,12 +411,12 @@ export const CriarUsuarioDialog = ({ open, onOpenChange }: CriarUsuarioDialogPro
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Criando...
+                Salvando...
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Usuário
+                <Save className="h-4 w-4 mr-2" />
+                Salvar Alterações
               </>
             )}
           </Button>

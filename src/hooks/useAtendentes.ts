@@ -4,9 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 export interface Atendente {
   id: string;
   nome: string;
+  email: string;
+  telefone?: string | null;
   cargo: "atendente" | "coordenacao" | "gestor";
   avatar: string | null;
-  setor_id: string;
+  setor_id: string | null;
+  unidade_id?: string | null;
+  perfil_id?: string | null;
+  ativo: boolean;
 }
 
 export const useAtendentes = (setorId?: string) => {
