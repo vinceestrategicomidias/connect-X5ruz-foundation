@@ -99,33 +99,31 @@ export const ConnectPatientCard = ({
             )}
           </div>
           
-          {/* Linha 2: Preview mensagem | Tempo */}
+          {/* Linha 2: Preview mensagem | Tempo + Badge não lidas */}
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground truncate flex-1">
               {formatarPreviewMensagem(lastMessage)}
             </p>
-            {mostrarTempo && tempoExibido > 0 && (
-              <span className={cn(
-                "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                tempoExibido >= 30 
-                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  : tempoExibido >= 15
-                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-              )}>
-                {formatarTempoEspera(tempoExibido)}
-              </span>
-            )}
-          </div>
-          
-          {/* Linha 3: Badge de não lidas */}
-          {unread && unread > 0 && (
-            <div className="flex justify-end mt-1">
-              <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
-                {unread}
-              </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {mostrarTempo && tempoExibido > 0 && (
+                <span className={cn(
+                  "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                  tempoExibido >= 30 
+                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    : tempoExibido >= 15
+                      ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                      : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                )}>
+                  {formatarTempoEspera(tempoExibido)}
+                </span>
+              )}
+              {unread && unread > 0 && (
+                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                  {unread}
+                </span>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
