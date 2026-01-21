@@ -7,7 +7,7 @@ import { ConnectStatusIndicator } from "./ConnectStatusIndicator";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConversas";
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
-import { useEnviarMensagem, useAtualizarStatusPaciente, useAtualizarNomePaciente } from "@/hooks/useMutations";
+import { useEnviarMensagem, useAtualizarStatusPaciente, useAtualizarContatoPaciente } from "@/hooks/useMutations";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ConnectTransferDialogNew } from "./ConnectTransferDialogNew";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,7 @@ import { AudioRecorder } from "./AudioRecorder";
 import { useUploadAnexo } from "@/hooks/useAnexos";
 import { EmojiStickerPicker } from "./EmojiStickerPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { EditarNomeDialog } from "./EditarNomeDialog";
+import { EditarContatoDialog } from "./EditarContatoDialog";
 import { FinalizarConversaDialog } from "./FinalizarConversaDialog";
 import { BuscaConversaBar } from "./BuscaConversaBar";
 import { MensagemAcoesBar } from "./MensagemAcoesBar";
@@ -59,7 +59,7 @@ export const ConnectColumn2 = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadAnexo = useUploadAnexo();
-  const atualizarNome = useAtualizarNomePaciente();
+  const atualizarContato = useAtualizarContatoPaciente();
 
   // Scroll automático para última mensagem
   useEffect(() => {
@@ -292,12 +292,13 @@ export const ConnectColumn2 = () => {
     }
   };
 
-  const handleSalvarNome = async (novoNome: string) => {
+  const handleSalvarContato = async (novoNome: string, novoTelefone: string) => {
     if (!pacienteSelecionado) return;
     
-    await atualizarNome.mutateAsync({
+    await atualizarContato.mutateAsync({
       pacienteId: pacienteSelecionado.id,
       novoNome,
+      novoTelefone,
     });
   };
 
@@ -630,12 +631,13 @@ export const ConnectColumn2 = () => {
         paciente={pacienteSelecionado}
       />
 
-      {/* Dialog de Editar Nome */}
-      <EditarNomeDialog
+      {/* Dialog de Editar Contato */}
+      <EditarContatoDialog
         open={editarNomeOpen}
         onOpenChange={setEditarNomeOpen}
         nomeAtual={pacienteSelecionado?.nome || ""}
-        onSalvar={handleSalvarNome}
+        telefoneAtual={pacienteSelecionado?.telefone || ""}
+        onSalvar={handleSalvarContato}
       />
 
       {/* Dialog de Finalizar Conversa */}

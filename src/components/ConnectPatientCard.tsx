@@ -9,6 +9,7 @@ interface ConnectPatientCardProps {
   unread?: number;
   onClick?: () => void;
   tempoNaFila?: number;
+  tempoSemResposta?: number; // Novo: para Meus Atendimentos
   tempoLimiteAlerta?: number;
 }
 
@@ -41,6 +42,7 @@ const formatarPreviewMensagem = (mensagem: string | undefined): string => {
   if (mensagem.includes("[IMAGEM]") || mensagem.includes("[FOTO]")) return "🖼️ Imagem";
   if (mensagem.includes("[FIGURINHA]") || mensagem.includes("[STICKER]")) return "✨ Figurinha";
   if (mensagem.includes("[VIDEO]") || mensagem.includes("[VÍDEO]")) return "🎬 Vídeo";
+  if (mensagem.includes("[CONTATO]")) return "👤 Contato";
   
   // Truncar texto longo
   if (mensagem.length > 50) {
@@ -57,8 +59,15 @@ export const ConnectPatientCard = ({
   unread,
   onClick,
   tempoNaFila = 0,
+  tempoSemResposta = 0,
 }: ConnectPatientCardProps) => {
   const isEspera = status === "espera";
+  const isAndamento = status === "andamento";
+  
+  // Usa tempoNaFila para Fila e tempoSemResposta para Meus Atendimentos
+  const tempoExibido = isEspera ? tempoNaFila : (isAndamento ? tempoSemResposta : 0);
+  const mostrarTempo = isEspera || isAndamento;
+  const mostrarBolinha = mostrarTempo && tempoExibido > 0;
   
   return (
     <div
@@ -72,10 +81,10 @@ export const ConnectPatientCard = ({
           {/* Linha 1: Bolinha + Nome | Horário */}
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              {isEspera && (
+              {mostrarBolinha && (
                 <span className={cn(
                   "w-2.5 h-2.5 rounded-full flex-shrink-0",
-                  getCorBolinha(tempoNaFila)
+                  getCorBolinha(tempoExibido)
                 )} />
               )}
               <h4 className="font-medium text-sm text-foreground truncate">
@@ -89,21 +98,21 @@ export const ConnectPatientCard = ({
             )}
           </div>
           
-          {/* Linha 2: Preview mensagem | Tempo na fila */}
+          {/* Linha 2: Preview mensagem | Tempo */}
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground truncate flex-1">
               {formatarPreviewMensagem(lastMessage)}
             </p>
-            {isEspera && tempoNaFila > 0 && (
+            {mostrarTempo && tempoExibido > 0 && (
               <span className={cn(
                 "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                tempoNaFila >= 30 
+                tempoExibido >= 30 
                   ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  : tempoNaFila >= 15
+                  : tempoExibido >= 15
                     ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
                     : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
               )}>
-                {formatarTempoEspera(tempoNaFila)}
+                {formatarTempoEspera(tempoExibido)}
               </span>
             )}
           </div>

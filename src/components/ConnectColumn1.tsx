@@ -6,11 +6,17 @@ import { usePacientes } from "@/hooks/usePacientes";
 import { ConnectPatientCard } from "./ConnectPatientCard";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
-import { Loader2, MessageSquarePlus } from "lucide-react";
+import { Loader2, MessageSquarePlus, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetores } from "@/hooks/useSetores";
 import { NovaConversaDialog } from "./NovaConversaDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Hook para obter configurações salvas
 const useConfigFila = () => {
@@ -49,12 +55,15 @@ const getIntervalMs = (intervalo: string): number => {
   }
 };
 
+type OrdenacaoFila = "crescente" | "decrescente";
+
 export const ConnectColumn1 = () => {
   const { atendenteLogado } = useAtendenteContext();
   const { data: setores } = useSetores();
   const [novaConversaOpen, setNovaConversaOpen] = useState(false);
   const { data: pacientesFila } = usePacientes("fila");
   const config = useConfigFila();
+  const [ordenacaoFila, setOrdenacaoFila] = useState<OrdenacaoFila>("decrescente");
   
   const nomeSetor = setores?.find(s => s.id === atendenteLogado?.setor_id)?.nome || "Atendimento";
   
@@ -92,7 +101,38 @@ export const ConnectColumn1 = () => {
               value="espera" 
               className="text-xs font-medium py-2.5 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap"
             >
-              Fila {config.exibirContadorFila && countFila > 0 && `(${countFila})`}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <span className="flex items-center gap-1 cursor-pointer">
+                    Fila {config.exibirContadorFila && countFila > 0 && `(${countFila})`}
+                    {ordenacaoFila === "decrescente" ? (
+                      <ChevronDown className="h-3 w-3" />
+                    ) : (
+                      <ChevronUp className="h-3 w-3" />
+                    )}
+                  </span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOrdenacaoFila("crescente");
+                    }}
+                    className={ordenacaoFila === "crescente" ? "bg-accent" : ""}
+                  >
+                    Menor tempo primeiro (crescente)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOrdenacaoFila("decrescente");
+                    }}
+                    className={ordenacaoFila === "decrescente" ? "bg-accent" : ""}
+                  >
+                    Maior tempo primeiro (decrescente)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </TabsTrigger>
             <TabsTrigger 
               value="andamento" 
@@ -110,13 +150,13 @@ export const ConnectColumn1 = () => {
         </div>
 
         <TabsContent value="espera" className="flex-1 mt-2">
-          <PacientesLista status="fila" config={config} />
+          <PacientesLista status="fila" config={config} ordenacao={ordenacaoFila} />
         </TabsContent>
         <TabsContent value="andamento" className="flex-1 mt-2">
-          <PacientesLista status="em_atendimento" config={config} />
+          <PacientesLista status="em_atendimento" config={config} ordenacao="decrescente" />
         </TabsContent>
         <TabsContent value="finalizados" className="flex-1 mt-2">
-          <PacientesLista status="finalizado" config={config} />
+          <PacientesLista status="finalizado" config={config} ordenacao="decrescente" />
         </TabsContent>
       </Tabs>
     </div>
@@ -129,7 +169,15 @@ interface ConfigFila {
   atualizacaoTempoReal: "5s" | "10s" | "30s" | "60s";
 }
 
-const PacientesLista = ({ status, config }: { status: "fila" | "em_atendimento" | "finalizado"; config: ConfigFila }) => {
+const PacientesLista = ({ 
+  status, 
+  config,
+  ordenacao = "decrescente"
+}: { 
+  status: "fila" | "em_atendimento" | "finalizado"; 
+  config: ConfigFila;
+  ordenacao?: "crescente" | "decrescente";
+}) => {
   const { data: pacientes, isLoading } = usePacientes(status);
   const { setPacienteSelecionado } = usePacienteContext();
   const { atendenteLogado } = useAtendenteContext();
@@ -208,23 +256,29 @@ const PacientesLista = ({ status, config }: { status: "fila" | "em_atendimento" 
     );
   }
 
-  // Ordenar pacientes: maior tempo de espera primeiro (mais críticos no topo)
+  // Ordenar pacientes conforme a ordenação escolhida
   const pacientesOrdenados = [...pacientesFiltrados].sort((a, b) => {
     const tempoLimite = config.tempoAlertaFila;
-    const aEmAlerta = a.status === "fila" && (a.tempo_na_fila || 0) >= tempoLimite;
-    const bEmAlerta = b.status === "fila" && (b.tempo_na_fila || 0) >= tempoLimite;
+    const tempoA = a.tempo_na_fila || 0;
+    const tempoB = b.tempo_na_fila || 0;
+    const aEmAlerta = a.status === "fila" && tempoA >= tempoLimite;
+    const bEmAlerta = b.status === "fila" && tempoB >= tempoLimite;
     
-    // Alertas primeiro
-    if (aEmAlerta && !bEmAlerta) return -1;
-    if (!aEmAlerta && bEmAlerta) return 1;
+    // Alertas primeiro (se decrescente)
+    if (ordenacao === "decrescente") {
+      if (aEmAlerta && !bEmAlerta) return -1;
+      if (!aEmAlerta && bEmAlerta) return 1;
+    }
     
-    // Depois por tempo na fila (maior primeiro)
-    if ((b.tempo_na_fila || 0) !== (a.tempo_na_fila || 0)) {
-      return (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0);
+    // Ordenar por tempo
+    if (tempoA !== tempoB) {
+      return ordenacao === "decrescente" ? tempoB - tempoA : tempoA - tempoB;
     }
     
     // Por último, por data de criação
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    const dateA = new Date(a.created_at).getTime();
+    const dateB = new Date(b.created_at).getTime();
+    return ordenacao === "decrescente" ? dateB - dateA : dateA - dateB;
   });
 
   return (
@@ -235,7 +289,7 @@ const PacientesLista = ({ status, config }: { status: "fila" | "em_atendimento" 
             key={paciente.id}
             name={paciente.nome}
             lastMessage={paciente.ultima_mensagem || undefined}
-            lastMessageTime={new Date(paciente.created_at).toLocaleTimeString('pt-BR', { 
+            lastMessageTime={new Date(paciente.created_at || new Date()).toLocaleTimeString('pt-BR', { 
               hour: '2-digit', 
               minute: '2-digit' 
             })}
@@ -247,6 +301,7 @@ const PacientesLista = ({ status, config }: { status: "fila" | "em_atendimento" 
                 : "finalizado"
             }
             tempoNaFila={paciente.tempo_na_fila || 0}
+            tempoSemResposta={paciente.tempo_na_fila || 0} // Usa tempo_na_fila como proxy
             tempoLimiteAlerta={config.tempoAlertaFila}
             unread={Math.floor(Math.random() * 4)} // Simular mensagens não lidas
             onClick={() => handleClickPaciente(paciente)}
