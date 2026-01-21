@@ -301,10 +301,10 @@ const PacientesLista = ({
 
   // Função para obter tempo na fila específico para pacientes do protótipo
   const getTempoNaFila = (nome: string, tempoOriginal: number): number => {
-    // Tempos específicos para Lúcia Andrade e Pedro Oliveira
+    // Tempos específicos para Lúcia Andrade e Pedro Oliveira conforme imagem de referência
     const temposEspecificos: Record<string, number> = {
       "Lúcia Andrade": 35, // vermelho (>= 30min)
-      "Pedro Oliveira": 8, // verde (< 15min)
+      "Pedro Oliveira": 17, // amarelo (15-29min)
     };
     
     if (temposEspecificos[nome] !== undefined) {
