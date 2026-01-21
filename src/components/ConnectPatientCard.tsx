@@ -22,14 +22,15 @@ const formatarTempoEspera = (minutos: number): string => {
   return mins > 0 ? `${horas}h${mins.toString().padStart(2, '0')}` : `${horas}h`;
 };
 
+// Cores de intensidade: verde 0-14min, amarelo 15-29min, vermelho 30+ min
 const getCorBolinha = (minutos: number): string => {
   if (minutos >= 30) {
     return "bg-red-500";
   }
   if (minutos >= 15) {
-    return "bg-orange-500";
+    return "bg-yellow-500";
   }
-  // Verde para <= 5 min (ou qualquer valor abaixo de 15)
+  // Verde para 0-14 min
   return "bg-green-500";
 };
 
@@ -109,7 +110,7 @@ export const ConnectPatientCard = ({
                 tempoExibido >= 30 
                   ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                   : tempoExibido >= 15
-                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                     : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
               )}>
                 {formatarTempoEspera(tempoExibido)}
