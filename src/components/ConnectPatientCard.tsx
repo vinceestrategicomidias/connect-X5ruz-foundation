@@ -75,11 +75,11 @@ export const ConnectPatientCard = ({
       onClick={onClick}
       className="p-3 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         {/* Bolinha de status (tempo de espera) */}
         {mostrarBolinha && (
           <span className={cn(
-            "w-2.5 h-2.5 rounded-full flex-shrink-0",
+            "w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1",
             tempoExibido >= 30 
               ? "bg-destructive"
               : tempoExibido >= 15
@@ -90,44 +90,40 @@ export const ConnectPatientCard = ({
         
         {/* Conteúdo principal */}
         <div className="flex-1 min-w-0">
-          {/* Linha 1: Nome */}
-          <div className="flex items-center gap-2">
-            <h4 className="font-medium text-sm text-foreground truncate flex-1">
+          {/* Linha 1: Nome e metadados */}
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-medium text-sm text-foreground truncate">
               {name}
             </h4>
+            
+            {/* Horário e Tempo */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {lastMessageTime && (
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  {lastMessageTime}
+                </span>
+              )}
+              {mostrarTempo && tempoExibido > 0 && (
+                <>
+                  <span className="text-[10px] text-muted-foreground">|</span>
+                  <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                    {formatarTempoEspera(tempoExibido)}
+                  </span>
+                </>
+              )}
+              {/* Badge de não lidas */}
+              {unread && unread > 0 && (
+                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 ml-1">
+                  {unread}
+                </span>
+              )}
+            </div>
           </div>
           
           {/* Linha 2: Preview mensagem */}
           <p className="text-xs text-muted-foreground truncate mt-0.5">
             {formatarPreviewMensagem(lastMessage)}
           </p>
-        </div>
-        
-        {/* Área direita: Horário, Tempo e Badge */}
-        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          {/* Linha 1: Horário e Tempo */}
-          <div className="flex items-center gap-1">
-            {lastMessageTime && (
-              <span className="text-[10px] text-muted-foreground">
-                {lastMessageTime}
-              </span>
-            )}
-            {mostrarTempo && tempoExibido > 0 && (
-              <>
-                <span className="text-[10px] text-muted-foreground">|</span>
-                <span className="text-[10px] text-muted-foreground font-medium">
-                  {formatarTempoEspera(tempoExibido)}
-                </span>
-              </>
-            )}
-          </div>
-          
-          {/* Linha 2: Badge de não lidas */}
-          {unread && unread > 0 && (
-            <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
-              {unread}
-            </span>
-          )}
         </div>
       </div>
     </div>
