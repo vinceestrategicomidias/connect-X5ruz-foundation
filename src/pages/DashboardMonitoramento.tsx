@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Maximize2, Users, Clock, TrendingUp, Phone, MessageSquare, Timer, Target, Award, UserCheck, Coffee, ArrowLeft, ChevronUp, ChevronDown, Minus } from "lucide-react";
+import { Maximize2, Users, Clock, TrendingUp, Phone, MessageSquare, Timer, Target, Award, UserCheck, Coffee, ArrowLeft, ChevronUp, ChevronDown, Minus, Eye } from "lucide-react";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { usePacientes } from "@/hooks/usePacientes";
 import { useChamadas } from "@/hooks/useChamadas";
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConnectAvatar } from "@/components/ConnectAvatar";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, ReferenceLine } from "recharts";
 import { MapaBrasilClientes } from "@/components/MapaBrasilClientes";
+import { MonitoramentoAtendentesPanel } from "@/components/MonitoramentoAtendentesPanel";
 
 interface DashboardMetrics {
   emAtendimento: number;
@@ -52,6 +53,7 @@ export default function DashboardMonitoramento() {
   const [periodoFiltro, setPeriodoFiltro] = useState("agora");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [tamanhoFila, setTamanhoFila] = useState<"compacto" | "medio" | "expandido">("medio");
+  const [monitoramentoOpen, setMonitoramentoOpen] = useState(false);
 
   // Alturas do bloco Fila em tempo real
   const alturasFila = {
@@ -270,7 +272,12 @@ export default function DashboardMonitoramento() {
         <MetricCard icon={Target} label="SLA resposta" value={`${metrics.sla.toFixed(0)}%`} alert={metrics.sla < 85} />
         <MetricCard icon={Award} label="NPS médio hoje" value={metrics.nps.toFixed(0)} />
         <MetricCard icon={Phone} label="Encerrados hoje" value={metrics.encerradosHoje} />
-        <MetricCard icon={UserCheck} label="Atendentes online" value={metrics.atendentesOnline} />
+        <div 
+          className="cursor-pointer transition-transform hover:scale-105"
+          onClick={() => setMonitoramentoOpen(true)}
+        >
+          <MetricCard icon={UserCheck} label="Atendentes online" value={metrics.atendentesOnline} />
+        </div>
         <MetricCard icon={Coffee} label="Em pausa" value={metrics.atendentesPausa} />
       </div>
 
@@ -303,18 +310,25 @@ export default function DashboardMonitoramento() {
                 return (
                   <div 
                     key={paciente.id}
-                    className="p-3 rounded-lg border border-border"
+                    className="p-3 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => setMonitoramentoOpen(true)}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <ConnectAvatar name={paciente.nome} size="sm" />
                         <span className="font-medium text-sm">{paciente.nome}</span>
                       </div>
-                      <Badge className={corBadge}>
-                        {tempo} min
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className={corBadge}>
+                          {tempo} min
+                        </Badge>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" title="Visualizar conversa">
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">Pré-venda • Sede - Vitória</p>
+                    <p className="text-xs text-muted-foreground truncate">{paciente.ultima_mensagem || "Sem mensagem"}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Pré-venda • Sede - Vitória</p>
                   </div>
                 );
               })}
@@ -404,6 +418,12 @@ export default function DashboardMonitoramento() {
       <div className="mb-6">
         <MapaBrasilClientes />
       </div>
+
+      {/* Painel de Monitoramento */}
+      <MonitoramentoAtendentesPanel
+        open={monitoramentoOpen}
+        onOpenChange={setMonitoramentoOpen}
+      />
     </div>
   );
 }

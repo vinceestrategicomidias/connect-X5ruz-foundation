@@ -19,6 +19,8 @@ import {
   Inbox,
   Building2,
   Loader2,
+  MessageSquare,
+  Eye,
 } from "lucide-react";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { useAtendentes } from "@/hooks/useAtendentes";
@@ -439,22 +441,58 @@ export const MonitoramentoAtendentesPanel = ({
                             <p className="text-sm text-muted-foreground">
                               {pacienteSelecionado.telefone}
                             </p>
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs mt-1 ${getTempoColor(pacienteSelecionado.tempo_na_fila || 0)}`}
+                            >
+                              Aguardando há {pacienteSelecionado.tempo_na_fila || 0} min
+                            </Badge>
                           </div>
                         </div>
                       </div>
 
-                      {/* Prévia da conversa */}
-                      <div className="flex-1 p-4 bg-muted/10">
-                        <p className="text-sm text-muted-foreground mb-3">Última mensagem:</p>
-                        <div className="p-3 bg-background rounded-lg border">
-                          <p className="text-sm">{pacienteSelecionado.ultima_mensagem || "Sem mensagem"}</p>
+                      {/* Prévia da conversa em tempo real */}
+                      <div className="flex-1 overflow-hidden flex flex-col">
+                        <div className="p-3 border-b flex items-center gap-2">
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Visualização da Conversa (tempo real)
+                          </p>
                         </div>
+                        <ScrollArea className="flex-1 p-4 bg-muted/10">
+                          <div className="space-y-3">
+                            {/* Mensagem do paciente (mock) */}
+                            <div className="flex justify-start">
+                              <div className="max-w-[80%] p-3 rounded-lg bg-background border">
+                                <p className="text-sm">{pacienteSelecionado.ultima_mensagem || "Olá, gostaria de informações"}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">
+                                  {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </ScrollArea>
                       </div>
 
                       {/* Ações */}
                       <div className="p-4 border-t space-y-2">
+                        {(isGestor || isCoordenacao) && (
+                          <div className="flex gap-2 mb-3">
+                            <Textarea
+                              value={mensagemResposta}
+                              onChange={(e) => setMensagemResposta(e.target.value)}
+                              placeholder="Responder como gestor..."
+                              rows={2}
+                              className="flex-1"
+                            />
+                            <Button size="icon" onClick={handleResponder}>
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                         <Button
                           className="w-full gap-2"
+                          variant="outline"
                           onClick={() => handleAbrirTransferencia(pacienteSelecionado)}
                         >
                           <ArrowRightLeft className="h-4 w-4" />
