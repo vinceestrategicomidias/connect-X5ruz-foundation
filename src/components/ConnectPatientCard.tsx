@@ -73,20 +73,18 @@ export const ConnectPatientCard = ({
   return (
     <div
       onClick={onClick}
-      className="p-3 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm overflow-hidden"
+      className="p-3 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm"
     >
-      <div className="flex items-start gap-3 w-full overflow-hidden">
+      <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           <ConnectAvatar name={name} size="md" />
         </div>
         
-        <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="flex-1 min-w-0 pr-1">
           {/* Linha 1: Nome do paciente */}
-          <div className="mb-0.5">
-            <h4 className="font-medium text-sm text-foreground truncate">
-              {name}
-            </h4>
-          </div>
+          <h4 className="font-medium text-sm text-foreground truncate mb-0.5">
+            {name}
+          </h4>
           
           {/* Linha 2: Preview mensagem */}
           <p className="text-xs text-muted-foreground truncate mb-1">
@@ -94,9 +92,9 @@ export const ConnectPatientCard = ({
           </p>
           
           {/* Linha 3: Bolinha tempo + Tempo | Horário | Não lidas */}
-          <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center justify-between">
             {/* Bolinha colorida + tempo de espera */}
-            <div className="flex items-center gap-1 min-w-0 flex-shrink">
+            <div className="flex items-center gap-1">
               {mostrarTempo && tempoExibido > 0 && (
                 <>
                   <span className={cn(
@@ -107,7 +105,7 @@ export const ConnectPatientCard = ({
                         ? "bg-yellow-500"
                         : "bg-green-500"
                   )} />
-                  <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                  <span className="text-[10px] text-muted-foreground font-medium">
                     {formatarTempoEspera(tempoExibido)}
                   </span>
                 </>
@@ -115,14 +113,14 @@ export const ConnectPatientCard = ({
             </div>
             
             {/* Horário da mensagem + Badge não lidas (bolinha azul) */}
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="flex items-center gap-2">
               {lastMessageTime && (
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                <span className="text-[10px] text-muted-foreground">
                   {lastMessageTime}
                 </span>
               )}
               {unread && unread > 0 && (
-                <span className="bg-blue-500 text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full flex-shrink-0">
+                <span className="bg-blue-500 text-white text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center rounded-full px-1">
                   {unread}
                 </span>
               )}
