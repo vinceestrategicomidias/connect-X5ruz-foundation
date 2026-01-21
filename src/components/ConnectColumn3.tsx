@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAvatarPaciente } from "@/hooks/useAvatarPaciente";
 
 export const ConnectColumn3 = () => {
   const { data: pacientes, isLoading } = useTodosPacientes();
@@ -17,6 +18,7 @@ export const ConnectColumn3 = () => {
   const [busca, setBusca] = useState("");
   const [expandido, setExpandido] = useState(true);
   const queryClient = useQueryClient();
+  const { getAvatar } = useAvatarPaciente();
 
   // Realtime updates
   useEffect(() => {
@@ -130,6 +132,7 @@ export const ConnectColumn3 = () => {
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
+                avatar={getAvatar(paciente.nome)}
                 onClick={() => setPacienteSelecionado(paciente)}
               />
             ))}
