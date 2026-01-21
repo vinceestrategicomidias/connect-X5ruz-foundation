@@ -88,19 +88,19 @@ const ATENDENTES_LOGADOS_MOCK: AtendenteMock[] = [
   },
 ];
 
-// Mock de pacientes por atendente
-const PACIENTES_POR_ATENDENTE: Record<string, { id: string; nome: string; telefone: string; ultima_msg: string; horario: string }[]> = {
+// Mock de pacientes por atendente com dados atualizados
+const PACIENTES_POR_ATENDENTE: Record<string, { id: string; nome: string; telefone: string; ultima_msg: string; horario: string; tempo_aguardando: number; nao_lidas: number }[]> = {
   "att-1": [
-    { id: "p1", nome: "Ricardo Fernandes", telefone: "(27) 99999-1234", ultima_msg: "Olá, preciso de ajuda", horario: "08:32" },
-    { id: "p2", nome: "Vanessa Lima", telefone: "(27) 99999-5678", ultima_msg: "Qual o valor?", horario: "08:45" },
-    { id: "p3", nome: "Carlos Eduardo", telefone: "(27) 99999-9012", ultima_msg: "Obrigado!", horario: "09:01" },
+    { id: "p1", nome: "Ricardo Fernandes", telefone: "(27) 99999-1234", ultima_msg: "Consegue me enviar a proposta com desconto?", horario: "08:28", tempo_aguardando: 17, nao_lidas: 2 },
+    { id: "p2", nome: "Vanessa Lima", telefone: "(27) 99999-5678", ultima_msg: "Qual a forma de pagamento para confirmar hoje?", horario: "08:10", tempo_aguardando: 35, nao_lidas: 3 },
+    { id: "p3", nome: "Carlos Eduardo", telefone: "(27) 99999-9012", ultima_msg: "Obrigado!", horario: "09:01", tempo_aguardando: 5, nao_lidas: 0 },
   ],
   "att-2": [
-    { id: "p4", nome: "Mariana Costa", telefone: "(27) 99888-1111", ultima_msg: "Aguardo retorno", horario: "08:15" },
-    { id: "p5", nome: "Felipe Santos", telefone: "(27) 99888-2222", ultima_msg: "Pode me ajudar?", horario: "08:50" },
+    { id: "p4", nome: "Mariana Costa", telefone: "(27) 99888-1111", ultima_msg: "Aguardo retorno sobre o orçamento", horario: "08:15", tempo_aguardando: 28, nao_lidas: 2 },
+    { id: "p5", nome: "Felipe Santos", telefone: "(27) 99888-2222", ultima_msg: "Pode me ajudar com a dúvida?", horario: "08:50", tempo_aguardando: 8, nao_lidas: 1 },
   ],
   "att-3": [
-    { id: "p6", nome: "Ana Paula", telefone: "(27) 99777-1111", ultima_msg: "Tenho dúvidas", horario: "09:10" },
+    { id: "p6", nome: "Ana Paula", telefone: "(27) 99777-1111", ultima_msg: "Tenho dúvidas sobre o procedimento", horario: "09:10", tempo_aguardando: 3, nao_lidas: 1 },
   ],
 };
 
@@ -124,6 +124,11 @@ const getStatusLabel = (status: string) => {
   }
 };
 
+const getTempoColor = (tempo: number): string => {
+  if (tempo >= 30) return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+  if (tempo >= 15) return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
+  return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+};
 export const MonitoramentoAtendentesPanel = ({
   open,
   onOpenChange,
@@ -158,14 +163,19 @@ export const MonitoramentoAtendentesPanel = ({
     setMensagemResposta("");
   };
 
-  const handleTransferirFilaGeral = () => {
-    if (!pacienteParaTransferir) return;
+  // Estado para tipo de destino selecionado
+  const [tipoDestinoTransferencia, setTipoDestinoTransferencia] = useState<"setor" | "atendente" | "fila">("fila");
+
+  const handleAbrirTransferencia = (paciente: any) => {
+    setPacienteParaTransferir(paciente);
+    setTipoDestinoTransferencia("fila");
     setTransferDialogOpen(true);
   };
 
   const handleConfirmarTransferencia = (motivo: string, observacao?: string) => {
-    toast.success(`${pacienteParaTransferir?.nome} transferido para Fila Geral. Motivo: ${motivo}`);
+    toast.success(`${pacienteParaTransferir?.nome} transferido. Motivo: ${motivo}`);
     setPacienteParaTransferir(null);
+    setTransferDialogOpen(false);
   };
 
   return (
@@ -282,7 +292,19 @@ export const MonitoramentoAtendentesPanel = ({
                                   <p className="font-medium text-sm">{paciente.nome}</p>
                                   <span className="text-xs text-muted-foreground">{paciente.horario}</span>
                                 </div>
-                                <p className="text-xs text-muted-foreground truncate">{paciente.ultima_msg}</p>
+                                <div className="flex items-center justify-between mt-1">
+                                  <p className="text-xs text-muted-foreground truncate flex-1">{paciente.ultima_msg}</p>
+                                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${getTempoColor(paciente.tempo_aguardando)}`}>
+                                      {paciente.tempo_aguardando} min
+                                    </span>
+                                    {paciente.nao_lidas > 0 && (
+                                      <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                                        {paciente.nao_lidas}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -402,15 +424,14 @@ export const MonitoramentoAtendentesPanel = ({
                       <div className="p-4 border-t space-y-2">
                         <Button
                           className="w-full gap-2"
-                          variant="outline"
-                          onClick={() => {
-                            setPacienteParaTransferir(pacienteSelecionado);
-                            setTransferDialogOpen(true);
-                          }}
+                          onClick={() => handleAbrirTransferencia(pacienteSelecionado)}
                         >
                           <ArrowRightLeft className="h-4 w-4" />
-                          Transferir sem destino (Fila Geral)
+                          Transferir Atendimento
                         </Button>
+                        <p className="text-[10px] text-muted-foreground text-center">
+                          Escolha: Setor, Atendente ou Fila do setor
+                        </p>
                       </div>
                     </>
                   ) : (
@@ -430,8 +451,8 @@ export const MonitoramentoAtendentesPanel = ({
         open={transferDialogOpen}
         onOpenChange={setTransferDialogOpen}
         pacienteNome={pacienteParaTransferir?.nome || ""}
-        destinoNome="Fila Geral"
-        tipoDestino="fila_geral"
+        destinoNome="Fila do Setor"
+        tipoDestino={tipoDestinoTransferencia}
         onConfirmar={handleConfirmarTransferencia}
       />
     </>

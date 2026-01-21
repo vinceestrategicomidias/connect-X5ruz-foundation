@@ -17,7 +17,7 @@ interface TransferenciaJustificativaDialogProps {
   onOpenChange: (open: boolean) => void;
   pacienteNome: string;
   destinoNome: string;
-  tipoDestino: "atendente" | "setor" | "fila" | "fila_geral";
+  tipoDestino: "atendente" | "setor" | "fila";
   onConfirmar: (motivo: string, observacao?: string) => void;
 }
 
@@ -47,8 +47,6 @@ export const TransferenciaJustificativaDialog = ({
         return `Setor: ${destinoNome}`;
       case "fila":
         return `Fila do Setor`;
-      case "fila_geral":
-        return `Fila Geral (sem destino definido)`;
       default:
         return destinoNome;
     }
