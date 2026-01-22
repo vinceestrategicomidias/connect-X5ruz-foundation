@@ -251,17 +251,17 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
         {/* Lista de conversas - visível sempre no modo gestão ou quando não tem conversa selecionada */}
         {(modoGestao || !conversaSelecionada) && (
           <div className={cn(
-            "flex flex-col border-r",
+            "flex flex-col border-r overflow-hidden",
             modoGestao ? "w-80" : "w-full"
           )}>
-            <Tabs defaultValue="conversas" className="flex-1 flex flex-col">
-              <TabsList className="w-full grid grid-cols-2 m-2 mb-0">
+            <Tabs defaultValue="conversas" className="flex-1 flex flex-col overflow-hidden">
+              <TabsList className="w-full grid grid-cols-2 m-2 mb-0 shrink-0">
                 <TabsTrigger value="conversas" className="text-xs">Conversas</TabsTrigger>
                 <TabsTrigger value="contatos" className="text-xs">Contatos</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="conversas" className="flex-1 m-0 p-2 overflow-hidden">
-                <div className="relative mb-2">
+              <TabsContent value="conversas" className="flex-1 m-0 p-2 flex flex-col overflow-hidden data-[state=inactive]:hidden">
+                <div className="relative mb-2 shrink-0">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
                     placeholder="Buscar conversa..."
@@ -270,7 +270,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                     className="pl-8 h-8 text-xs"
                   />
                 </div>
-                <ScrollArea className="h-[calc(100%-40px)] [&_[data-radix-scroll-area-scrollbar]]:w-1.5 [&_[data-radix-scroll-area-thumb]]:bg-primary/30 hover:[&_[data-radix-scroll-area-thumb]]:bg-primary/50">
+                <ScrollArea className="flex-1 min-h-0"  style={{ maxHeight: 'calc(100% - 40px)' }}>
                   <div className="space-y-1">
                     {conversasFiltradas.map(conversa => (
                       <div
@@ -336,8 +336,8 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="contatos" className="flex-1 m-0 p-2 overflow-hidden">
-                <div className="relative mb-2">
+              <TabsContent value="contatos" className="flex-1 m-0 p-2 flex flex-col overflow-hidden data-[state=inactive]:hidden">
+                <div className="relative mb-2 shrink-0">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
                     placeholder="Buscar colega..."
@@ -346,7 +346,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                     className="pl-8 h-8 text-xs"
                   />
                 </div>
-                <ScrollArea className="h-[calc(100%-40px)] [&_[data-radix-scroll-area-scrollbar]]:w-1.5 [&_[data-radix-scroll-area-thumb]]:bg-primary/30 hover:[&_[data-radix-scroll-area-thumb]]:bg-primary/50">
+                <ScrollArea className="flex-1 min-h-0" style={{ maxHeight: 'calc(100% - 40px)' }}>
                   <div className="space-y-1">
                     {contatosOrdenados.map(atendente => {
                       const setorNome = atendente.setor_nome || setores?.find(s => s.id === atendente.setor_id)?.nome;
