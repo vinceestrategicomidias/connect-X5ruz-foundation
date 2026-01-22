@@ -177,10 +177,28 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
     c.participanteNome.toLowerCase().includes(busca.toLowerCase())
   );
 
+  // Agrupar contatos por setor, com coordenadores primeiro
   const contatosFiltrados = atendentes?.filter(a => 
     a.id !== atendenteLogado?.id &&
     a.nome.toLowerCase().includes(buscaContato.toLowerCase())
   ) || [];
+
+  // Ordenar: coordenadores/gestores primeiro, depois por nome
+  const contatosOrdenados = [...contatosFiltrados].sort((a, b) => {
+    const cargoOrdem = { gestor: 0, coordenacao: 1, atendente: 2 };
+    const ordemA = cargoOrdem[a.cargo] ?? 2;
+    const ordemB = cargoOrdem[b.cargo] ?? 2;
+    if (ordemA !== ordemB) return ordemA - ordemB;
+    return a.nome.localeCompare(b.nome);
+  });
+
+  const getCargoLabel = (cargo: string) => {
+    switch (cargo) {
+      case "gestor": return "Gestor";
+      case "coordenacao": return "Coordenador(a)";
+      default: return null;
+    }
+  };
 
   const totalNaoLidas = conversas.reduce((acc, c) => acc + c.naoLidas, 0);
 
@@ -320,27 +338,48 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                 </div>
                 <ScrollArea className="h-[calc(100%-40px)]">
                   <div className="space-y-1">
-                    {contatosFiltrados.map(atendente => (
-                      <div
-                        key={atendente.id}
-                        className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => handleIniciarConversa(atendente)}
-                      >
-                        <ConnectAvatar
-                          name={atendente.nome}
-                          image={atendente.avatar || undefined}
-                          size="sm"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-xs truncate block">
-                            {atendente.nome}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">
-                            {setores?.find(s => s.id === atendente.setor_id)?.nome || "Sem setor"}
-                          </span>
+                    {contatosOrdenados.map(atendente => {
+                      const setor = setores?.find(s => s.id === atendente.setor_id);
+                      const cargoLabel = getCargoLabel(atendente.cargo);
+                      const isCoordenadorOuGestor = atendente.cargo === "coordenacao" || atendente.cargo === "gestor";
+                      
+                      return (
+                        <div
+                          key={atendente.id}
+                          className={cn(
+                            "flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors",
+                            isCoordenadorOuGestor && "bg-primary/5 border-l-2 border-primary"
+                          )}
+                          onClick={() => handleIniciarConversa(atendente)}
+                        >
+                          <ConnectAvatar
+                            name={atendente.nome}
+                            image={atendente.avatar || undefined}
+                            size="sm"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium text-xs truncate">
+                                {atendente.nome}
+                              </span>
+                              {cargoLabel && (
+                                <Badge variant="secondary" className="h-4 px-1 text-[9px] font-normal">
+                                  {cargoLabel}
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">
+                              {setor?.nome || "Sem setor atribuído"}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                    {contatosOrdenados.length === 0 && (
+                      <p className="text-xs text-muted-foreground text-center py-4">
+                        Nenhum contato encontrado
+                      </p>
+                    )}
                   </div>
                 </ScrollArea>
               </TabsContent>
