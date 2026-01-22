@@ -25,7 +25,9 @@ import {
   Trash2,
   Edit,
   Settings,
+  MessagesSquare,
 } from "lucide-react";
+import { ChatInternoPanel } from "./ChatInternoEquipe";
 import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
 import { useUnidades, useCriarUnidade, useAtualizarUnidade } from "@/hooks/useUnidades";
 import { useSetores } from "@/hooks/useSetores";
@@ -198,6 +200,10 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
             <TabsTrigger value="api" className="gap-2">
               <Code className="h-4 w-4" />
               API
+            </TabsTrigger>
+            <TabsTrigger value="chat-interno" className="gap-2">
+              <MessagesSquare className="h-4 w-4" />
+              Chat Interno
             </TabsTrigger>
           </TabsList>
 
@@ -743,6 +749,24 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
                         Adicionar Webhook
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* CHAT INTERNO */}
+              <TabsContent value="chat-interno" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessagesSquare className="h-5 w-5" />
+                      Chat Interno da Equipe
+                    </CardTitle>
+                    <CardDescription>
+                      Visualize e participe das conversas internas entre colaboradores de todos os setores
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ChatInternoPanel open={true} onOpenChange={() => {}} modoGestao={true} />
                   </CardContent>
                 </Card>
               </TabsContent>
