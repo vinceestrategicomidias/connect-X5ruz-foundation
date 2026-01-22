@@ -25,12 +25,16 @@ import {
   Building,
   Tag,
   Pencil,
+  Star,
+  MessageSquare,
 } from "lucide-react";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { Paciente } from "@/hooks/usePacientes";
 import { useDocumentosPaciente } from "@/hooks/useDocumentosPaciente";
 import { useNotasPaciente } from "@/hooks/useNotasPaciente";
 import { useHistoricoPaciente } from "@/hooks/useHistoricoPaciente";
+import { useEtiquetasPaciente } from "@/hooks/useEtiquetasPaciente";
+import { useMensagensFavoritadas } from "@/hooks/useMensagensFavoritadas";
 import { useAtualizarNomePaciente } from "@/hooks/useMutations";
 import { format } from "date-fns";
 import { EditarNomeDialog } from "./EditarNomeDialog";
@@ -66,7 +70,9 @@ export const PerfilPacienteSheet = ({
 
   const { documentos, isLoading: loadingDocs } = useDocumentosPaciente(paciente?.id);
   const { notas, adicionarNota, isLoading: loadingNotas } = useNotasPaciente(paciente?.id);
-  const { historico, isLoading: loadingHistorico } = useHistoricoPaciente(paciente?.id);
+  const { historico, isLoading: loadingHistorico } = useHistoricoPaciente(paciente?.id, paciente?.nome);
+  const { etiquetas, historicoEtiquetas } = useEtiquetasPaciente(paciente?.id, paciente?.nome);
+  const { mensagensFavoritadas } = useMensagensFavoritadas(paciente?.id, paciente?.nome);
   const atualizarNome = useAtualizarNomePaciente();
 
   const satisfacao = getSatisfacaoIA(paciente);
@@ -104,13 +110,39 @@ export const PerfilPacienteSheet = ({
               <div className="flex flex-col items-center gap-3">
                 <ConnectAvatar name={paciente.nome} size="lg" />
                 <div className="text-center">
-                  <SheetTitle className="text-xl">{paciente.nome}</SheetTitle>
-                  <div
-                    className={`inline-flex items-center gap-2 mt-2 px-3 py-1 rounded-full text-sm ${satisfacao.cor}`}
-                    title="Classificação baseada nas últimas interações e notas de satisfação"
-                  >
-                    <span className="text-lg">{satisfacao.emoji}</span>
-                    <span className="font-medium">{satisfacao.nivel}</span>
+                  <SheetTitle className="text-xl">Ver Perfil</SheetTitle>
+                  <p className="text-sm text-muted-foreground mt-1">{paciente.nome}</p>
+                  
+                  {/* Badges de sentimento e etiquetas */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+                    <div
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs ${satisfacao.cor}`}
+                      title="Classificação baseada nas últimas interações"
+                    >
+                      <span>{satisfacao.emoji}</span>
+                      <span className="font-medium">{satisfacao.nivel}</span>
+                    </div>
+                    
+                    {/* Etiquetas do paciente */}
+                    {etiquetas.slice(0, 2).map((etiqueta) => (
+                      <Badge
+                        key={etiqueta.id}
+                        style={{
+                          backgroundColor: `${etiqueta.cor}20`,
+                          color: etiqueta.cor,
+                          borderColor: etiqueta.cor,
+                        }}
+                        className="border text-xs"
+                      >
+                        <Tag className="h-2.5 w-2.5 mr-1" />
+                        {etiqueta.nome}
+                      </Badge>
+                    ))}
+                    {etiquetas.length > 2 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{etiquetas.length - 2}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
@@ -298,7 +330,78 @@ export const PerfilPacienteSheet = ({
 
               {/* ABA HISTÓRICO */}
               <TabsContent value="historico" className="space-y-4 mt-4">
+                {/* Mensagens Favoritadas */}
+                {mensagensFavoritadas.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold flex items-center gap-2 text-amber-600">
+                      <Star className="h-4 w-4" />
+                      Mensagens Favoritadas
+                    </h4>
+                    <div className="space-y-2">
+                      {mensagensFavoritadas.map((msg) => (
+                        <div 
+                          key={msg.id} 
+                          className="p-3 rounded-lg bg-amber-50 border border-amber-200"
+                        >
+                          <div className="flex items-start gap-2">
+                            <MessageSquare className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-amber-900 line-clamp-2">
+                                "{msg.texto}"
+                              </p>
+                              {msg.nota && (
+                                <p className="text-xs text-amber-700 mt-1 italic">
+                                  📝 {msg.nota}
+                                </p>
+                              )}
+                              <p className="text-xs text-amber-600/70 mt-1">
+                                {format(new Date(msg.dataFavorito), "dd/MM/yyyy HH:mm")} • {msg.favoritadoPor}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Histórico de Etiquetas */}
+                {historicoEtiquetas.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold flex items-center gap-2 text-purple-600">
+                      <Tag className="h-4 w-4" />
+                      Histórico de Etiquetas
+                    </h4>
+                    <div className="space-y-2">
+                      {historicoEtiquetas.map((item) => (
+                        <div 
+                          key={item.id} 
+                          className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
+                        >
+                          <div 
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: item.etiqueta.cor }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm">
+                              Recebeu etiqueta <span className="font-medium">{item.etiqueta.nome}</span>
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(item.dataAtribuicao), "dd/MM/yyyy HH:mm")} • {item.atribuidoPor}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Eventos do histórico */}
                 <div className="space-y-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Linha do Tempo
+                  </h4>
                   {loadingHistorico ? (
                     <p className="text-sm text-muted-foreground">Carregando...</p>
                   ) : historico.length === 0 ? (
