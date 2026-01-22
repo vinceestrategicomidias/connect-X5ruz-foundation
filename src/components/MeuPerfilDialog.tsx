@@ -309,96 +309,111 @@ export const MeuPerfilDialog = ({ open, onOpenChange }: MeuPerfilDialogProps) =>
           </TabsList>
 
           <TabsContent value="perfil" className="mt-4">
-            <div className="space-y-6">
-              {/* Avatar */}
-              <div className="flex flex-col items-center gap-4">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={formData.avatar} />
-                  <AvatarFallback className="text-2xl">
-                    {formData.nome.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-                <Button variant="outline" size="sm">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Alterar Foto
-                </Button>
-              </div>
-
-              {/* Campos Editáveis */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="nome">Nome Completo *</Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    className="mt-1.5"
-                  />
+            <ScrollArea className="h-[450px] pr-4">
+              <div className="space-y-6">
+                {/* Avatar */}
+                <div className="flex flex-col items-center gap-4">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={formData.avatar} />
+                    <AvatarFallback className="text-2xl">
+                      {formData.nome.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button variant="outline" size="sm">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Alterar Foto
+                  </Button>
                 </div>
 
-                <div>
-                  <Label htmlFor="assinatura">Assinatura *</Label>
-                  <Input
-                    id="assinatura"
-                    value={formData.assinatura}
-                    onChange={(e) => setFormData({ ...formData, assinatura: e.target.value })}
-                    className="mt-1.5"
-                    placeholder="Nome que aparece ao enviar mensagens"
-                  />
-                </div>
-
-                {/* Campos Não Editáveis */}
-                <div className="pt-4 border-t border-border space-y-3">
+                {/* Campos Editáveis */}
+                <div className="space-y-4">
                   <div>
-                    <Label className="text-muted-foreground">E-mail</Label>
-                    <p className="text-sm font-medium mt-1">
-                      {(atendenteLogado as any)?.email || "Não informado"}
-                    </p>
+                    <Label htmlFor="nome">Nome Completo *</Label>
+                    <Input
+                      id="nome"
+                      value={formData.nome}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                      className="mt-1.5"
+                    />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="assinatura">Assinatura *</Label>
+                    <Input
+                      id="assinatura"
+                      value={formData.assinatura}
+                      onChange={(e) => setFormData({ ...formData, assinatura: e.target.value })}
+                      className="mt-1.5"
+                      placeholder="Nome que aparece ao enviar mensagens"
+                    />
+                  </div>
+
+                  {/* Campos Não Editáveis */}
+                  <div className="pt-4 border-t border-border space-y-3">
                     <div>
-                      <Label className="text-muted-foreground">Cargo</Label>
-                      <p className="text-sm font-medium mt-1 capitalize">
-                        {atendenteLogado?.cargo || "-"}
+                      <Label className="text-muted-foreground">E-mail</Label>
+                      <p className="text-sm font-medium mt-1">
+                        {(atendenteLogado as any)?.email || "Não informado"}
                       </p>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-muted-foreground">Cargo</Label>
+                        <p className="text-sm font-medium mt-1 capitalize">
+                          {atendenteLogado?.cargo || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-muted-foreground">Unidade</Label>
+                        <p className="text-sm font-medium mt-1">Matriz</p>
+                      </div>
+                    </div>
+
                     <div>
-                      <Label className="text-muted-foreground">Unidade</Label>
-                      <p className="text-sm font-medium mt-1">Matriz</p>
+                      <Label className="text-muted-foreground">Setor</Label>
+                      <p className="text-sm font-medium mt-1">Atendimento Geral</p>
                     </div>
                   </div>
-
-                  <div>
-                    <Label className="text-muted-foreground">Setor</Label>
-                    <p className="text-sm font-medium mt-1">Atendimento Geral</p>
-                  </div>
                 </div>
-              </div>
 
-              {/* Botões */}
-              <div className="flex gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  className="flex-1 bg-[#0A2647] hover:bg-[#0A2647]/90"
-                  onClick={handleSave}
-                  disabled={criarValidacao.isPending}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
-                </Button>
-              </div>
+                {/* Status de Validação Pendente */}
+                {criarValidacao.isPending && (
+                  <Card className="p-4 border-yellow-200 bg-yellow-50">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-yellow-600 animate-pulse" />
+                      <div>
+                        <p className="font-medium text-yellow-800">Aguardando validação</p>
+                        <p className="text-xs text-yellow-600">Suas alterações foram enviadas para aprovação da coordenação</p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
 
-              <p className="text-xs text-muted-foreground text-center">
-                * Alterações serão enviadas para validação da coordenação
-              </p>
-            </div>
+                {/* Botões */}
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="flex-1 bg-[#0A2647] hover:bg-[#0A2647]/90"
+                    onClick={handleSave}
+                    disabled={criarValidacao.isPending}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {criarValidacao.isPending ? "Enviando..." : "Salvar Alterações"}
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground text-center pb-2">
+                  * Alterações serão enviadas para validação da coordenação
+                </p>
+              </div>
+            </ScrollArea>
           </TabsContent>
 
           <TabsContent value="ideias" className="mt-4">
