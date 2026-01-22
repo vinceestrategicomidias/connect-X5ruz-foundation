@@ -300,10 +300,17 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-xs truncate">
-                              {conversa.participanteNome}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="font-medium text-xs truncate">
+                                {conversa.participanteNome}
+                              </span>
+                              {conversa.participanteSetor && (
+                                <span className="text-[9px] text-muted-foreground shrink-0">
+                                  • {conversa.participanteSetor}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground shrink-0 ml-1">
                               {formatarHora(conversa.timestamp)}
                             </span>
                           </div>
