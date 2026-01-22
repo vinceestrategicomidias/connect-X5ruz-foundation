@@ -349,7 +349,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                 <ScrollArea className="h-[calc(100%-40px)]">
                   <div className="space-y-1">
                     {contatosOrdenados.map(atendente => {
-                      const setor = setores?.find(s => s.id === atendente.setor_id);
+                      const setorNome = atendente.setor_nome || setores?.find(s => s.id === atendente.setor_id)?.nome;
                       const cargoLabel = getCargoLabel(atendente.cargo);
                       const isCoordenadorOuGestor = atendente.cargo === "coordenacao" || atendente.cargo === "gestor";
                       
@@ -379,7 +379,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                               )}
                             </div>
                             <span className="text-[10px] text-muted-foreground">
-                              {setor?.nome || "Sem setor atribuído"}
+                              {setorNome || "Sem setor atribuído"}
                             </span>
                           </div>
                         </div>
