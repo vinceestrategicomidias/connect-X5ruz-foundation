@@ -286,7 +286,12 @@ export default function DashboardMonitoramento() {
         {/* Fila em tempo real - com controle de tamanho */}
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Fila em tempo real</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold">Fila em tempo real</h3>
+              <Badge variant="secondary" className="text-sm font-medium">
+                {filaEmTempoReal.length}
+              </Badge>
+            </div>
             <Button
               variant="ghost"
               size="sm"
