@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   FileText,
   Upload,
@@ -27,7 +29,9 @@ import {
   Pencil,
   Star,
   MessageSquare,
+  CalendarDays,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ConnectAvatar } from "./ConnectAvatar";
 import { Paciente } from "@/hooks/usePacientes";
 import { useDocumentosPaciente } from "@/hooks/useDocumentosPaciente";
@@ -67,6 +71,9 @@ export const PerfilPacienteSheet = ({
   const [novaNotaTexto, setNovaNotaTexto] = useState("");
   const [novaNotaTag, setNovaNotaTag] = useState("");
   const [editarNomeOpen, setEditarNomeOpen] = useState(false);
+  const [filtroDataInicio, setFiltroDataInicio] = useState<Date | undefined>(undefined);
+  const [filtroDataFim, setFiltroDataFim] = useState<Date | undefined>(undefined);
+  const [filtroCalendarioOpen, setFiltroCalendarioOpen] = useState(false);
 
   const { documentos, isLoading: loadingDocs } = useDocumentosPaciente(paciente?.id);
   const { notas, adicionarNota, isLoading: loadingNotas } = useNotasPaciente(paciente?.id);
@@ -398,10 +405,69 @@ export const PerfilPacienteSheet = ({
 
                 {/* Eventos do histórico */}
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Linha do Tempo
-                  </h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Linha do Tempo
+                    </h4>
+                    <Popover open={filtroCalendarioOpen} onOpenChange={setFiltroCalendarioOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 gap-1.5">
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          {filtroDataInicio || filtroDataFim ? (
+                            <span className="text-xs">
+                              {filtroDataInicio ? format(filtroDataInicio, "dd/MM") : "..."} - {filtroDataFim ? format(filtroDataFim, "dd/MM") : "..."}
+                            </span>
+                          ) : (
+                            <span className="text-xs">Filtrar período</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-3" align="end">
+                        <div className="space-y-3">
+                          <div className="text-sm font-medium">Selecione o período</div>
+                          <div className="flex gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Data inicial</Label>
+                              <CalendarComponent
+                                mode="single"
+                                selected={filtroDataInicio}
+                                onSelect={setFiltroDataInicio}
+                                className={cn("rounded-md border pointer-events-auto")}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Data final</Label>
+                              <CalendarComponent
+                                mode="single"
+                                selected={filtroDataFim}
+                                onSelect={setFiltroDataFim}
+                                className={cn("rounded-md border pointer-events-auto")}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                setFiltroDataInicio(undefined);
+                                setFiltroDataFim(undefined);
+                              }}
+                            >
+                              Limpar
+                            </Button>
+                            <Button 
+                              size="sm"
+                              onClick={() => setFiltroCalendarioOpen(false)}
+                            >
+                              Aplicar
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                   {loadingHistorico ? (
                     <p className="text-sm text-muted-foreground">Carregando...</p>
                   ) : historico.length === 0 ? (
@@ -409,11 +475,22 @@ export const PerfilPacienteSheet = ({
                       Nenhum evento registrado
                     </p>
                   ) : (
-                    historico.map((evento, index) => (
+                    historico
+                      .filter((evento) => {
+                        const eventoDate = new Date(evento.data_hora);
+                        if (filtroDataInicio && eventoDate < filtroDataInicio) return false;
+                        if (filtroDataFim) {
+                          const fimDoDia = new Date(filtroDataFim);
+                          fimDoDia.setHours(23, 59, 59, 999);
+                          if (eventoDate > fimDoDia) return false;
+                        }
+                        return true;
+                      })
+                      .map((evento, index, arr) => (
                       <div key={evento.id} className="flex gap-3">
                         <div className="flex flex-col items-center">
                           <div className="w-2 h-2 rounded-full bg-primary" />
-                          {index < historico.length - 1 && (
+                          {index < arr.length - 1 && (
                             <div className="w-px flex-1 bg-border mt-1" />
                           )}
                         </div>

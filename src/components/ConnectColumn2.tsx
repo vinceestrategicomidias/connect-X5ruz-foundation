@@ -455,7 +455,7 @@ export const ConnectColumn2 = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setPerfilOpen(true)}>
-                  Ver perfil do paciente
+                  Ver Perfil
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setFinalizarDialogOpen(true)}
