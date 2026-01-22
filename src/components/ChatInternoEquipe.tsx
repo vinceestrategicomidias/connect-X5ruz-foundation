@@ -353,6 +353,9 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                       const cargoLabel = getCargoLabel(atendente.cargo);
                       const isCoordenadorOuGestor = atendente.cargo === "coordenacao" || atendente.cargo === "gestor";
                       
+                      // Simular status online (em produção viria do banco)
+                      const isOnline = atendente.ativo !== false;
+                      
                       return (
                         <div
                           key={atendente.id}
@@ -362,11 +365,21 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                           )}
                           onClick={() => handleIniciarConversa(atendente)}
                         >
-                          <ConnectAvatar
-                            name={atendente.nome}
-                            image={atendente.avatar || undefined}
-                            size="sm"
-                          />
+                          <div className="relative">
+                            <ConnectAvatar
+                              name={atendente.nome}
+                              image={atendente.avatar || undefined}
+                              size="sm"
+                            />
+                            <Circle
+                              className={cn(
+                                "absolute -bottom-0.5 -right-0.5 h-3 w-3",
+                                isOnline 
+                                  ? "fill-green-500 text-green-500" 
+                                  : "fill-muted text-muted"
+                              )}
+                            />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className="font-medium text-xs truncate">
