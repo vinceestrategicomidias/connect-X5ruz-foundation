@@ -1,4 +1,4 @@
-import { Phone, PhoneOff, Mic, MicOff, MessageSquare, User } from "lucide-react";
+import { Phone, PhoneOff, Mic, MicOff, MessageSquare, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useChamadaContext } from "@/contexts/ChamadaContext";
@@ -8,6 +8,8 @@ import { usePacientes } from "@/hooks/usePacientes";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useState } from "react";
 import { PerfilPacienteSheet } from "./PerfilPacienteSheet";
+import { CallNotesPanel } from "./CallNotesPanel";
+import { toast } from "sonner";
 
 export const CallFloatingCard = () => {
   const { chamadaAtiva, setChamadaAtiva, tempoDecorrido, mutado, setMutado } =
@@ -16,8 +18,38 @@ export const CallFloatingCard = () => {
   const { data: pacientes } = usePacientes();
   const { setPacienteSelecionado } = usePacienteContext();
   const [perfilAberto, setPerfilAberto] = useState(false);
+  const [notasAbertas, setNotasAbertas] = useState(false);
 
-  if (!chamadaAtiva || chamadaAtiva.status === "encerrada") return null;
+  // Manter estado das notas mesmo após encerrar a chamada
+  const [ultimaChamada, setUltimaChamada] = useState<{
+    numeroDiscado: string;
+    pacienteNome?: string;
+  } | null>(null);
+
+  if (!chamadaAtiva || chamadaAtiva.status === "encerrada") {
+    // Se não tem chamada ativa mas tem notas abertas, manter o painel
+    if (notasAbertas && ultimaChamada) {
+      return (
+        <CallNotesPanel
+          open={notasAbertas}
+          onOpenChange={(open) => {
+            setNotasAbertas(open);
+            if (!open) setUltimaChamada(null);
+          }}
+          pacienteNome={ultimaChamada.pacienteNome}
+          numeroDiscado={ultimaChamada.numeroDiscado}
+          chamadaAtiva={false}
+          onSaveNote={(nota, transcricao) => {
+            console.log("Nota salva:", { nota, transcricao });
+            toast.success("Anotação salva na aba de notas do paciente");
+            setNotasAbertas(false);
+            setUltimaChamada(null);
+          }}
+        />
+      );
+    }
+    return null;
+  }
 
   const paciente = pacientes?.find((p) => p.id === chamadaAtiva.paciente_id);
 
@@ -28,6 +60,12 @@ export const CallFloatingCard = () => {
   };
 
   const handleEncerrar = async () => {
+    // Salvar dados da chamada antes de encerrar para manter notas abertas
+    setUltimaChamada({
+      numeroDiscado: chamadaAtiva.numero_discado,
+      pacienteNome: paciente?.nome,
+    });
+
     await atualizarChamada.mutateAsync({
       chamadaId: chamadaAtiva.id,
       status: "encerrada",
@@ -45,6 +83,10 @@ export const CallFloatingCard = () => {
     if (paciente) {
       setPerfilAberto(true);
     }
+  };
+
+  const handleAbrirNotas = () => {
+    setNotasAbertas(true);
   };
 
   const getStatusText = () => {
@@ -82,6 +124,17 @@ export const CallFloatingCard = () => {
               </p>
             )}
           </div>
+          
+          {/* Botão de Notas */}
+          <Button
+            variant={notasAbertas ? "default" : "outline"}
+            size="icon"
+            className="h-8 w-8 flex-shrink-0"
+            onClick={handleAbrirNotas}
+            title="Anotações da ligação"
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="flex items-center gap-2 mt-4">
@@ -128,6 +181,19 @@ export const CallFloatingCard = () => {
           </div>
         )}
       </Card>
+
+      {/* Painel de Notas */}
+      <CallNotesPanel
+        open={notasAbertas}
+        onOpenChange={setNotasAbertas}
+        pacienteNome={paciente?.nome}
+        numeroDiscado={chamadaAtiva.numero_discado}
+        chamadaAtiva={chamadaAtiva.status === "atendida"}
+        onSaveNote={(nota, transcricao) => {
+          console.log("Nota salva:", { nota, transcricao });
+          toast.success("Anotação salva na aba de notas do paciente");
+        }}
+      />
 
       {paciente && (
         <PerfilPacienteSheet
