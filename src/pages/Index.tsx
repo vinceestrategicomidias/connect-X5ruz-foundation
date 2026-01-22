@@ -5,6 +5,7 @@ import { ConnectColumn2 } from "@/components/ConnectColumn2";
 import { ConnectColumn3 } from "@/components/ConnectColumn3";
 import { CallFloatingCard } from "@/components/CallFloatingCard";
 import { FloatingButtons } from "@/components/FloatingButtons";
+import { ChatInternoButton } from "@/components/ChatInternoButton";
 
 const Index = () => {
   return (
@@ -31,6 +32,9 @@ const Index = () => {
 
       {/* Botões Flutuantes: Roteiros e IA Thalí */}
       <FloatingButtons />
+
+      {/* Chat Interno da Equipe */}
+      <ChatInternoButton />
     </ConnectContainer>
   );
 };
