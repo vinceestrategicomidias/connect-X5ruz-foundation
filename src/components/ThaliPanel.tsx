@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
-import { X, Copy, Heart, MessageCircle, TrendingUp, Clock } from "lucide-react";
+import { X, Copy, Heart, MessageCircle, TrendingUp, Clock, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { ThaliAvatar, type ThaliExpression } from "./ThaliAvatar";
+import { format, subDays, isAfter, isBefore, startOfDay, endOfDay } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface ThaliPanelProps {
   open: boolean;
@@ -39,6 +44,13 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
   const { pacienteSelecionado } = usePacienteContext();
   const [loading, setLoading] = useState(false);
   const [analise, setAnalise] = useState<AnaliseContexto | null>(null);
+  const [resumoDataInicio, setResumoDataInicio] = useState<Date | undefined>(undefined);
+  const [resumoDataFim, setResumoDataFim] = useState<Date | undefined>(undefined);
+  const [resumoCalendarioOpen, setResumoCalendarioOpen] = useState(false);
+  const [resumoCarregando, setResumoCarregando] = useState(false);
+  
+  // Data máxima permitida: 30 dias atrás
+  const dataMinima = subDays(new Date(), 30);
   
   // Determinar expressão baseada no sentimento
   const getExpression = (): ThaliExpression => {
@@ -168,7 +180,7 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
               <Card className="p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Heart className="h-4 w-4 text-primary" />
-                  <h3 className="font-semibold text-sm">Análise de Sentimento</h3>
+                  <h3 className="font-semibold text-sm">Análise de Sentimento do Dia</h3>
                 </div>
                 {loading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -182,7 +194,7 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
                     </div>
                     <div>
                       <p className="font-medium">{config.label}</p>
-                      <p className="text-xs text-muted-foreground">Baseado no histórico de conversa</p>
+                      <p className="text-xs text-muted-foreground">Baseado no atendimento de hoje</p>
                     </div>
                   </div>
                 )}
@@ -266,14 +278,106 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
               <div>
                 <h3 className="font-semibold text-sm mb-3">Comandos Rápidos</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleComandoRapido("resumir")}
-                    disabled={loading}
-                  >
-                    Resumir conversa
-                  </Button>
+                  {/* Botão Resumir com Popover de Período */}
+                  <Popover open={resumoCalendarioOpen} onOpenChange={setResumoCalendarioOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={loading || resumoCarregando}
+                        className="w-full"
+                      >
+                        <CalendarDays className="h-3.5 w-3.5 mr-1.5" />
+                        Resumir conversa
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-4" align="start">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-1">Selecione o período</h4>
+                          <p className="text-xs text-muted-foreground">Máximo: últimos 30 dias</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Data inicial</Label>
+                            <Calendar
+                              mode="single"
+                              selected={resumoDataInicio}
+                              onSelect={setResumoDataInicio}
+                              disabled={(date) => 
+                                isBefore(date, startOfDay(dataMinima)) || 
+                                isAfter(date, endOfDay(new Date()))
+                              }
+                              className={cn("rounded-md border pointer-events-auto")}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Data final</Label>
+                            <Calendar
+                              mode="single"
+                              selected={resumoDataFim}
+                              onSelect={setResumoDataFim}
+                              disabled={(date) => 
+                                isBefore(date, startOfDay(dataMinima)) || 
+                                isAfter(date, endOfDay(new Date())) ||
+                                (resumoDataInicio ? isBefore(date, startOfDay(resumoDataInicio)) : false)
+                              }
+                              className={cn("rounded-md border pointer-events-auto")}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-between gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              setResumoDataInicio(undefined);
+                              setResumoDataFim(undefined);
+                            }}
+                          >
+                            Limpar
+                          </Button>
+                          <Button 
+                            size="sm"
+                            disabled={!resumoDataInicio || !resumoDataFim || resumoCarregando}
+                            onClick={async () => {
+                              setResumoCalendarioOpen(false);
+                              setResumoCarregando(true);
+                              try {
+                                const { data, error } = await supabase.functions.invoke("ia-thali-comando", {
+                                  body: {
+                                    comando: "resumir",
+                                    paciente: pacienteSelecionado,
+                                    dataInicio: resumoDataInicio?.toISOString(),
+                                    dataFim: resumoDataFim?.toISOString(),
+                                  },
+                                });
+
+                                if (error) throw error;
+
+                                navigator.clipboard.writeText(data.resposta);
+                                toast({
+                                  title: "Resumo gerado",
+                                  description: `Resumo do período ${format(resumoDataInicio!, "dd/MM")} - ${format(resumoDataFim!, "dd/MM")} copiado`,
+                                });
+                              } catch (error) {
+                                console.error("Erro ao resumir:", error);
+                                toast({
+                                  title: "Erro ao resumir",
+                                  description: "Não foi possível gerar o resumo",
+                                  variant: "destructive",
+                                });
+                              } finally {
+                                setResumoCarregando(false);
+                              }
+                            }}
+                          >
+                            {resumoCarregando ? "Gerando..." : "Gerar resumo"}
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                   <Button
                     variant="outline"
                     size="sm"
