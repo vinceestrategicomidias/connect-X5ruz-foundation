@@ -260,7 +260,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                 <TabsTrigger value="contatos" className="text-xs">Contatos</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="conversas" className="flex-1 m-0 p-2">
+              <TabsContent value="conversas" className="flex-1 m-0 p-2 overflow-hidden">
                 <div className="relative mb-2">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
@@ -270,7 +270,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                     className="pl-8 h-8 text-xs"
                   />
                 </div>
-                <ScrollArea className="h-[calc(100%-40px)]">
+                <ScrollArea className="h-[calc(100%-40px)] [&_[data-radix-scroll-area-scrollbar]]:w-1.5 [&_[data-radix-scroll-area-thumb]]:bg-primary/30 hover:[&_[data-radix-scroll-area-thumb]]:bg-primary/50">
                   <div className="space-y-1">
                     {conversasFiltradas.map(conversa => (
                       <div
@@ -336,7 +336,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="contatos" className="flex-1 m-0 p-2">
+              <TabsContent value="contatos" className="flex-1 m-0 p-2 overflow-hidden">
                 <div className="relative mb-2">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
@@ -346,7 +346,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
                     className="pl-8 h-8 text-xs"
                   />
                 </div>
-                <ScrollArea className="h-[calc(100%-40px)]">
+                <ScrollArea className="h-[calc(100%-40px)] [&_[data-radix-scroll-area-scrollbar]]:w-1.5 [&_[data-radix-scroll-area-thumb]]:bg-primary/30 hover:[&_[data-radix-scroll-area-thumb]]:bg-primary/50">
                   <div className="space-y-1">
                     {contatosOrdenados.map(atendente => {
                       const setorNome = atendente.setor_nome || setores?.find(s => s.id === atendente.setor_id)?.nome;
@@ -421,7 +421,7 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
             )}
 
             {/* Mensagens */}
-            <ScrollArea className="flex-1 p-3" ref={scrollRef}>
+            <ScrollArea className="flex-1 p-3 [&_[data-radix-scroll-area-scrollbar]]:w-1.5 [&_[data-radix-scroll-area-thumb]]:bg-primary/30 hover:[&_[data-radix-scroll-area-thumb]]:bg-primary/50" ref={scrollRef}>
               <div className="space-y-3">
                 {mensagens.map(msg => (
                   <div
