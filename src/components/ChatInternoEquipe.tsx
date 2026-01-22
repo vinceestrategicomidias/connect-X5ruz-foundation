@@ -224,10 +224,13 @@ export const ChatInternoPanel = ({ open, onOpenChange, modoGestao = false }: Cha
               <ChevronLeft className="h-4 w-4" />
             </Button>
           )}
-          <Users className="h-5 w-5 text-muted-foreground" />
-          <h3 className="font-semibold text-sm">
-            {modoGestao ? "Chat Interno - Gestão" : "Chat da Equipe"}
-          </h3>
+          <Users className="h-5 w-5 text-primary" />
+          <div className="flex flex-col leading-tight">
+            <span className="text-[9px] font-medium text-primary tracking-wide uppercase">Connect</span>
+            <h3 className="font-semibold text-sm -mt-0.5">
+              {modoGestao ? "Chat Interno" : "Chat da Equipe"}
+            </h3>
+          </div>
           {totalNaoLidas > 0 && (
             <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
               {totalNaoLidas}
