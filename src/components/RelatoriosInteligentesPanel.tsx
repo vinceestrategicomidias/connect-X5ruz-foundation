@@ -489,6 +489,10 @@ export const RelatoriosInteligentesPanel = () => {
             <Target className="h-3 w-3 mr-1" />
             Follow-up
           </TabsTrigger>
+          <TabsTrigger value="etiquetas" className="text-xs">
+            <Star className="h-3 w-3 mr-1" />
+            Etiquetas
+          </TabsTrigger>
           <TabsTrigger value="relatorio_geral_atendente" className="text-xs">
             <Brain className="h-3 w-3 mr-1" />
             Relatório Atendente
@@ -928,6 +932,74 @@ export const RelatoriosInteligentesPanel = () => {
                   ))}
                 </div>
               </Card>
+            </TabsContent>
+
+            {/* Relatório por Etiquetas */}
+            <TabsContent value="etiquetas" className="mt-0 space-y-4">
+              <FiltrosRelatorio filtros={["Data", "Mês", "Ano", "Setor"]} />
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="p-4">
+                  <div className="text-sm text-muted-foreground">Total Etiquetados</div>
+                  <div className="text-3xl font-bold text-[#0A2647]">1.187</div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-sm text-muted-foreground">Etiqueta Mais Usada</div>
+                  <div className="text-lg font-bold text-purple-600">Convênio (312)</div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-sm text-muted-foreground">VIPs Ativos</div>
+                  <div className="text-3xl font-bold text-amber-600">47</div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-sm text-muted-foreground">Em Negociação</div>
+                  <div className="text-3xl font-bold text-orange-600">128</div>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card className="p-4">
+                  <h4 className="font-semibold mb-4">Volume por Etiqueta</h4>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={[
+                        { nome: "Convênio", total: 312 },
+                        { nome: "Primeira Consulta", total: 234 },
+                        { nome: "Particular", total: 198 },
+                        { nome: "Retorno", total: 156 },
+                        { nome: "Negociação", total: 128 },
+                        { nome: "Proposta Enviada", total: 89 },
+                        { nome: "VIP", total: 47 },
+                        { nome: "Urgente", total: 23 },
+                      ]} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                        <XAxis type="number" />
+                        <YAxis dataKey="nome" type="category" width={100} />
+                        <Tooltip />
+                        <Bar dataKey="total" fill="#0A2647" radius={[0, 8, 8, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card className="p-4">
+                  <h4 className="font-semibold mb-4">Gargalos Identificados</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 border-l-4 border-l-red-500 bg-red-50 rounded-r-lg">
+                      <p className="font-medium text-red-900">Alta taxa em "Proposta Enviada"</p>
+                      <p className="text-sm text-red-700">89 pacientes aguardando retorno há mais de 5 dias</p>
+                    </div>
+                    <div className="p-3 border-l-4 border-l-orange-500 bg-orange-50 rounded-r-lg">
+                      <p className="font-medium text-orange-900">Negociações prolongadas</p>
+                      <p className="text-sm text-orange-700">32% das negociações estão acima de 7 dias</p>
+                    </div>
+                    <div className="p-3 border-l-4 border-l-green-500 bg-green-50 rounded-r-lg">
+                      <p className="font-medium text-green-900">Oportunidade: Retornos</p>
+                      <p className="text-sm text-green-700">156 pacientes prontos para nova oferta</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </TabsContent>
 
             {/* Relatório Geral por Atendente */}

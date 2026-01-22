@@ -55,6 +55,7 @@ import { EditorRoteirosPanel } from "./EditorRoteirosPanel";
 import { RelatoriosInteligentesPanel } from "./RelatoriosInteligentesPanel";
 import { CentralIdeiasPanel } from "./CentralIdeiasPanel";
 import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
+import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
 
 type SecaoPainel =
   | "dashboards"
@@ -67,6 +68,7 @@ type SecaoPainel =
   | "indicadores"
   | "auditoria"
   | "ideias"
+  | "etiquetas"
   | "configuracoes";
 
 interface MenuItem {
@@ -87,6 +89,7 @@ const menuItems: MenuItem[] = [
   { id: "indicadores", label: "Indicadores", icon: Activity },
   { id: "auditoria", label: "Auditoria de Ações", icon: History },
   { id: "ideias", label: "Ideias", icon: Lightbulb },
+  { id: "etiquetas", label: "Etiquetas", icon: Award, apenasGestor: true },
   { id: "configuracoes", label: "Configurações", icon: Settings, apenasGestor: true },
 ];
 
@@ -847,6 +850,9 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
       case "ideias":
         return <CentralIdeiasPanel />;
+
+      case "etiquetas":
+        return <EtiquetasManagementPanel />;
 
       case "configuracoes":
         return <ConfiguracoesFilaPanel />;
