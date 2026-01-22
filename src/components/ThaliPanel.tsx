@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Copy, Heart, MessageCircle, TrendingUp, Clock, CalendarDays } from "lucide-react";
+import { X, Copy, Heart, MessageCircle, TrendingUp, Clock, CalendarDays, Send, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { usePacienteContext } from "@/contexts/PacienteContext";
@@ -48,6 +49,9 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
   const [resumoDataFim, setResumoDataFim] = useState<Date | undefined>(undefined);
   const [resumoCalendarioOpen, setResumoCalendarioOpen] = useState(false);
   const [resumoCarregando, setResumoCarregando] = useState(false);
+  const [pergunta, setPergunta] = useState("");
+  const [respostaDuvida, setRespostaDuvida] = useState<string | null>(null);
+  const [duvidaCarregando, setDuvidaCarregando] = useState(false);
   
   // Data máxima permitida: 30 dias atrás
   const dataMinima = subDays(new Date(), 30);
@@ -404,10 +408,109 @@ export const ThaliPanel = ({ open, onClose }: ThaliPanelProps) => {
                   </Button>
                 </div>
               </div>
+
+              {/* Campo para tirar dúvidas */}
+              <Separator />
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <HelpCircle className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-sm">Tire suas dúvidas</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Pergunte à Thalí com base na base de conhecimento configurada
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ex: Qual o valor do procedimento X?"
+                    value={pergunta}
+                    onChange={(e) => setPergunta(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey && pergunta.trim()) {
+                        e.preventDefault();
+                        handlePerguntarDuvida();
+                      }
+                    }}
+                    disabled={duvidaCarregando}
+                  />
+                  <Button 
+                    size="icon"
+                    onClick={handlePerguntarDuvida}
+                    disabled={!pergunta.trim() || duvidaCarregando}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {duvidaCarregando && (
+                  <Card className="mt-3 p-3 bg-muted/50">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <ThaliAvatar size="sm" expression="pensativa" processing={true} />
+                      <span>Consultando base de conhecimento...</span>
+                    </div>
+                  </Card>
+                )}
+                
+                {respostaDuvida && !duvidaCarregando && (
+                  <Card className="mt-3 p-3 bg-primary/5 border-primary/20">
+                    <div className="flex items-start gap-2">
+                      <ThaliAvatar size="sm" expression="feliz" />
+                      <div className="flex-1">
+                        <p className="text-sm leading-relaxed">{respostaDuvida}</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2 h-7 text-xs"
+                          onClick={() => {
+                            navigator.clipboard.writeText(respostaDuvida);
+                            toast({
+                              title: "Resposta copiada",
+                              description: "A resposta foi copiada para a área de transferência",
+                            });
+                          }}
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copiar resposta
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </div>
             </div>
           </ScrollArea>
         </div>
       </div>
     </div>
   );
+
+  async function handlePerguntarDuvida() {
+    if (!pergunta.trim()) return;
+    
+    setDuvidaCarregando(true);
+    setRespostaDuvida(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("ia-thali-comando", {
+        body: {
+          comando: "duvida",
+          pergunta: pergunta,
+          paciente: pacienteSelecionado,
+        },
+      });
+
+      if (error) throw error;
+
+      setRespostaDuvida(data.resposta);
+      setPergunta("");
+    } catch (error) {
+      console.error("Erro ao consultar:", error);
+      toast({
+        title: "Erro na consulta",
+        description: "Não foi possível obter resposta da Thalí",
+        variant: "destructive",
+      });
+    } finally {
+      setDuvidaCarregando(false);
+    }
+  }
 };
