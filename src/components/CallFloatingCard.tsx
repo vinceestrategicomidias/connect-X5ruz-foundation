@@ -1,4 +1,4 @@
-import { Phone, PhoneOff, Mic, MicOff, MessageSquare, User, FileText } from "lucide-react";
+import { Phone, PhoneOff, Mic, MicOff, MessageSquare, User, FileText, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useChamadaContext } from "@/contexts/ChamadaContext";
@@ -10,6 +10,7 @@ import { useState } from "react";
 import { PerfilPacienteSheet } from "./PerfilPacienteSheet";
 import { CallNotesPanel } from "./CallNotesPanel";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export const CallFloatingCard = () => {
   const { chamadaAtiva, setChamadaAtiva, tempoDecorrido, mutado, setMutado } =
@@ -19,12 +20,28 @@ export const CallFloatingCard = () => {
   const { setPacienteSelecionado } = usePacienteContext();
   const [perfilAberto, setPerfilAberto] = useState(false);
   const [notasAbertas, setNotasAbertas] = useState(false);
+  const [posicao, setPosicao] = useState<"bottom-right" | "bottom-left" | "top-right" | "top-left">("bottom-right");
 
   // Manter estado das notas mesmo após encerrar a chamada
   const [ultimaChamada, setUltimaChamada] = useState<{
     numeroDiscado: string;
     pacienteNome?: string;
   } | null>(null);
+
+  const getPositionClasses = () => {
+    switch (posicao) {
+      case "bottom-right":
+        return "bottom-6 right-6";
+      case "bottom-left":
+        return "bottom-6 left-6";
+      case "top-right":
+        return "top-20 right-6";
+      case "top-left":
+        return "top-20 left-6";
+      default:
+        return "bottom-6 right-6";
+    }
+  };
 
   if (!chamadaAtiva || chamadaAtiva.status === "encerrada") {
     // Se não tem chamada ativa mas tem notas abertas, manter o painel
@@ -106,7 +123,7 @@ export const CallFloatingCard = () => {
 
   return (
     <>
-      <Card className="fixed bottom-6 right-6 w-80 p-4 connect-shadow z-50 animate-fade-in bg-card">
+      <Card className={`fixed ${getPositionClasses()} w-80 p-4 connect-shadow z-50 animate-fade-in bg-card`}>
         <div className="flex items-start gap-3">
           <ConnectAvatar
             name={paciente?.nome || chamadaAtiva.numero_discado}
@@ -135,6 +152,46 @@ export const CallFloatingCard = () => {
           >
             <FileText className="h-4 w-4" />
           </Button>
+
+          {/* Botão para ajustar posição */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 flex-shrink-0"
+                title="Mover card"
+              >
+                {posicao.includes("top") ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronUp className="h-4 w-4" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={() => setPosicao("top-left")} className="gap-2">
+                <ChevronUp className="h-3 w-3" />
+                <ChevronLeft className="h-3 w-3" />
+                Superior esquerdo
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPosicao("top-right")} className="gap-2">
+                <ChevronUp className="h-3 w-3" />
+                <ChevronRight className="h-3 w-3" />
+                Superior direito
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPosicao("bottom-left")} className="gap-2">
+                <ChevronDown className="h-3 w-3" />
+                <ChevronLeft className="h-3 w-3" />
+                Inferior esquerdo
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPosicao("bottom-right")} className="gap-2">
+                <ChevronDown className="h-3 w-3" />
+                <ChevronRight className="h-3 w-3" />
+                Inferior direito
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="flex items-center gap-2 mt-4">
