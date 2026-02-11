@@ -118,15 +118,15 @@ export const ConnectPatientCard = ({
         </div>
         
         {/* Conteúdo principal */}
-        <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="flex-1 min-w-0">
           {/* Linha 1: Nome e metadados */}
-          <div className="flex items-center justify-between gap-2">
-            <h4 className="font-medium text-sm text-foreground truncate flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1">
+            <h4 className="font-medium text-sm text-foreground truncate min-w-0 flex-shrink">
               {name}
             </h4>
             
             {/* Horário e Tempo */}
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0 pr-0.5">
               {lastMessageTime && (
                 <span className="text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
                   {lastMessageTime}
@@ -142,7 +142,7 @@ export const ConnectPatientCard = ({
               )}
               {/* Badge de não lidas */}
               {unread && unread > 0 && (
-                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 ml-1">
+                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
                   {unread}
                 </span>
               )}
