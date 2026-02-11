@@ -104,17 +104,6 @@ export const ConnectPatientCard = ({
             </AvatarFallback>
           </Avatar>
           
-          {/* Bolinha de status sobreposta ao avatar */}
-          {mostrarBolinha && (
-            <span className={cn(
-              "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card",
-              tempoExibido >= 30 
-                ? "bg-destructive"
-                : tempoExibido >= 15
-                  ? "bg-yellow-500"
-                  : "bg-green-500"
-            )} />
-          )}
         </div>
         
         {/* Conteúdo principal */}
