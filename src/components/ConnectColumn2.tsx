@@ -26,6 +26,7 @@ import { FinalizarConversaDialog } from "./FinalizarConversaDialog";
 import { BuscaConversaBar } from "./BuscaConversaBar";
 import { MensagemAcoesBar } from "./MensagemAcoesBar";
 import { EncaminharMensagemDialog } from "./EncaminharMensagemDialog";
+import { adicionarMensagemFavoritada } from "@/hooks/useMensagensFavoritadas";
 import { useFinalizarAtendimento } from "@/hooks/useFinalizarAtendimento";
 import {
   DropdownMenu,
@@ -334,8 +335,22 @@ export const ConnectColumn2 = () => {
   };
 
   const handleFavoritar = (opcao: "historico" | "nota", nota?: string) => {
-    if (mensagemSelecionada) {
+    if (mensagemSelecionada && pacienteSelecionado) {
       setFavoritas(prev => new Set(prev).add(mensagemSelecionada.id));
+      
+      adicionarMensagemFavoritada(
+        pacienteSelecionado.id,
+        pacienteSelecionado.nome,
+        {
+          id: mensagemSelecionada.id,
+          texto: mensagemSelecionada.texto,
+          autor: mensagemSelecionada.autor,
+          horario: mensagemSelecionada.horario,
+        },
+        opcao,
+        nota,
+        atendenteLogado?.nome || "Você"
+      );
       
       if (opcao === "historico") {
         toast.success("Mensagem adicionada ao histórico");
