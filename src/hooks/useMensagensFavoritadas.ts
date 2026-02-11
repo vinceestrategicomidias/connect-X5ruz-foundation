@@ -93,6 +93,28 @@ const mensagensFavoritadasIniciais: Record<string, MensagemFavoritada[]> = {
       opcaoFavorito: "nota"
     },
   ],
+  "ricardo": [
+    {
+      id: "fav8",
+      texto: "Vou estar enviando os documentos para encaminhar ao convênio ainda hoje, pode me passar o e-mail?",
+      autor: "paciente",
+      horario: "10:15",
+      dataFavorito: "2026-02-10T10:18:00",
+      favoritadoPor: "Geovana",
+      nota: "Paciente vai enviar documentação do convênio - acompanhar recebimento",
+      opcaoFavorito: "nota"
+    },
+    {
+      id: "fav9",
+      texto: "Preciso que o contrato seja refeito, pois houve alteração no valor do procedimento",
+      autor: "paciente",
+      horario: "14:42",
+      dataFavorito: "2026-02-09T14:45:00",
+      favoritadoPor: "Paloma",
+      nota: "Solicitar ao financeiro novo contrato com valor atualizado",
+      opcaoFavorito: "nota"
+    },
+  ],
 };
 
 const getPacienteKeyFromNome = (nome: string): string => {
@@ -102,7 +124,11 @@ const getPacienteKeyFromNome = (nome: string): string => {
   if (nomeNormalizado.includes("pedro")) return "pedro";
   if (nomeNormalizado.includes("carla")) return "carla";
   if (nomeNormalizado.includes("fernando")) return "fernando";
-  return "";
+  if (nomeNormalizado.includes("ricardo")) return "ricardo";
+  if (nomeNormalizado.includes("bruna")) return "bruna";
+  if (nomeNormalizado.includes("geovanna")) return "geovanna";
+  if (nomeNormalizado.includes("teste")) return "teste";
+  return nomeNormalizado.split(" ")[0] || "";
 };
 
 // Global store for favorited messages (shared across components)
