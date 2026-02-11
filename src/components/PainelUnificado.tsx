@@ -82,7 +82,7 @@ const menuItems: MenuItem[] = [
   { id: "dashboards", label: "Dashboards", icon: LayoutGrid },
   { id: "roteiros", label: "Roteiros", icon: FileText },
   { id: "relatorios", label: "Relatórios Inteligentes", icon: BarChart3 },
-  { id: "nps", label: "NPS Feedback", icon: ThumbsUp },
+  { id: "nps", label: "Net Promoter Score (NPS)", icon: ThumbsUp },
   { id: "alertas", label: "Alertas", icon: Bell },
   { id: "preditiva", label: "Thalí Preditiva", icon: TrendingUp },
   { id: "feedback", label: "Feedback da Thalí", icon: MessageSquare },
@@ -287,6 +287,34 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </select>
             </div>
 
+            {/* Filtros por Setor e Unidade */}
+            <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
+              <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+              <Select defaultValue="todos">
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Setores" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os Setores</SelectItem>
+                  <SelectItem value="pre-venda">Pré-venda</SelectItem>
+                  <SelectItem value="venda">Venda</SelectItem>
+                  <SelectItem value="pos-venda">Pós-venda</SelectItem>
+                  <SelectItem value="suporte">Suporte</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select defaultValue="todas">
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Unidades" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as Unidades</SelectItem>
+                  <SelectItem value="sede">Sede - Vitória</SelectItem>
+                  <SelectItem value="sp">Unidade São Paulo</SelectItem>
+                  <SelectItem value="rj">Unidade Rio de Janeiro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Cards de métricas */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-6 bg-gradient-to-br from-[#0A2647]/5 to-[#0A2647]/10 border-[#0A2647]/20 overflow-hidden">
@@ -318,8 +346,12 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                   {dadosEmpresaGrande.taxaConclusao}%
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">
-                  Taxa de Conclusão
+                  Taxa de Resolutividade
                 </p>
+                <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                  <p>Pacientes no chat: 240</p>
+                  <p>Finalizados: 180</p>
+                </div>
               </Card>
             </div>
 
@@ -465,7 +497,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             {/* Header com botão de relatório */}
             <div className="flex items-center justify-between gap-4">
               <h3 className="text-2xl font-bold text-[#0A2647]">
-                NPS e Feedback dos Pacientes
+                Net Promoter Score (NPS)
               </h3>
               <Button variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
@@ -632,9 +664,44 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
               </Card>
 
               {/* Feedbacks Recentes */}
-              <Card className="p-6 overflow-hidden">
+              <Card className="p-6 overflow-hidden col-span-1 lg:col-span-2">
                 <h4 className="font-semibold mb-4 text-lg">Feedbacks Recentes</h4>
-                <div className="space-y-3 max-h-[240px] overflow-y-auto pr-2">
+                {/* Filtros de Feedbacks Recentes */}
+                <div className="flex flex-wrap gap-3 mb-4 p-3 bg-muted/30 rounded-lg border">
+                  <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+                  <Select defaultValue="todos">
+                    <SelectTrigger className="w-36">
+                      <Users className="h-3 w-3 mr-1" />
+                      <SelectValue placeholder="Atendente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="geovana">Geovana</SelectItem>
+                      <SelectItem value="paloma">Paloma</SelectItem>
+                      <SelectItem value="emilly">Emilly</SelectItem>
+                      <SelectItem value="marcos">Marcos</SelectItem>
+                      <SelectItem value="bianca">Bianca</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select defaultValue="todos">
+                    <SelectTrigger className="w-36">
+                      <SelectValue placeholder="Setor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="pre-venda">Pré-venda</SelectItem>
+                      <SelectItem value="pos-venda">Pós-venda</SelectItem>
+                      <SelectItem value="suporte">Suporte</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-3 w-3 text-muted-foreground" />
+                    <input type="date" className="px-2 py-1.5 border border-border rounded-md text-sm bg-background" placeholder="De" />
+                    <span className="text-xs text-muted-foreground">até</span>
+                    <input type="date" className="px-2 py-1.5 border border-border rounded-md text-sm bg-background" placeholder="Até" />
+                  </div>
+                </div>
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {dadosEmpresaGrande.nps.feedbacksRecentes.map((feedback, idx) => (
                     <div
                       key={idx}

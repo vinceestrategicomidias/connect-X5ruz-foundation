@@ -177,32 +177,6 @@ export const IAConfigPanel = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Notificações & Alertas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {[
-            { id: 'fila_alta', nome: 'Fila alta', ativo: alertasAtivos.fila_alta },
-            { id: 'nps_baixo', nome: 'NPS baixo', ativo: alertasAtivos.nps_baixo },
-            { id: 'sem_resposta', nome: 'Paciente sem resposta', ativo: alertasAtivos.sem_resposta },
-            { id: 'tma_acima', nome: 'Tempo médio acima da meta', ativo: alertasAtivos.tma_acima },
-            { id: 'ligacao_perdida', nome: 'Ligação perdida', ativo: alertasAtivos.ligacao_perdida },
-          ].map((alerta) => (
-            <div key={alerta.id} className="flex items-center justify-between py-2 border-b last:border-0">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{alerta.nome}</span>
-              </div>
-              <Switch
-                checked={alerta.ativo}
-                onCheckedChange={(checked) => setAlertasAtivos(prev => ({ ...prev, [alerta.id]: checked }))}
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle>Módulos da Thalí</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -288,67 +262,6 @@ export const IAConfigPanel = () => {
               checked={formData.feedback_automatico_ativo}
               onCheckedChange={(checked) => setFormData({ ...formData, feedback_automatico_ativo: checked })}
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Limites e Sensibilidade</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>NPS Baixo</Label>
-              <Input
-                type="number"
-                value={formData.limite_nps_baixo}
-                onChange={(e) => setFormData({ ...formData, limite_nps_baixo: Number(e.target.value) })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Fila Alta</Label>
-              <Input
-                type="number"
-                value={formData.limite_fila_alta}
-                onChange={(e) => setFormData({ ...formData, limite_fila_alta: Number(e.target.value) })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>TMA (minutos)</Label>
-              <Input
-                type="number"
-                value={formData.limite_tma_minutos}
-                onChange={(e) => setFormData({ ...formData, limite_tma_minutos: Number(e.target.value) })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Sensibilidade de Alertas</Label>
-            <div className="flex gap-2">
-              <Badge
-                variant={formData.sensibilidade_alertas === 'baixa' ? 'default' : 'outline'}
-                className="cursor-pointer"
-                onClick={() => setFormData({ ...formData, sensibilidade_alertas: 'baixa' })}
-              >
-                Baixa
-              </Badge>
-              <Badge
-                variant={formData.sensibilidade_alertas === 'media' ? 'default' : 'outline'}
-                className="cursor-pointer"
-                onClick={() => setFormData({ ...formData, sensibilidade_alertas: 'media' })}
-              >
-                Média
-              </Badge>
-              <Badge
-                variant={formData.sensibilidade_alertas === 'alta' ? 'default' : 'outline'}
-                className="cursor-pointer"
-                onClick={() => setFormData({ ...formData, sensibilidade_alertas: 'alta' })}
-              >
-                Alta
-              </Badge>
-            </div>
           </div>
         </CardContent>
       </Card>
