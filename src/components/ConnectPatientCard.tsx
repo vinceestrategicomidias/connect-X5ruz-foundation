@@ -120,13 +120,13 @@ export const ConnectPatientCard = ({
         {/* Conteúdo principal */}
         <div className="flex-1 min-w-0">
           {/* Linha 1: Nome e metadados */}
-          <div className="flex items-center gap-1">
-            <h4 className="font-medium text-sm text-foreground truncate flex-shrink min-w-0">
+          <div className="flex items-center gap-1 flex-wrap">
+            <h4 className="font-medium text-sm text-foreground truncate max-w-[120px]">
               {name}
             </h4>
             
-            {/* Horário, Tempo e Badge - sempre visíveis */}
-            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+            {/* Horário, Tempo e Badge */}
+            <div className="flex items-center gap-1 flex-shrink-0">
               {lastMessageTime && (
                 <span className="text-[10px] text-muted-foreground whitespace-nowrap tabular-nums">
                   {lastMessageTime}
