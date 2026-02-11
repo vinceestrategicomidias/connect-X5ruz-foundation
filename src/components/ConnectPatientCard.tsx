@@ -92,14 +92,14 @@ export const ConnectPatientCard = ({
   return (
     <div
       onClick={onClick}
-      className="p-3 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm"
+      className="p-2.5 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm overflow-hidden"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* Avatar do paciente */}
         <div className="relative flex-shrink-0">
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-9 w-9">
             <AvatarImage src={avatar} alt={name} />
-            <AvatarFallback className={cn("text-white text-sm font-medium", avatarColor)}>
+            <AvatarFallback className={cn("text-white text-xs font-medium", avatarColor)}>
               {getInitials(name)}
             </AvatarFallback>
           </Avatar>
@@ -107,7 +107,7 @@ export const ConnectPatientCard = ({
           {/* Bolinha de status sobreposta ao avatar */}
           {mostrarBolinha && (
             <span className={cn(
-              "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card",
+              "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card",
               tempoExibido >= 30 
                 ? "bg-destructive"
                 : tempoExibido >= 15
@@ -120,29 +120,28 @@ export const ConnectPatientCard = ({
         {/* Conteúdo principal */}
         <div className="flex-1 min-w-0">
           {/* Linha 1: Nome e metadados */}
-          <div className="flex items-center justify-between gap-1">
-            <h4 className="font-medium text-sm text-foreground truncate min-w-0 flex-shrink">
+          <div className="flex items-center gap-1">
+            <h4 className="font-medium text-sm text-foreground truncate flex-shrink min-w-0">
               {name}
             </h4>
             
-            {/* Horário e Tempo */}
-            <div className="flex items-center gap-1 flex-shrink-0 pr-0.5">
+            {/* Horário, Tempo e Badge - sempre visíveis */}
+            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
               {lastMessageTime && (
-                <span className="text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap tabular-nums">
                   {lastMessageTime}
                 </span>
               )}
               {mostrarTempo && tempoExibido > 0 && (
                 <>
-                  <span className="text-[10px] text-muted-foreground">|</span>
-                  <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap tabular-nums">
+                  <span className="text-[9px] text-muted-foreground">|</span>
+                  <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap tabular-nums">
                     {formatarTempoEspera(tempoExibido)}
                   </span>
                 </>
               )}
-              {/* Badge de não lidas */}
               {unread && unread > 0 && (
-                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                <span className="bg-primary text-primary-foreground text-[9px] font-bold min-w-[16px] h-[16px] flex items-center justify-center rounded-full px-0.5">
                   {unread}
                 </span>
               )}
@@ -150,7 +149,7 @@ export const ConnectPatientCard = ({
           </div>
           
           {/* Linha 2: Preview mensagem */}
-          <p className="text-xs text-muted-foreground truncate mt-0.5 pr-1">
+          <p className="text-xs text-muted-foreground truncate mt-0.5">
             {formatarPreviewMensagem(lastMessage)}
           </p>
         </div>
