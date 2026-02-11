@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConnectAvatar } from "./ConnectAvatar";
-import { ConnectStatusIndicator } from "./ConnectStatusIndicator";
+// ConnectStatusIndicator removed from header per user request
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente, useMensagensByConversa } from "@/hooks/useConversas";
 import { ConnectMessageBubblePatient, ConnectMessageBubbleAttendant } from "./ConnectMessageBubble";
@@ -279,20 +279,6 @@ export const ConnectColumn2 = () => {
     toast.success(`Ligando para ${pacienteSelecionado.nome}`);
   };
 
-  const getStatusBadge = () => {
-    if (!pacienteSelecionado) return "offline";
-    
-    switch (pacienteSelecionado.status) {
-      case "fila":
-        return "espera";
-      case "em_atendimento":
-        return "andamento";
-      case "finalizado":
-        return "finalizado";
-      default:
-        return "offline";
-    }
-  };
 
   const handleSalvarContato = async (novoNome: string, novoTelefone: string) => {
     if (!pacienteSelecionado) return;
@@ -387,23 +373,11 @@ export const ConnectColumn2 = () => {
             )}
           </button>
           <div className="flex items-center gap-2">
-            <ConnectStatusIndicator 
-              status={getStatusBadge()} 
-              tempoNaFila={pacienteSelecionado?.tempo_na_fila || 0}
-            />
             <div className="flex items-center gap-2">
               <div>
                 <h3 className="font-medium text-sm text-foreground">
                   {pacienteSelecionado?.nome || "Selecione um paciente"}
                 </h3>
-                {mensagens && mensagens.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(mensagens[mensagens.length - 1].created_at).toLocaleTimeString('pt-BR', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </p>
-                )}
               </div>
               {pacienteSelecionado && (
                 <>
