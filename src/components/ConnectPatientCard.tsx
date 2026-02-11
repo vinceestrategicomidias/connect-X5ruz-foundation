@@ -92,11 +92,11 @@ export const ConnectPatientCard = ({
   return (
     <div
       onClick={onClick}
-      className="p-2.5 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm overflow-hidden"
+      className="p-2.5 bg-card hover:bg-muted/50 cursor-pointer connect-transition rounded-lg border border-border shadow-sm"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2.5">
         {/* Avatar do paciente */}
-        <div className="relative flex-shrink-0">
+        <div className="relative flex-shrink-0 mt-0.5">
           <Avatar className="h-9 w-9">
             <AvatarImage src={avatar} alt={name} />
             <AvatarFallback className={cn("text-white text-xs font-medium", avatarColor)}>
@@ -119,39 +119,47 @@ export const ConnectPatientCard = ({
         
         {/* Conteúdo principal */}
         <div className="flex-1 min-w-0">
-          {/* Linha 1: Nome e metadados */}
-          <div className="flex items-center gap-1 flex-wrap">
-            <h4 className="font-medium text-sm text-foreground truncate max-w-[120px]">
-              {name}
-            </h4>
-            
-            {/* Horário, Tempo e Badge */}
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {lastMessageTime && (
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap tabular-nums">
-                  {lastMessageTime}
-                </span>
-              )}
-              {mostrarTempo && tempoExibido > 0 && (
-                <>
-                  <span className="text-[9px] text-muted-foreground">|</span>
-                  <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap tabular-nums">
-                    {formatarTempoEspera(tempoExibido)}
-                  </span>
-                </>
-              )}
-              {unread && unread > 0 && (
-                <span className="bg-primary text-primary-foreground text-[9px] font-bold min-w-[16px] h-[16px] flex items-center justify-center rounded-full px-0.5">
-                  {unread}
-                </span>
-              )}
-            </div>
-          </div>
+          {/* Linha 1: Nome completo */}
+          <h4 className="font-medium text-sm text-foreground truncate">
+            {name}
+          </h4>
           
           {/* Linha 2: Preview mensagem */}
           <p className="text-xs text-muted-foreground truncate mt-0.5">
             {formatarPreviewMensagem(lastMessage)}
           </p>
+
+          {/* Linha 3: Horário | Tempo de espera | Badge não lidas */}
+          <div className="flex items-center gap-1.5 mt-1">
+            {lastMessageTime && (
+              <span className="text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
+                {lastMessageTime}
+              </span>
+            )}
+            {mostrarTempo && tempoExibido > 0 && (
+              <>
+                <span className="text-[10px] text-muted-foreground">|</span>
+                <span className={cn(
+                  "text-[11px] font-medium whitespace-nowrap tabular-nums",
+                  tempoExibido >= 30
+                    ? "text-destructive"
+                    : tempoExibido >= 15
+                      ? "text-yellow-500"
+                      : "text-muted-foreground"
+                )}>
+                  {formatarTempoEspera(tempoExibido)}
+                </span>
+              </>
+            )}
+            {unread && unread > 0 && (
+              <>
+                <span className="text-[10px] text-muted-foreground">|</span>
+                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                  {unread}
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
