@@ -385,6 +385,39 @@ export const PerfilPacienteSheet = ({
                   </div>
                 )}
 
+                {/* Notas dos Atendentes */}
+                {notas.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold flex items-center gap-2 text-blue-600">
+                      <FileText className="h-4 w-4" />
+                      Notas dos Atendentes
+                    </h4>
+                    <div className="space-y-2">
+                      {notas.map((nota) => (
+                        <div
+                          key={nota.id}
+                          className="p-3 rounded-lg bg-blue-50 border border-blue-200"
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-blue-900">{nota.texto}</p>
+                              {nota.tag && (
+                                <Badge variant="secondary" className="mt-1 text-xs">
+                                  <Tag className="h-2.5 w-2.5 mr-1" />
+                                  {nota.tag}
+                                </Badge>
+                              )}
+                              <p className="text-xs text-blue-600/70 mt-1">
+                                {format(new Date(nota.created_at), "dd/MM/yyyy HH:mm")} • {nota.usuario_nome} • {nota.setor}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Histórico de Etiquetas */}
                 {historicoEtiquetas.length > 0 && (
                   <div className="space-y-2">
