@@ -315,6 +315,132 @@ export type Database = {
           },
         ]
       }
+      commercial_cases: {
+        Row: {
+          conversa_id: string | null
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          loss_reason_id: string | null
+          next_followup_at: string | null
+          provider_id: string | null
+          service_type_id: string | null
+          stage: string
+          updated_at: string | null
+          value_closed: number | null
+          value_estimated: number | null
+        }
+        Insert: {
+          conversa_id?: string | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          loss_reason_id?: string | null
+          next_followup_at?: string | null
+          provider_id?: string | null
+          service_type_id?: string | null
+          stage?: string
+          updated_at?: string | null
+          value_closed?: number | null
+          value_estimated?: number | null
+        }
+        Update: {
+          conversa_id?: string | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          loss_reason_id?: string | null
+          next_followup_at?: string | null
+          provider_id?: string | null
+          service_type_id?: string | null
+          stage?: string
+          updated_at?: string | null
+          value_closed?: number | null
+          value_estimated?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_cases_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_cases_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_cases_loss_reason_id_fkey"
+            columns: ["loss_reason_id"]
+            isOneToOne: false
+            referencedRelation: "loss_reasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_cases_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_cases_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commercial_events: {
+        Row: {
+          commercial_case_id: string
+          created_at: string | null
+          created_by: string | null
+          event_type: string
+          from_value: string | null
+          id: string
+          to_value: string | null
+        }
+        Insert: {
+          commercial_case_id: string
+          created_at?: string | null
+          created_by?: string | null
+          event_type: string
+          from_value?: string | null
+          id?: string
+          to_value?: string | null
+        }
+        Update: {
+          commercial_case_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          event_type?: string
+          from_value?: string | null
+          id?: string
+          to_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_events_commercial_case_id_fkey"
+            columns: ["commercial_case_id"]
+            isOneToOne: false
+            referencedRelation: "commercial_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversas: {
         Row: {
           atendente_id: string | null
@@ -901,6 +1027,41 @@ export type Database = {
           },
         ]
       }
+      loss_reasons: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          nome: string
+          ordem: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome: string
+          ordem?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string
+          ordem?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loss_reasons_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mensagens: {
         Row: {
           autor: string
@@ -1213,6 +1374,76 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      providers: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          empresa_id: string | null
+          especialidade: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          especialidade?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          especialidade?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "providers_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_types: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          nome: string
+          ordem: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome: string
+          ordem?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string
+          ordem?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_types_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       setores: {
         Row: {
