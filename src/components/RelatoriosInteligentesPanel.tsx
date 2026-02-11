@@ -3,8 +3,9 @@ import {
   Download, Filter, Calendar, Users, Building2, Package,
   TrendingUp, TrendingDown, Target, BarChart3, PieChart as PieChartIcon,
   ArrowUpRight, ArrowDownRight, Clock, DollarSign, UserCheck, FileText,
-  Star, Lightbulb, CheckCircle2, Brain
+  Star, Lightbulb, CheckCircle2, Brain, CalendarClock
 } from "lucide-react";
+import { VisaoComercialPanel } from "./VisaoComercialPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -489,6 +490,10 @@ export const RelatoriosInteligentesPanel = () => {
             <Star className="h-3 w-3 mr-1" />
             Etiquetas
           </TabsTrigger>
+          <TabsTrigger value="follow_up" className="text-xs">
+            <CalendarClock className="h-3 w-3 mr-1" />
+            Follow-up
+          </TabsTrigger>
           <TabsTrigger value="relatorio_geral_atendente" className="text-xs">
             <Brain className="h-3 w-3 mr-1" />
             Relatório Atendente
@@ -640,94 +645,9 @@ export const RelatoriosInteligentesPanel = () => {
               </div>
             </TabsContent>
 
-            {/* Dashboard Comercial */}
-            <TabsContent value="dashboard_comercial" className="mt-0 space-y-4">
-              <FiltrosRelatorio filtros={["Data", "Mês", "Ano", "Setor"]} />
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Vendas do Mês</div>
-                  <div className="text-2xl font-bold text-[#0A2647]">
-                    {formatCurrency(mockData.dashboardComercial.vendasMes)}
-                  </div>
-                  <div className="text-xs text-green-600 flex items-center">
-                    <ArrowUpRight className="h-3 w-3" />
-                    +{mockData.dashboardComercial.crescimento}%
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Meta do Mês</div>
-                  <div className="text-2xl font-bold text-muted-foreground">
-                    {formatCurrency(mockData.dashboardComercial.metaMes)}
-                  </div>
-                  <div className="w-full h-2 bg-muted rounded-full mt-2">
-                    <div 
-                      className="h-full bg-[#0A2647] rounded-full" 
-                      style={{ width: `${(mockData.dashboardComercial.vendasMes / mockData.dashboardComercial.metaMes) * 100}%` }}
-                    />
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Ticket Médio</div>
-                  <div className="text-2xl font-bold text-[#0A2647]">
-                    {formatCurrency(mockData.dashboardComercial.ticketMedio)}
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Novos Clientes</div>
-                  <div className="text-2xl font-bold text-[#0A2647]">
-                    {mockData.dashboardComercial.novosClientes}
-                  </div>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card className="p-4">
-                  <h4 className="font-semibold mb-4">Vendas por Setor</h4>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={mockData.dashboardComercial.vendasPorSetor}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ setor, percent }) => `${setor}: ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={80}
-                          dataKey="valor"
-                        >
-                          {mockData.dashboardComercial.vendasPorSetor.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
-
-                <Card className="p-4">
-                  <h4 className="font-semibold mb-4">Tendência Semanal</h4>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={mockData.dashboardComercial.tendencia}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                        <XAxis dataKey="semana" />
-                        <YAxis tickFormatter={(value) => `${value/1000}k`} />
-                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                        <Line 
-                          type="monotone" 
-                          dataKey="vendas" 
-                          stroke="#0A2647" 
-                          strokeWidth={3}
-                          dot={{ r: 5, fill: "#0A2647" }}
-                          name="Vendas"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
-              </div>
+            {/* Visão Comercial */}
+            <TabsContent value="dashboard_comercial" className="mt-0">
+              <VisaoComercialPanel />
             </TabsContent>
 
             {/* Conversão por Atendente */}
@@ -939,6 +859,50 @@ export const RelatoriosInteligentesPanel = () => {
                   </div>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* Follow-up e Recontato */}
+            <TabsContent value="follow_up" className="mt-0 space-y-4">
+              <FiltrosRelatorio filtros={["Data", "Mês", "Ano", "Atendente"]} />
+
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card className="p-4">
+                  <div className="text-sm text-muted-foreground">Pendentes</div>
+                  <div className="text-3xl font-bold text-amber-600">{mockData.followUp.pendentes}</div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-sm text-muted-foreground">Realizados</div>
+                  <div className="text-3xl font-bold text-green-600">{mockData.followUp.realizados.toLocaleString()}</div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-sm text-muted-foreground">Taxa de Retorno</div>
+                  <div className="text-3xl font-bold text-foreground">{mockData.followUp.taxaRetorno}%</div>
+                </Card>
+              </div>
+
+              <Card className="p-4">
+                <h4 className="font-semibold mb-4">Follow-up por Atendente</h4>
+                <div className="space-y-3">
+                  {mockData.followUp.porAtendente.map((a, idx) => (
+                    <div key={idx} className="flex items-center gap-4 p-3 border rounded-lg">
+                      <div className="w-24 font-medium text-sm">{a.nome}</div>
+                      <div className="flex-1 grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Pendentes: </span>
+                          <span className="font-medium text-amber-600">{a.pendentes}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Realizados: </span>
+                          <span className="font-medium text-green-600">{a.realizados}</span>
+                        </div>
+                        <div>
+                          <Badge variant={a.taxa >= 65 ? "default" : "secondary"}>{a.taxa}% retorno</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
             </TabsContent>
 
             {/* Relatório Geral por Atendente */}
