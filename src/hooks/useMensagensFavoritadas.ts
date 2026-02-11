@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 export interface MensagemFavoritada {
   id: string;
@@ -9,10 +9,12 @@ export interface MensagemFavoritada {
   favoritadoPor: string;
   nota?: string;
   opcaoFavorito: "historico" | "nota";
+  pacienteId?: string;
+  pacienteNome?: string;
 }
 
 // Mock de mensagens favoritadas por paciente
-const mensagensFavoritadasPorPaciente: Record<string, MensagemFavoritada[]> = {
+const mensagensFavoritadasIniciais: Record<string, MensagemFavoritada[]> = {
   "lucia": [
     {
       id: "fav1",
@@ -103,13 +105,69 @@ const getPacienteKeyFromNome = (nome: string): string => {
   return "";
 };
 
+// Global store for favorited messages (shared across components)
+let favoritadasStore: Record<string, MensagemFavoritada[]> = { ...mensagensFavoritadasIniciais };
+let storeListeners: Array<() => void> = [];
+
+const notifyListeners = () => {
+  storeListeners.forEach((listener) => listener());
+};
+
+export const adicionarMensagemFavoritada = (
+  pacienteId: string,
+  pacienteNome: string,
+  mensagem: {
+    id: string;
+    texto: string;
+    autor: "paciente" | "atendente";
+    horario: string;
+  },
+  opcao: "historico" | "nota",
+  nota?: string,
+  favoritadoPor?: string
+) => {
+  const key = getPacienteKeyFromNome(pacienteNome) || pacienteId;
+
+  const novaFavoritada: MensagemFavoritada = {
+    id: `fav-${Date.now()}-${mensagem.id}`,
+    texto: mensagem.texto,
+    autor: mensagem.autor as "paciente" | "atendente",
+    horario: mensagem.horario,
+    dataFavorito: new Date().toISOString(),
+    favoritadoPor: favoritadoPor || "Você",
+    nota,
+    opcaoFavorito: opcao,
+    pacienteId,
+    pacienteNome,
+  };
+
+  favoritadasStore = {
+    ...favoritadasStore,
+    [key]: [novaFavoritada, ...(favoritadasStore[key] || [])],
+  };
+
+  notifyListeners();
+};
+
 export const useMensagensFavoritadas = (pacienteId?: string, pacienteNome?: string) => {
   const pacienteKey = pacienteNome ? getPacienteKeyFromNome(pacienteNome) : "";
-  
+  const [tick, setTick] = useState(0);
+
+  // Subscribe to store changes
+  useEffect(() => {
+    const listener = () => setTick((t) => t + 1);
+    storeListeners.push(listener);
+    return () => {
+      storeListeners = storeListeners.filter((l) => l !== listener);
+    };
+  }, []);
+
   const mensagensFavoritadas = useMemo(() => {
-    return (mensagensFavoritadasPorPaciente[pacienteKey] || [])
+    const key = pacienteKey || pacienteId || "";
+    return (favoritadasStore[key] || [])
       .sort((a, b) => new Date(b.dataFavorito).getTime() - new Date(a.dataFavorito).getTime());
-  }, [pacienteKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pacienteKey, pacienteId, tick]);
 
   return {
     mensagensFavoritadas,
