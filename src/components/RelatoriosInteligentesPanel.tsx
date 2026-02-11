@@ -485,10 +485,6 @@ export const RelatoriosInteligentesPanel = () => {
             <TrendingDown className="h-3 w-3 mr-1" />
             Motivos Perda
           </TabsTrigger>
-          <TabsTrigger value="follow_up" className="text-xs">
-            <Target className="h-3 w-3 mr-1" />
-            Follow-up
-          </TabsTrigger>
           <TabsTrigger value="etiquetas" className="text-xs">
             <Star className="h-3 w-3 mr-1" />
             Etiquetas
@@ -875,63 +871,6 @@ export const RelatoriosInteligentesPanel = () => {
                   </div>
                 </Card>
               </div>
-            </TabsContent>
-
-            {/* Follow-up e Recontato */}
-            <TabsContent value="follow_up" className="mt-0 space-y-4">
-              <FiltrosRelatorio filtros={["Data", "Mês", "Ano", "Atendente", "Setor"]} />
-
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Pendentes</div>
-                  <div className="text-3xl font-bold text-orange-600">
-                    {mockData.followUp.pendentes}
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Realizados</div>
-                  <div className="text-3xl font-bold text-green-600">
-                    {mockData.followUp.realizados}
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Taxa de Retorno</div>
-                  <div className="text-3xl font-bold text-[#0A2647]">
-                    {mockData.followUp.taxaRetorno}%
-                  </div>
-                </Card>
-              </div>
-
-              <Card className="p-4">
-                <h4 className="font-semibold mb-4">Follow-up por Atendente</h4>
-                <div className="space-y-3">
-                  {mockData.followUp.porAtendente.map((atendente, idx) => (
-                    <div key={idx} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold">{atendente.nome}</span>
-                        <Badge 
-                          variant={atendente.taxa >= 65 ? "default" : "secondary"}
-                          className={atendente.taxa >= 65 ? "bg-green-600" : ""}
-                        >
-                          {atendente.taxa}% retorno
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full bg-orange-500" />
-                          <span className="text-muted-foreground">Pendentes: </span>
-                          <span className="font-medium">{atendente.pendentes}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full bg-green-500" />
-                          <span className="text-muted-foreground">Realizados: </span>
-                          <span className="font-medium">{atendente.realizados}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
             </TabsContent>
 
             {/* Relatório por Etiquetas */}

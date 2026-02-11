@@ -30,6 +30,7 @@ import {
   Star,
   MessageSquare,
   CalendarDays,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ConnectAvatar } from "./ConnectAvatar";
@@ -47,6 +48,7 @@ interface PerfilPacienteSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   paciente: Paciente | null;
+  onNavigateToMessage?: (mensagemId: string, conversaId?: string) => void;
 }
 
 const getSatisfacaoIA = (paciente: Paciente | null) => {
@@ -66,6 +68,7 @@ export const PerfilPacienteSheet = ({
   open,
   onOpenChange,
   paciente,
+  onNavigateToMessage,
 }: PerfilPacienteSheetProps) => {
   const [activeTab, setActiveTab] = useState("dados");
   const [novaNotaTexto, setNovaNotaTexto] = useState("");
@@ -348,7 +351,14 @@ export const PerfilPacienteSheet = ({
                       {mensagensFavoritadas.map((msg) => (
                         <div 
                           key={msg.id} 
-                          className="p-3 rounded-lg bg-amber-50 border border-amber-200"
+                          className="p-3 rounded-lg bg-amber-50 border border-amber-200 cursor-pointer hover:bg-amber-100 transition-colors"
+                          onClick={() => {
+                            if (onNavigateToMessage && msg.id) {
+                              onNavigateToMessage(msg.id);
+                              onOpenChange(false);
+                            }
+                          }}
+                          title="Clique para ir até esta mensagem na conversa"
                         >
                           <div className="flex items-start gap-2">
                             <MessageSquare className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
@@ -365,6 +375,9 @@ export const PerfilPacienteSheet = ({
                                 {format(new Date(msg.dataFavorito), "dd/MM/yyyy HH:mm")} • {msg.favoritadoPor}
                               </p>
                             </div>
+                            {onNavigateToMessage && (
+                              <ExternalLink className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                            )}
                           </div>
                         </div>
                       ))}

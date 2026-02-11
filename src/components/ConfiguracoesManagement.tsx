@@ -553,134 +553,140 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
               </TabsContent>
 
               {/* ALERTAS */}
-              <TabsContent value="alertas" className="mt-0">
+              <TabsContent value="alertas" className="mt-0 space-y-4">
+                {/* Seção 1: Notificações e Alertas */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Alertas Automáticos</CardTitle>
-                    <CardDescription>Configure limites para alertas do sistema</CardDescription>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bell className="h-5 w-5" />
+                      Notificações e Alertas
+                    </CardTitle>
+                    <CardDescription>Ativar/desativar tipos de alertas e configurar notificações push</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {[
+                      { id: 'fila_alta', nome: 'Fila alta', desc: 'Quando a fila de espera exceder o limite' },
+                      { id: 'nps_baixo', nome: 'NPS baixo', desc: 'Quando o NPS cair abaixo do esperado' },
+                      { id: 'sem_resposta', nome: 'Paciente sem resposta', desc: 'Tempo sem resposta acima do limite' },
+                      { id: 'tma_acima', nome: 'Tempo médio acima da meta', desc: 'TMA excedeu a meta configurada' },
+                      { id: 'ligacao_perdida', nome: 'Ligação perdida', desc: 'Chamada não atendida' },
+                    ].map((alerta) => (
+                      <div key={alerta.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium text-sm">{alerta.nome}</h4>
+                          <p className="text-xs text-muted-foreground">{alerta.desc}</p>
+                        </div>
+                        <Switch
+                          checked={alertasConfig[alerta.id as keyof typeof alertasConfig]?.ativo ?? true}
+                          onCheckedChange={(checked) =>
+                            setAlertasConfig({
+                              ...alertasConfig,
+                              [alerta.id]: { ...alertasConfig[alerta.id as keyof typeof alertasConfig], ativo: checked },
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+                    
+                    <Separator />
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Notificações Push</h4>
+                      <p className="text-xs text-muted-foreground mb-3">Quais alertas aparecem como notificação na tela</p>
+                      <div className="space-y-2">
+                        {['Fila alta', 'NPS baixo', 'Paciente sem resposta', 'Ligação perdida'].map((nome) => (
+                          <div key={nome} className="flex items-center justify-between py-2 border-b last:border-0">
+                            <span className="text-sm">{nome}</span>
+                            <Switch defaultChecked />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Seção 2: Limites e Sensibilidades */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Limites e Sensibilidades</CardTitle>
+                    <CardDescription>Defina os limiares para disparo de alertas</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="p-4 border rounded-lg space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Fila Alta</h4>
-                            <p className="text-sm text-muted-foreground">Alerta quando a fila exceder o limite</p>
-                          </div>
-                          <Switch
-                            checked={alertasConfig.fila_alta.ativo}
-                            onCheckedChange={(checked) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                fila_alta: { ...alertasConfig.fila_alta, ativo: checked },
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Limite de Pacientes na Fila</Label>
-                          <Input
-                            type="number"
-                            value={alertasConfig.fila_alta.limite}
-                            onChange={(e) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                fila_alta: { ...alertasConfig.fila_alta, limite: parseInt(e.target.value) },
-                              })
-                            }
-                          />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Tempo crítico de fila (minutos)</Label>
+                        <Input
+                          type="number"
+                          value={alertasConfig.fila_alta.limite}
+                          onChange={(e) =>
+                            setAlertasConfig({
+                              ...alertasConfig,
+                              fila_alta: { ...alertasConfig.fila_alta, limite: parseInt(e.target.value) },
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Tempo sem resposta (minutos)</Label>
+                        <Input
+                          value={alertasConfig.tempo_resposta_alto.limite}
+                          onChange={(e) =>
+                            setAlertasConfig({
+                              ...alertasConfig,
+                              tempo_resposta_alto: { ...alertasConfig.tempo_resposta_alto, limite: e.target.value },
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Sensibilidade de sentimento</Label>
+                        <div className="flex gap-2">
+                          {['Baixa', 'Média', 'Alta'].map((nivel) => (
+                            <Badge
+                              key={nivel}
+                              variant={nivel === 'Média' ? 'default' : 'outline'}
+                              className="cursor-pointer"
+                            >
+                              {nivel}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
-
-                      <div className="p-4 border rounded-lg space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">NPS Baixo</h4>
-                            <p className="text-sm text-muted-foreground">Alerta quando o NPS cair abaixo do esperado</p>
-                          </div>
-                          <Switch
-                            checked={alertasConfig.nps_baixo.ativo}
-                            onCheckedChange={(checked) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                nps_baixo: { ...alertasConfig.nps_baixo, ativo: checked },
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Nota Mínima Aceitável</Label>
-                          <Input
-                            type="number"
-                            value={alertasConfig.nps_baixo.limite}
-                            onChange={(e) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                nps_baixo: { ...alertasConfig.nps_baixo, limite: parseInt(e.target.value) },
-                              })
-                            }
-                          />
+                      <div className="space-y-2">
+                        <Label>Sensibilidade de pico de demanda</Label>
+                        <div className="flex gap-2">
+                          {['Baixa', 'Média', 'Alta'].map((nivel) => (
+                            <Badge
+                              key={nivel}
+                              variant={nivel === 'Média' ? 'default' : 'outline'}
+                              className="cursor-pointer"
+                            >
+                              {nivel}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
+                    </div>
 
-                      <div className="p-4 border rounded-lg space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Tempo de Resposta Alto</h4>
-                            <p className="text-sm text-muted-foreground">Alerta quando o tempo médio exceder o limite</p>
-                          </div>
-                          <Switch
-                            checked={alertasConfig.tempo_resposta_alto.ativo}
-                            onCheckedChange={(checked) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                tempo_resposta_alto: { ...alertasConfig.tempo_resposta_alto, ativo: checked },
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Tempo Máximo (minutos)</Label>
-                          <Input
-                            value={alertasConfig.tempo_resposta_alto.limite}
-                            onChange={(e) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                tempo_resposta_alto: { ...alertasConfig.tempo_resposta_alto, limite: e.target.value },
-                              })
-                            }
-                          />
-                        </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>NPS baixo para alerta (≤)</Label>
+                        <Input
+                          type="number"
+                          value={alertasConfig.nps_baixo.limite}
+                          onChange={(e) =>
+                            setAlertasConfig({
+                              ...alertasConfig,
+                              nps_baixo: { ...alertasConfig.nps_baixo, limite: parseInt(e.target.value) },
+                            })
+                          }
+                        />
                       </div>
-
-                      <div className="p-4 border rounded-lg space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">Previsão de Pico</h4>
-                            <p className="text-sm text-muted-foreground">Alerta quando a capacidade estiver próxima do limite</p>
-                          </div>
-                          <Switch
-                            checked={alertasConfig.previsao_pico.ativo}
-                            onCheckedChange={(checked) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                previsao_pico: { ...alertasConfig.previsao_pico, ativo: checked },
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Percentual de Capacidade</Label>
-                          <Input
-                            value={alertasConfig.previsao_pico.limite}
-                            onChange={(e) =>
-                              setAlertasConfig({
-                                ...alertasConfig,
-                                previsao_pico: { ...alertasConfig.previsao_pico, limite: e.target.value },
-                              })
-                            }
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label>NPS alto para reconhecimento (≥)</Label>
+                        <Input type="number" defaultValue={9} />
                       </div>
                     </div>
 
