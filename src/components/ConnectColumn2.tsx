@@ -30,8 +30,7 @@ import { adicionarMensagemFavoritada } from "@/hooks/useMensagensFavoritadas";
 import { useFinalizarAtendimento } from "@/hooks/useFinalizarAtendimento";
 import { MensagensRapidasDropdown } from "./MensagensRapidasDropdown";
 import { FunilIndicador } from "./FunilIndicador";
-import { FunilClassificacaoModal } from "./FunilClassificacaoModal";
-import { useLeadAtivoPaciente, useCriarLead } from "@/hooks/useLeadsFunil";
+import { useLeadAtivoPaciente } from "@/hooks/useLeadsFunil";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,9 +67,6 @@ export const ConnectColumn2 = () => {
   const uploadAnexo = useUploadAnexo();
   const atualizarContato = useAtualizarContatoPaciente();
   const { data: leadAtivo } = useLeadAtivoPaciente(pacienteSelecionado?.id || null);
-  const criarLead = useCriarLead();
-  const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
-  const [pendingOrcamentoCallback, setPendingOrcamentoCallback] = useState<(() => void) | null>(null);
 
   // Scroll automático para última mensagem
   useEffect(() => {
@@ -104,7 +100,7 @@ export const ConnectColumn2 = () => {
     };
   }, [conversa?.id]);
 
-  const enviarMensagemDireto = async () => {
+  const handleEnviarMensagem = async () => {
     if (!mensagemTexto.trim() || !conversa?.id || !pacienteSelecionado) return;
 
     const ehPrimeiraMensagemAtendente = !mensagens?.some(m => m.autor === "atendente");
@@ -124,27 +120,6 @@ export const ConnectColumn2 = () => {
 
     setMensagemTexto("");
     setDigitando(false);
-  };
-
-  // Detect budget-related keywords to trigger funnel classification
-  const isOrcamentoMessage = (texto: string) => {
-    const keywords = ["orçamento", "orcamento", "orçamentos", "valor", "preço", "preco", "proposta", "budget", "cotação", "cotacao"];
-    const lower = texto.toLowerCase();
-    return keywords.some(k => lower.includes(k));
-  };
-
-  const handleEnviarMensagem = async () => {
-    if (!mensagemTexto.trim() || !conversa?.id || !pacienteSelecionado) return;
-
-    // If message looks like a budget and no active lead, trigger funnel
-    if (isOrcamentoMessage(mensagemTexto) && !leadAtivo && atendenteLogado) {
-      handleEnviarOrcamentoComFunil(() => {
-        enviarMensagemDireto();
-      });
-      return;
-    }
-
-    await enviarMensagemDireto();
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -394,47 +369,6 @@ export const ConnectColumn2 = () => {
     setMensagemSelecionada(null);
   };
 
-  // Funnel: trigger classification when sending first budget
-  const handleEnviarOrcamentoComFunil = (callback: () => void) => {
-    if (!pacienteSelecionado || !atendenteLogado) {
-      callback();
-      return;
-    }
-    // If lead already exists, just send
-    if (leadAtivo) {
-      callback();
-      return;
-    }
-    // First budget → open classification modal
-    setPendingOrcamentoCallback(() => callback);
-    setClassificacaoModalOpen(true);
-  };
-
-  const handleClassificacao = (tipo: "venda" | "apenas_contato", dados?: {
-    produto_servico: string;
-    valor_orcamento: number;
-    origem_lead?: string;
-    observacoes?: string;
-  }) => {
-    if (tipo === "venda" && dados && pacienteSelecionado && atendenteLogado) {
-      criarLead.mutate({
-        paciente_id: pacienteSelecionado.id,
-        conversa_id: conversa?.id,
-        atendente_id: atendenteLogado.id,
-        setor_id: atendenteLogado.setor_id || undefined,
-        produto_servico: dados.produto_servico,
-        valor_orcamento: dados.valor_orcamento,
-        origem_lead: dados.origem_lead,
-        observacoes: dados.observacoes,
-      });
-    }
-    setClassificacaoModalOpen(false);
-    // Execute the pending callback (send the budget)
-    if (pendingOrcamentoCallback) {
-      pendingOrcamentoCallback();
-      setPendingOrcamentoCallback(null);
-    }
-  };
 
   return (
     <div className="flex-1 flex flex-col bg-muted/20 relative">
@@ -749,19 +683,6 @@ export const ConnectColumn2 = () => {
         />
       )}
 
-      {/* Modal de Classificação do Funil */}
-      <FunilClassificacaoModal
-        open={classificacaoModalOpen}
-        onOpenChange={(open) => {
-          setClassificacaoModalOpen(open);
-          if (!open && pendingOrcamentoCallback) {
-            // If modal closed without classifying, still send
-            pendingOrcamentoCallback();
-            setPendingOrcamentoCallback(null);
-          }
-        }}
-        onClassificar={handleClassificacao}
-      />
     </div>
   );
 };
