@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
+import { usePacienteContext } from "@/contexts/PacienteContext";
+import { useConversaByPaciente } from "@/hooks/useConversas";
+import { useLeadAtivoPaciente, useCriarLead } from "@/hooks/useLeadsFunil";
+import { FunilClassificacaoModal } from "./FunilClassificacaoModal";
 
 interface RoteirosNode {
   id: string;
@@ -104,6 +108,12 @@ interface RoteirosPanelProps {
 export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const [fluxo, setFluxo] = useState<string[]>(["no_inicial"]);
   const { atendenteLogado } = useAtendenteContext();
+  const { pacienteSelecionado } = usePacienteContext();
+  const { data: conversa } = useConversaByPaciente(pacienteSelecionado?.id || null);
+  const { data: leadAtivo } = useLeadAtivoPaciente(pacienteSelecionado?.id || null);
+  const criarLead = useCriarLead();
+  const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
+  const [pendingOrcamentoCallback, setPendingOrcamentoCallback] = useState<(() => void) | null>(null);
   const [orcamento, setOrcamento] = useState<OrcamentoData>({
     descricao: "Consulta especializada",
     valorProduto: "350.00",
@@ -158,13 +168,53 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
     return mensagem;
   };
 
-  const handleEnviarOrcamento = () => {
+  const enviarOrcamentoDireto = () => {
     const mensagem = gerarMensagemOrcamento();
     navigator.clipboard.writeText(mensagem);
     toast({
       title: "Orçamento copiado!",
       description: "O orçamento foi copiado para a área de transferência",
     });
+  };
+
+  const handleEnviarOrcamento = () => {
+    if (!pacienteSelecionado || !atendenteLogado) {
+      enviarOrcamentoDireto();
+      return;
+    }
+    // If lead already exists, just send
+    if (leadAtivo) {
+      enviarOrcamentoDireto();
+      return;
+    }
+    // First budget → open classification modal
+    setPendingOrcamentoCallback(() => enviarOrcamentoDireto);
+    setClassificacaoModalOpen(true);
+  };
+
+  const handleClassificacao = (tipo: "venda" | "apenas_contato", dados?: {
+    produto_servico: string;
+    valor_orcamento: number;
+    origem_lead?: string;
+    observacoes?: string;
+  }) => {
+    if (tipo === "venda" && dados && pacienteSelecionado && atendenteLogado) {
+      criarLead.mutate({
+        paciente_id: pacienteSelecionado.id,
+        conversa_id: conversa?.id,
+        atendente_id: atendenteLogado.id,
+        setor_id: atendenteLogado.setor_id || undefined,
+        produto_servico: dados.produto_servico,
+        valor_orcamento: dados.valor_orcamento,
+        origem_lead: dados.origem_lead,
+        observacoes: dados.observacoes,
+      });
+    }
+    setClassificacaoModalOpen(false);
+    if (pendingOrcamentoCallback) {
+      pendingOrcamentoCallback();
+      setPendingOrcamentoCallback(null);
+    }
   };
 
   const handleLimparOrcamento = () => {
@@ -370,6 +420,19 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
           </ScrollArea>
         </div>
       </div>
+      {/* Modal de Classificação do Funil */}
+      <FunilClassificacaoModal
+        open={classificacaoModalOpen}
+        onOpenChange={(open) => {
+          setClassificacaoModalOpen(open);
+          if (!open && pendingOrcamentoCallback) {
+            pendingOrcamentoCallback();
+            setPendingOrcamentoCallback(null);
+          }
+        }}
+        onClassificar={handleClassificacao}
+        valorOrcamento={parseFloat(orcamento.valorProduto) || undefined}
+      />
     </div>
   );
 };
