@@ -20,7 +20,9 @@ export interface LeadFunil {
   ativo: boolean;
   created_at: string;
   updated_at: string;
+  fechado_por_id: string | null;
   vendedor_nome?: string;
+  fechado_por_nome?: string;
 }
 
 export const useLeadAtivoPaciente = (pacienteId: string | null) => {
@@ -30,15 +32,17 @@ export const useLeadAtivoPaciente = (pacienteId: string | null) => {
       if (!pacienteId) return null;
       const { data, error } = await (supabase
         .from("leads_funil" as any)
-        .select("*, atendentes:atendente_id(nome)") as any)
+        .select("*, vendedor:atendente_id(nome), fechador:fechado_por_id(nome)") as any)
         .eq("paciente_id", pacienteId)
         .eq("ativo", true)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
       const lead = { ...data } as any;
-      lead.vendedor_nome = lead.atendentes?.nome || null;
-      delete lead.atendentes;
+      lead.vendedor_nome = lead.vendedor?.nome || null;
+      lead.fechado_por_nome = lead.fechador?.nome || null;
+      delete lead.vendedor;
+      delete lead.fechador;
       return lead as LeadFunil;
     },
     enabled: !!pacienteId,
@@ -102,12 +106,14 @@ export const useAtualizarEtapaLead = () => {
       valor_final?: number;
       forma_pagamento?: string;
       motivo_perda?: string;
+      fechado_por_id?: string;
     }) => {
       const updates: Record<string, any> = { etapa: params.etapa };
       if (params.etapa === "vendido") {
         updates.valor_final = params.valor_final;
         updates.forma_pagamento = params.forma_pagamento;
         updates.data_fechamento = new Date().toISOString();
+        if (params.fechado_por_id) updates.fechado_por_id = params.fechado_por_id;
       }
       if (params.etapa === "perdido") {
         updates.motivo_perda = params.motivo_perda;
