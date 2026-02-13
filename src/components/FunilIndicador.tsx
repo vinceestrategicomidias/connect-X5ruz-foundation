@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLeadAtivoPaciente, useAtualizarEtapaLead, useReabrirLead } from "@/hooks/useLeadsFunil";
+import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { FunilVendidoModal } from "./FunilVendidoModal";
 import { FunilPerdidoModal } from "./FunilPerdidoModal";
 import { toast } from "sonner";
-import { TrendingUp, RotateCcw } from "lucide-react";
+import { TrendingUp, RotateCcw, User, ShoppingCart, CalendarClock } from "lucide-react";
+import { format } from "date-fns";
 
 interface FunilIndicadorProps {
   pacienteId: string | null;
@@ -21,6 +21,7 @@ const ETAPAS = [
 
 export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
   const { data: lead } = useLeadAtivoPaciente(pacienteId);
+  const { atendenteLogado } = useAtendenteContext();
   const atualizarEtapa = useAtualizarEtapaLead();
   const reabrirLead = useReabrirLead();
   const [vendidoOpen, setVendidoOpen] = useState(false);
@@ -33,7 +34,6 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
     if (etapa === "vendido") setVendidoOpen(true);
     if (etapa === "perdido") setPerdidoOpen(true);
     if (etapa === "em_negociacao" && lead.etapa !== "em_negociacao") {
-      // Reabrir
       reabrirLead.mutate(
         { leadId: lead.id, pacienteId: lead.paciente_id },
         { onSuccess: () => toast.success("Lead reaberto!") }
@@ -49,6 +49,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
         etapa: "vendido",
         valor_final: dados.valor_final,
         forma_pagamento: dados.forma_pagamento,
+        fechado_por_id: atendenteLogado?.id,
       },
       { onSuccess: () => { toast.success("Venda confirmada! 🎉"); setVendidoOpen(false); } }
     );
@@ -69,6 +70,63 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
   const formatCurrency = (v: number) =>
     v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+  const formatDate = (d: string) => {
+    try { return format(new Date(d), "dd/MM/yyyy HH:mm"); } catch { return d; }
+  };
+
+  const renderTooltipContent = () => {
+    return (
+      <div className="space-y-1.5 text-xs max-w-56">
+        <p className="font-semibold text-sm">{lead.produto_servico}</p>
+
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <ShoppingCart className="h-3 w-3 shrink-0" />
+          <span>Orçamento: {formatCurrency(lead.valor_orcamento)}</span>
+        </div>
+
+        {lead.vendedor_nome && (
+          <div className="flex items-center gap-1.5">
+            <User className="h-3 w-3 shrink-0 text-primary" />
+            <span>Vendedor: <span className="font-medium">{lead.vendedor_nome}</span></span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <CalendarClock className="h-3 w-3 shrink-0" />
+          <span>Enviado: {formatDate(lead.data_envio_orcamento)}</span>
+        </div>
+
+        {lead.etapa === "vendido" && (
+          <div className="border-t border-border/50 pt-1.5 mt-1.5 space-y-1">
+            {lead.valor_final && (
+              <p className="text-green-600 font-medium">
+                Fechado: {formatCurrency(lead.valor_final)}
+              </p>
+            )}
+            {lead.fechado_por_nome && (
+              <div className="flex items-center gap-1.5">
+                <User className="h-3 w-3 shrink-0 text-green-600" />
+                <span>Fechou venda: <span className="font-medium">{lead.fechado_por_nome}</span></span>
+              </div>
+            )}
+            {lead.data_fechamento && (
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <CalendarClock className="h-3 w-3 shrink-0" />
+                <span>{formatDate(lead.data_fechamento)}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {lead.etapa === "perdido" && lead.motivo_perda && (
+          <div className="border-t border-border/50 pt-1.5 mt-1.5">
+            <p className="text-destructive">Motivo: {lead.motivo_perda}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <TooltipProvider>
       <div className="flex items-center gap-1.5 px-2">
@@ -76,15 +134,8 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
           <TooltipTrigger>
             <TrendingUp className="h-3.5 w-3.5 text-primary" />
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="text-xs max-w-52">
-            <p className="font-medium">{lead.produto_servico}</p>
-            <p>Orçamento: {formatCurrency(lead.valor_orcamento)}</p>
-            {lead.valor_final && <p>Fechado: {formatCurrency(lead.valor_final)}</p>}
-            {lead.vendedor_nome && (
-              <p className="mt-1 border-t border-border/50 pt-1">
-                👤 Vendedor: <span className="font-medium">{lead.vendedor_nome}</span>
-              </p>
-            )}
+          <TooltipContent side="bottom">
+            {renderTooltipContent()}
           </TooltipContent>
         </Tooltip>
 

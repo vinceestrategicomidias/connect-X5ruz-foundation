@@ -1036,6 +1036,7 @@ export type Database = {
           data_envio_orcamento: string
           data_fechamento: string | null
           etapa: string
+          fechado_por_id: string | null
           forma_pagamento: string | null
           id: string
           motivo_perda: string | null
@@ -1056,6 +1057,7 @@ export type Database = {
           data_envio_orcamento?: string
           data_fechamento?: string | null
           etapa?: string
+          fechado_por_id?: string | null
           forma_pagamento?: string | null
           id?: string
           motivo_perda?: string | null
@@ -1076,6 +1078,7 @@ export type Database = {
           data_envio_orcamento?: string
           data_fechamento?: string | null
           etapa?: string
+          fechado_por_id?: string | null
           forma_pagamento?: string | null
           id?: string
           motivo_perda?: string | null
@@ -1101,6 +1104,13 @@ export type Database = {
             columns: ["conversa_id"]
             isOneToOne: false
             referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_funil_fechado_por_id_fkey"
+            columns: ["fechado_por_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
             referencedColumns: ["id"]
           },
           {
