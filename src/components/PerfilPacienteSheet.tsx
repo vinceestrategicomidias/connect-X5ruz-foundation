@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FunilIndicador } from "./FunilIndicador";
 import {
   Sheet,
   SheetContent,
@@ -157,6 +158,11 @@ export const PerfilPacienteSheet = ({
                 </div>
               </div>
             </SheetHeader>
+
+            {/* Funil de Vendas */}
+            <div className="mb-4 flex justify-center">
+              <FunilIndicador pacienteId={paciente.id} />
+            </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-4">

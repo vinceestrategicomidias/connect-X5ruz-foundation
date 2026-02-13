@@ -266,6 +266,32 @@ export const VisaoComercialPanel = () => {
         </Card>
       </div>
 
+      {/* FUNIL DE VENDAS SIMPLIFICADO (3 etapas) */}
+      <Card className="p-4">
+        <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" />
+          Funil de Vendas
+        </h4>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+            <div className="text-3xl font-bold text-blue-600">{data.emNegociacao.toLocaleString()}</div>
+            <div className="text-sm font-medium text-blue-700 dark:text-blue-400 mt-1">Em negociação</div>
+          </div>
+          <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+            <div className="text-3xl font-bold text-green-600">{data.fechados.toLocaleString()}</div>
+            <div className="text-sm font-medium text-green-700 dark:text-green-400 mt-1">Vendido</div>
+          </div>
+          <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+            <div className="text-3xl font-bold text-red-500">{data.perdidos.toLocaleString()}</div>
+            <div className="text-sm font-medium text-red-700 dark:text-red-400 mt-1">Perdido</div>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+          <span>Taxa de conversão: <strong className="text-foreground">{data.taxaConversao}%</strong></span>
+          <span>Fórmula: Vendidos / Total classificados como Venda</span>
+        </div>
+      </Card>
+
       {/* LINHA 2 - Contadores do Processo Comercial */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <Card className="p-3 text-center">
