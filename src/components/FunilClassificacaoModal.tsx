@@ -77,9 +77,9 @@ export const FunilClassificacaoModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Classificação do envio</DialogTitle>
+          <DialogTitle>Novo orçamento para negociação</DialogTitle>
           <DialogDescription>
-            Este envio de orçamento é uma venda em potencial ou apenas um contato informativo?
+            Classifique este envio: é uma venda em potencial ou apenas um contato informativo?
           </DialogDescription>
         </DialogHeader>
 
