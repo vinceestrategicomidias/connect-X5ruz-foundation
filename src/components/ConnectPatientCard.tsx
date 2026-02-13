@@ -83,6 +83,7 @@ export const ConnectPatientCard = ({
 }: ConnectPatientCardProps) => {
   const isEspera = status === "espera";
   const isAndamento = status === "andamento";
+  const isFinalizado = status === "finalizado";
   
   const tempoExibido = isEspera ? tempoNaFila : (isAndamento ? tempoSemResposta : 0);
   const mostrarTempo = isEspera || isAndamento;
@@ -113,42 +114,48 @@ export const ConnectPatientCard = ({
             {name}
           </h4>
           
-          {/* Linha 2: Preview mensagem */}
+          {/* Linha 2: Preview mensagem (finalizados: horário antes da mensagem) */}
           <p className="text-xs text-muted-foreground truncate mt-0.5">
-            {formatarPreviewMensagem(lastMessage)}
+            {isFinalizado && lastMessageTime ? (
+              <><span className="tabular-nums">{lastMessageTime}</span> {formatarPreviewMensagem(lastMessage)}</>
+            ) : (
+              formatarPreviewMensagem(lastMessage)
+            )}
           </p>
 
-          {/* Linha 3: Horário | Tempo de espera | Badge não lidas */}
-          <div className="flex items-center gap-1.5 mt-1">
-            {lastMessageTime && (
-              <span className="text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
-                {lastMessageTime}
-              </span>
-            )}
-            {mostrarTempo && tempoExibido > 0 && (
-              <>
-                <span className="text-[10px] text-muted-foreground">|</span>
-                <span className={cn(
-                  "text-[11px] font-medium whitespace-nowrap tabular-nums",
-                  tempoExibido >= 30
-                    ? "text-destructive"
-                    : tempoExibido >= 15
-                      ? "text-yellow-500"
-                      : "text-muted-foreground"
-                )}>
-                  {formatarTempoEspera(tempoExibido)}
+          {/* Linha 3: Horário | Tempo de espera | Badge não lidas (oculto em finalizados) */}
+          {!isFinalizado && (
+            <div className="flex items-center gap-1.5 mt-1">
+              {lastMessageTime && (
+                <span className="text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
+                  {lastMessageTime}
                 </span>
-              </>
-            )}
-            {unread && unread > 0 && (
-              <>
-                <span className="text-[10px] text-muted-foreground">|</span>
-                <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
-                  {unread}
-                </span>
-              </>
-            )}
-          </div>
+              )}
+              {mostrarTempo && tempoExibido > 0 && (
+                <>
+                  <span className="text-[10px] text-muted-foreground">|</span>
+                  <span className={cn(
+                    "text-[11px] font-medium whitespace-nowrap tabular-nums",
+                    tempoExibido >= 30
+                      ? "text-destructive"
+                      : tempoExibido >= 15
+                        ? "text-yellow-500"
+                        : "text-muted-foreground"
+                  )}>
+                    {formatarTempoEspera(tempoExibido)}
+                  </span>
+                </>
+              )}
+              {unread && unread > 0 && (
+                <>
+                  <span className="text-[10px] text-muted-foreground">|</span>
+                  <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                    {unread}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
