@@ -51,7 +51,20 @@ export const NovaConversaDialog = ({ open, onOpenChange }: NovaConversaDialogPro
     p.telefone.replace(/[\s()-]/g, '') === busca.replace(/[\s()-]/g, '')
   );
 
-  const handleSelecionarContato = (paciente: any) => {
+  const handleSelecionarContato = async (paciente: any) => {
+    // Se o paciente não está em atendimento, mover para "Meus Atendimentos"
+    if (paciente.status !== "em_atendimento" && atendenteLogado?.id) {
+      const { supabase } = await import("@/integrations/supabase/client");
+      await supabase
+        .from("pacientes")
+        .update({
+          status: "em_atendimento",
+          atendente_responsavel: atendenteLogado.id,
+        })
+        .eq("id", paciente.id);
+      
+      paciente = { ...paciente, status: "em_atendimento", atendente_responsavel: atendenteLogado.id };
+    }
     setPacienteSelecionado(paciente);
     onOpenChange(false);
     setBusca("");
@@ -89,9 +102,19 @@ export const NovaConversaDialog = ({ open, onOpenChange }: NovaConversaDialogPro
       const novoPaciente: any = await criarPaciente.mutateAsync({
         nome: novoContato.nome,
         telefone: novoContato.telefone,
-        status: "fila",
+        status: "em_atendimento",
         setor_id: atendenteLogado?.setor_id,
       });
+
+      // Atribuir atendente ao paciente criado
+      if (atendenteLogado?.id) {
+        const { supabase } = await import("@/integrations/supabase/client");
+        await supabase
+          .from("pacientes")
+          .update({ atendente_responsavel: atendenteLogado.id })
+          .eq("id", novoPaciente.id);
+        novoPaciente.atendente_responsavel = atendenteLogado.id;
+      }
 
       setPacienteSelecionado(novoPaciente);
       onOpenChange(false);
