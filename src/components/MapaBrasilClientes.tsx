@@ -6,73 +6,37 @@ import { Calendar, AlertTriangle, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface LocalizacaoCliente {
-  local: string;
-  uf: string;
-  clientes: number;
-  intensidade: "muito_baixa" | "baixa" | "média" | "alta" | "muito_alta";
-  lat: number;
-  lng: number;
-  temEndereco?: boolean;
-}
-
 interface PacienteSemEndereco {
   id: string;
   nome: string;
   telefone: string;
 }
 
-const dadosLocalizacao: Record<string, LocalizacaoCliente[]> = {
-  "tempo_real": [
-    { local: "São Paulo", uf: "SP", clientes: 28, intensidade: "muito_alta", lat: -23.55, lng: -46.63 },
-    { local: "Vitória", uf: "ES", clientes: 14, intensidade: "alta", lat: -20.32, lng: -40.34 },
-    { local: "Rio de Janeiro", uf: "RJ", clientes: 12, intensidade: "alta", lat: -22.91, lng: -43.17 },
-    { local: "Brasília", uf: "DF", clientes: 7, intensidade: "média", lat: -15.79, lng: -47.88 },
-    { local: "Curitiba", uf: "PR", clientes: 5, intensidade: "baixa", lat: -25.43, lng: -49.27 },
-  ],
-  "7dias": [
-    { local: "São Paulo", uf: "SP", clientes: 145, intensidade: "muito_alta", lat: -23.55, lng: -46.63 },
-    { local: "Vitória", uf: "ES", clientes: 72, intensidade: "alta", lat: -20.32, lng: -40.34 },
-    { local: "Rio de Janeiro", uf: "RJ", clientes: 61, intensidade: "alta", lat: -22.91, lng: -43.17 },
-    { local: "Brasília", uf: "DF", clientes: 38, intensidade: "média", lat: -15.79, lng: -47.88 },
-    { local: "Curitiba", uf: "PR", clientes: 28, intensidade: "média", lat: -25.43, lng: -49.27 },
-    { local: "Recife", uf: "PE", clientes: 22, intensidade: "baixa", lat: -8.05, lng: -34.88 },
-    { local: "Salvador", uf: "BA", clientes: 16, intensidade: "baixa", lat: -12.97, lng: -38.51 },
-    { local: "Manaus", uf: "AM", clientes: 5, intensidade: "muito_baixa", lat: -3.12, lng: -60.02 },
-  ],
-  "30dias": [
-    { local: "São Paulo", uf: "SP", clientes: 420, intensidade: "muito_alta", lat: -23.55, lng: -46.63 },
-    { local: "Vitória", uf: "ES", clientes: 210, intensidade: "alta", lat: -20.32, lng: -40.34 },
-    { local: "Rio de Janeiro", uf: "RJ", clientes: 185, intensidade: "alta", lat: -22.91, lng: -43.17 },
-    { local: "Brasília", uf: "DF", clientes: 120, intensidade: "média", lat: -15.79, lng: -47.88 },
-    { local: "Curitiba", uf: "PR", clientes: 95, intensidade: "média", lat: -25.43, lng: -49.27 },
-    { local: "Recife", uf: "PE", clientes: 80, intensidade: "média", lat: -8.05, lng: -34.88 },
-    { local: "Salvador", uf: "BA", clientes: 55, intensidade: "baixa", lat: -12.97, lng: -38.51 },
-    { local: "Manaus", uf: "AM", clientes: 18, intensidade: "muito_baixa", lat: -3.12, lng: -60.02 },
-    { local: "Belo Horizonte", uf: "MG", clientes: 142, intensidade: "alta", lat: -19.92, lng: -43.94 },
-    { local: "Porto Alegre", uf: "RS", clientes: 67, intensidade: "média", lat: -30.03, lng: -51.23 },
-    { local: "Fortaleza", uf: "CE", clientes: 48, intensidade: "baixa", lat: -3.72, lng: -38.54 },
-    { local: "Goiânia", uf: "GO", clientes: 35, intensidade: "baixa", lat: -16.68, lng: -49.26 },
-  ],
-  "ano": [
-    { local: "São Paulo", uf: "SP", clientes: 4850, intensidade: "muito_alta", lat: -23.55, lng: -46.63 },
-    { local: "Vitória", uf: "ES", clientes: 2340, intensidade: "alta", lat: -20.32, lng: -40.34 },
-    { local: "Rio de Janeiro", uf: "RJ", clientes: 2120, intensidade: "alta", lat: -22.91, lng: -43.17 },
-    { local: "Brasília", uf: "DF", clientes: 1380, intensidade: "alta", lat: -15.79, lng: -47.88 },
-    { local: "Belo Horizonte", uf: "MG", clientes: 1580, intensidade: "alta", lat: -19.92, lng: -43.94 },
-    { local: "Curitiba", uf: "PR", clientes: 1050, intensidade: "média", lat: -25.43, lng: -49.27 },
-    { local: "Recife", uf: "PE", clientes: 890, intensidade: "média", lat: -8.05, lng: -34.88 },
-    { local: "Salvador", uf: "BA", clientes: 620, intensidade: "média", lat: -12.97, lng: -38.51 },
-    { local: "Manaus", uf: "AM", clientes: 198, intensidade: "baixa", lat: -3.12, lng: -60.02 },
-    { local: "Porto Alegre", uf: "RS", clientes: 780, intensidade: "média", lat: -30.03, lng: -51.23 },
-    { local: "Fortaleza", uf: "CE", clientes: 540, intensidade: "média", lat: -3.72, lng: -38.54 },
-    { local: "Goiânia", uf: "GO", clientes: 420, intensidade: "baixa", lat: -16.68, lng: -49.26 },
-  ],
+// Dados por estado (UF) com quantidades realistas por período
+const dadosPorEstado: Record<string, Record<string, number>> = {
+  tempo_real: { SP: 28, RJ: 12, MG: 9, ES: 14, BA: 4, PR: 5, RS: 3, SC: 2, DF: 7, GO: 2, PE: 3, CE: 2, PA: 1, AM: 1, MA: 1, MT: 1, MS: 1, RN: 1, PB: 1, AL: 1, SE: 1, PI: 0, TO: 0, RO: 0, AC: 0, AP: 0, RR: 0 },
+  "7dias": { SP: 145, RJ: 61, MG: 48, ES: 72, BA: 16, PR: 28, RS: 22, SC: 14, DF: 38, GO: 12, PE: 22, CE: 15, PA: 5, AM: 5, MA: 8, MT: 4, MS: 6, RN: 7, PB: 5, AL: 4, SE: 3, PI: 2, TO: 3, RO: 1, AC: 0, AP: 1, RR: 0 },
+  "30dias": { SP: 420, RJ: 185, MG: 142, ES: 210, BA: 55, PR: 95, RS: 67, SC: 38, DF: 120, GO: 35, PE: 80, CE: 48, PA: 18, AM: 18, MA: 22, MT: 12, MS: 15, RN: 19, PB: 14, AL: 11, SE: 8, PI: 6, TO: 7, RO: 3, AC: 2, AP: 2, RR: 1 },
+  ano: { SP: 4850, RJ: 2120, MG: 1580, ES: 2340, BA: 620, PR: 1050, RS: 780, SC: 410, DF: 1380, GO: 420, PE: 890, CE: 540, PA: 198, AM: 198, MA: 280, MT: 150, MS: 170, RN: 210, PB: 160, AL: 120, SE: 90, PI: 70, TO: 85, RO: 35, AC: 20, AP: 15, RR: 10 },
 };
 
-// Dados simulados de pacientes sem endereço por período
+// Cidades por estado (simuladas para tooltip)
+const cidadesPorEstado: Record<string, { nome: string; qtd: number }[]> = {
+  SP: [{ nome: "São Paulo", qtd: 180 }, { nome: "Campinas", qtd: 45 }, { nome: "Santos", qtd: 30 }, { nome: "Ribeirão Preto", qtd: 25 }],
+  RJ: [{ nome: "Rio de Janeiro", qtd: 120 }, { nome: "Niterói", qtd: 25 }, { nome: "Petrópolis", qtd: 15 }],
+  MG: [{ nome: "Belo Horizonte", qtd: 80 }, { nome: "Uberlândia", qtd: 22 }, { nome: "Juiz de Fora", qtd: 15 }],
+  ES: [{ nome: "Vitória", qtd: 110 }, { nome: "Vila Velha", qtd: 45 }, { nome: "Serra", qtd: 30 }, { nome: "Cariacica", qtd: 15 }],
+  BA: [{ nome: "Salvador", qtd: 30 }, { nome: "Feira de Santana", qtd: 10 }],
+  PR: [{ nome: "Curitiba", qtd: 55 }, { nome: "Londrina", qtd: 15 }, { nome: "Maringá", qtd: 12 }],
+  RS: [{ nome: "Porto Alegre", qtd: 40 }, { nome: "Caxias do Sul", qtd: 12 }],
+  DF: [{ nome: "Brasília", qtd: 120 }],
+  PE: [{ nome: "Recife", qtd: 55 }, { nome: "Olinda", qtd: 12 }],
+  CE: [{ nome: "Fortaleza", qtd: 35 }, { nome: "Sobral", qtd: 5 }],
+  GO: [{ nome: "Goiânia", qtd: 25 }, { nome: "Anápolis", qtd: 5 }],
+};
+
 const pacientesSemEndereco: Record<string, PacienteSemEndereco[]> = {
-  "tempo_real": [
+  tempo_real: [
     { id: "1", nome: "Carlos Menezes", telefone: "(27) 99123-4567" },
     { id: "2", nome: "Fernanda Costa", telefone: "(11) 98765-4321" },
     { id: "3", nome: "Roberto Alves", telefone: "(21) 97654-3210" },
@@ -94,7 +58,7 @@ const pacientesSemEndereco: Record<string, PacienteSemEndereco[]> = {
     { id: "7", nome: "Lucas Ferreira", telefone: "(61) 93210-9876" },
     { id: "8", nome: "Juliana Santos", telefone: "(71) 92109-8765" },
   ],
-  "ano": [
+  ano: [
     { id: "1", nome: "Carlos Menezes", telefone: "(27) 99123-4567" },
     { id: "2", nome: "Fernanda Costa", telefone: "(11) 98765-4321" },
     { id: "3", nome: "Roberto Alves", telefone: "(21) 97654-3210" },
@@ -105,66 +69,72 @@ const pacientesSemEndereco: Record<string, PacienteSemEndereco[]> = {
     { id: "8", nome: "Juliana Santos", telefone: "(71) 92109-8765" },
     { id: "9", nome: "Ricardo Lima", telefone: "(81) 91098-7654" },
     { id: "10", nome: "Camila Rocha", telefone: "(85) 90987-6543" },
-    { id: "11", nome: "Diego Martins", telefone: "(92) 99876-5432" },
-    { id: "12", nome: "Larissa Pinto", telefone: "(62) 98765-4321" },
   ],
 };
 
-const getIntensidadeCor = (intensidade: string) => {
-  switch (intensidade) {
-    case "muito_alta":
-      return { bg: "bg-red-500", size: "w-10 h-10", text: "text-red-700" };
-    case "alta":
-      return { bg: "bg-orange-500", size: "w-8 h-8", text: "text-orange-700" };
-    case "média":
-      return { bg: "bg-yellow-500", size: "w-6 h-6", text: "text-yellow-700" };
-    case "baixa":
-      return { bg: "bg-blue-400", size: "w-5 h-5", text: "text-blue-600" };
-    case "muito_baixa":
-      return { bg: "bg-blue-300", size: "w-4 h-4", text: "text-blue-500" };
-    default:
-      return { bg: "bg-gray-400", size: "w-4 h-4", text: "text-gray-600" };
-  }
+// SVG paths para os estados do Brasil (simplificados)
+const ESTADOS_SVG: Record<string, { path: string; labelX: number; labelY: number; nome: string }> = {
+  AM: { path: "M80,60 L140,45 L170,50 L175,75 L160,90 L120,95 L85,90 Z", labelX: 125, labelY: 72, nome: "Amazonas" },
+  PA: { path: "M175,50 L240,40 L260,55 L255,90 L220,100 L175,95 L160,90 L175,75 Z", labelX: 215, labelY: 72, nome: "Pará" },
+  MA: { path: "M260,55 L290,50 L300,65 L290,85 L270,90 L255,90 L260,70 Z", labelX: 278, labelY: 72, nome: "Maranhão" },
+  CE: { path: "M300,55 L320,50 L325,70 L310,80 L300,75 Z", labelX: 312, labelY: 66, nome: "Ceará" },
+  RN: { path: "M325,55 L340,55 L340,68 L325,70 Z", labelX: 333, labelY: 62, nome: "R. G. do Norte" },
+  PB: { path: "M325,70 L340,68 L340,78 L320,80 Z", labelX: 332, labelY: 74, nome: "Paraíba" },
+  PE: { path: "M310,80 L340,78 L340,88 L305,90 Z", labelX: 325, labelY: 85, nome: "Pernambuco" },
+  AL: { path: "M330,88 L340,88 L340,96 L330,96 Z", labelX: 336, labelY: 92, nome: "Alagoas" },
+  SE: { path: "M325,96 L340,96 L338,103 L325,102 Z", labelX: 333, labelY: 100, nome: "Sergipe" },
+  BA: { path: "M270,90 L325,96 L325,102 L335,110 L320,140 L280,145 L255,130 L260,105 Z", labelX: 290, labelY: 118, nome: "Bahia" },
+  MG: { path: "M255,130 L280,145 L310,150 L310,175 L280,185 L250,180 L240,165 L240,140 Z", labelX: 275, labelY: 162, nome: "Minas Gerais" },
+  ES: { path: "M310,150 L330,148 L330,168 L310,175 Z", labelX: 320, labelY: 160, nome: "Espírito Santo" },
+  RJ: { path: "M290,180 L320,175 L325,185 L300,195 Z", labelX: 308, labelY: 186, nome: "Rio de Janeiro" },
+  SP: { path: "M240,175 L280,185 L290,195 L270,210 L240,210 L225,195 Z", labelX: 257, labelY: 195, nome: "São Paulo" },
+  PR: { path: "M215,205 L260,210 L260,230 L220,235 L205,220 Z", labelX: 235, labelY: 220, nome: "Paraná" },
+  SC: { path: "M220,235 L255,235 L250,250 L225,252 Z", labelX: 238, labelY: 244, nome: "Santa Catarina" },
+  RS: { path: "M205,250 L250,250 L240,285 L210,290 L195,270 Z", labelX: 222, labelY: 270, nome: "R. G. do Sul" },
+  MS: { path: "M195,170 L240,175 L240,210 L225,215 L205,220 L190,200 Z", labelX: 215, labelY: 195, nome: "Mato Grosso do Sul" },
+  MT: { path: "M140,95 L200,100 L210,130 L200,165 L195,170 L160,160 L135,130 Z", labelX: 170, labelY: 132, nome: "Mato Grosso" },
+  GO: { path: "M210,130 L255,130 L250,165 L240,175 L195,170 L200,165 Z", labelX: 225, labelY: 152, nome: "Goiás" },
+  DF: { path: "M250,150 L260,148 L262,155 L252,157 Z", labelX: 256, labelY: 153, nome: "Distrito Federal" },
+  TO: { path: "M220,85 L260,90 L260,105 L255,130 L210,130 L200,100 Z", labelX: 230, labelY: 108, nome: "Tocantins" },
+  RO: { path: "M100,95 L140,95 L135,130 L110,140 L90,120 Z", labelX: 115, labelY: 118, nome: "Rondônia" },
+  AC: { path: "M50,100 L100,95 L90,120 L55,120 Z", labelX: 72, labelY: 110, nome: "Acre" },
+  RR: { path: "M115,20 L145,15 L155,35 L140,45 L120,40 Z", labelX: 135, labelY: 32, nome: "Roraima" },
+  AP: { path: "M200,20 L225,15 L235,35 L220,45 L195,40 Z", labelX: 215, labelY: 32, nome: "Amapá" },
+  PI: { path: "M270,65 L300,65 L300,90 L280,90 L270,82 Z", labelX: 285, labelY: 78, nome: "Piauí" },
 };
 
-// Mapear coordenadas para posição no mapa (SVG simplificado)
-const coordToPosition = (lat: number, lng: number) => {
-  // Brasil aproximado: lat -5 a -33, lng -35 a -74
-  const x = ((lng + 74) / (74 - 35)) * 100;
-  const y = ((lat + 5) / (33 - 5)) * 100;
-  return { x: Math.min(95, Math.max(5, x)), y: Math.min(90, Math.max(5, y)) };
+const getCorEstado = (qtd: number, maxQtd: number) => {
+  if (qtd === 0) return "fill-muted/40 dark:fill-muted/20";
+  const ratio = qtd / maxQtd;
+  if (ratio > 0.6) return "fill-red-500/80 dark:fill-red-500/70";
+  if (ratio > 0.3) return "fill-orange-400/80 dark:fill-orange-400/70";
+  if (ratio > 0.15) return "fill-yellow-400/80 dark:fill-yellow-400/70";
+  if (ratio > 0.05) return "fill-green-400/80 dark:fill-green-400/70";
+  return "fill-green-300/60 dark:fill-green-300/40";
 };
 
 export const MapaBrasilClientes = () => {
   const [periodo, setPeriodo] = useState("30dias");
   const [dialogSemEnderecoOpen, setDialogSemEnderecoOpen] = useState(false);
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(new Date());
-  
-  const dados = dadosLocalizacao[periodo];
-  const totalClientes = dados.reduce((acc, d) => acc + d.clientes, 0);
+  const [paisFiltro, setPaisFiltro] = useState("brasil");
+  const [estadoFiltro, setEstadoFiltro] = useState("todos");
+  const [cidadeFiltro, setCidadeFiltro] = useState("todas");
+  const [hoveredEstado, setHoveredEstado] = useState<string | null>(null);
+
+  const dados = dadosPorEstado[periodo] || dadosPorEstado["30dias"];
+  const totalClientes = Object.values(dados).reduce((a, b) => a + b, 0);
+  const maxQtd = Math.max(...Object.values(dados));
   const semEndereco = pacientesSemEndereco[periodo] || [];
 
-  // Auto-refresh para tempo real
   useEffect(() => {
     if (periodo !== "tempo_real") return;
-    
-    const interval = setInterval(() => {
-      setUltimaAtualizacao(new Date());
-      // Aqui poderia fazer uma nova query para dados atualizados
-    }, 30000); // 30 segundos
-
+    const interval = setInterval(() => setUltimaAtualizacao(new Date()), 30000);
     return () => clearInterval(interval);
   }, [periodo]);
 
-  const getLabelPeriodo = (p: string) => {
-    switch (p) {
-      case "tempo_real": return "Tempo real";
-      case "7dias": return "Últimos 7 dias";
-      case "30dias": return "Últimos 30 dias";
-      case "ano": return "Último ano";
-      default: return p;
-    }
-  };
+  const estadosDisponiveis = Object.entries(ESTADOS_SVG).map(([uf, info]) => ({ uf, nome: info.nome })).sort((a, b) => a.nome.localeCompare(b.nome));
+  const cidadesDoEstado = estadoFiltro !== "todos" ? (cidadesPorEstado[estadoFiltro] || []) : [];
 
   return (
     <>
@@ -172,13 +142,15 @@ export const MapaBrasilClientes = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold">Distribuição de Clientes por Localização</h3>
-            <p className="text-sm text-muted-foreground">Total: {totalClientes.toLocaleString()} clientes</p>
+            <p className="text-sm text-muted-foreground">
+              Total: {totalClientes.toLocaleString()} clientes
+              {estadoFiltro !== "todos" && ` • ${ESTADOS_SVG[estadoFiltro]?.nome}: ${dados[estadoFiltro] || 0}`}
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Tag de pacientes sem endereço */}
             {semEndereco.length > 0 && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="cursor-pointer hover:bg-muted flex items-center gap-1.5 py-1 px-2"
                 onClick={() => setDialogSemEnderecoOpen(true)}
               >
@@ -186,19 +158,16 @@ export const MapaBrasilClientes = () => {
                 <span className="text-xs">Sem endereço: {semEndereco.length}</span>
               </Badge>
             )}
-            
-            {/* Indicador de tempo real */}
             {periodo === "tempo_real" && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                <span>Atualizado {ultimaAtualizacao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>Atualizado {ultimaAtualizacao.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
             )}
-            
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <Select value={periodo} onValueChange={setPeriodo}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,79 +181,109 @@ export const MapaBrasilClientes = () => {
           </div>
         </div>
 
-        {/* Mapa do Brasil estilizado */}
-        <div className="relative bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20 rounded-xl overflow-hidden" style={{ height: 400 }}>
-          {/* SVG simplificado do Brasil */}
-          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full opacity-20">
-            <path
-              d="M 45 5 L 75 10 L 85 25 L 90 45 L 85 65 L 70 80 L 50 90 L 30 85 L 20 70 L 15 50 L 20 30 L 35 15 Z"
-              fill="currentColor"
-              className="text-primary/30"
-            />
+        {/* Filtros de localização */}
+        <div className="flex items-center gap-3 mb-4">
+          <Select value={paisFiltro} onValueChange={setPaisFiltro}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="País" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="brasil">Brasil</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={estadoFiltro} onValueChange={(v) => { setEstadoFiltro(v); setCidadeFiltro("todas"); }}>
+            <SelectTrigger className="w-52">
+              <SelectValue placeholder="Todos os estados" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os estados</SelectItem>
+              {estadosDisponiveis.map(e => (
+                <SelectItem key={e.uf} value={e.uf}>{e.nome} ({e.uf})</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {cidadesDoEstado.length > 0 && (
+            <Select value={cidadeFiltro} onValueChange={setCidadeFiltro}>
+              <SelectTrigger className="w-52">
+                <SelectValue placeholder="Todas as cidades" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas as cidades</SelectItem>
+                {cidadesDoEstado.map(c => (
+                  <SelectItem key={c.nome} value={c.nome}>{c.nome} ({c.qtd})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        {/* Mapa SVG do Brasil */}
+        <div className="relative bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20 rounded-xl overflow-hidden" style={{ height: 420 }}>
+          <svg viewBox="30 5 330 300" className="w-full h-full">
+            {Object.entries(ESTADOS_SVG).map(([uf, info]) => {
+              const qtd = dados[uf] || 0;
+              const isHighlighted = estadoFiltro === uf || hoveredEstado === uf;
+              const isFiltered = estadoFiltro !== "todos" && estadoFiltro !== uf;
+              
+              return (
+                <g
+                  key={uf}
+                  onMouseEnter={() => setHoveredEstado(uf)}
+                  onMouseLeave={() => setHoveredEstado(null)}
+                  onClick={() => { setEstadoFiltro(uf === estadoFiltro ? "todos" : uf); setCidadeFiltro("todas"); }}
+                  className="cursor-pointer transition-all"
+                >
+                  <path
+                    d={info.path}
+                    className={`${getCorEstado(qtd, maxQtd)} stroke-background dark:stroke-background/50 transition-all ${
+                      isHighlighted ? "stroke-primary stroke-[2]" : "stroke-[0.8]"
+                    } ${isFiltered ? "opacity-30" : "opacity-100"}`}
+                  />
+                  {/* UF label */}
+                  <text
+                    x={info.labelX}
+                    y={info.labelY - 4}
+                    textAnchor="middle"
+                    className={`fill-foreground text-[7px] font-bold pointer-events-none ${isFiltered ? "opacity-20" : ""}`}
+                  >
+                    {uf}
+                  </text>
+                  {/* Quantity label */}
+                  {qtd > 0 && (
+                    <text
+                      x={info.labelX}
+                      y={info.labelY + 5}
+                      textAnchor="middle"
+                      className={`fill-foreground/70 text-[6px] pointer-events-none ${isFiltered ? "opacity-20" : ""}`}
+                    >
+                      {qtd >= 1000 ? `${(qtd / 1000).toFixed(1)}k` : qtd}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
           </svg>
 
-          {/* Marcadores de cidades */}
-          {dados.map((loc) => {
-            const pos = coordToPosition(loc.lat, loc.lng);
-            const style = getIntensidadeCor(loc.intensidade);
-            
-            return (
-              <div
-                key={loc.local}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-              >
-                <div className={`${style.bg} ${style.size} rounded-full opacity-70 animate-pulse shadow-lg flex items-center justify-center`}>
-                  <span className="text-white text-[8px] font-bold">
-                    {loc.clientes >= 1000 ? `${(loc.clientes / 1000).toFixed(1)}k` : loc.clientes}
-                  </span>
+          {/* Tooltip */}
+          {hoveredEstado && (
+            <div className="absolute top-4 right-4 bg-popover border border-border rounded-lg shadow-lg p-3 z-10 min-w-[160px]">
+              <p className="font-semibold text-sm">{ESTADOS_SVG[hoveredEstado]?.nome} ({hoveredEstado})</p>
+              <p className="text-lg font-bold text-primary">{(dados[hoveredEstado] || 0).toLocaleString()} clientes</p>
+              {cidadesPorEstado[hoveredEstado] && (
+                <div className="mt-2 pt-2 border-t space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">Top cidades:</p>
+                  {cidadesPorEstado[hoveredEstado].slice(0, 3).map(c => (
+                    <div key={c.nome} className="flex justify-between text-xs">
+                      <span>{c.nome}</span>
+                      <span className="font-medium">{c.qtd}</span>
+                    </div>
+                  ))}
                 </div>
-                
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-popover border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                  <p className="font-semibold text-sm">{loc.local} - {loc.uf}</p>
-                  <p className={`text-sm ${style.text} font-medium`}>{loc.clientes.toLocaleString()} clientes</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Legenda */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t">
-          {[
-            { label: "Muito baixa", cor: "bg-blue-300" },
-            { label: "Baixa", cor: "bg-blue-400" },
-            { label: "Média", cor: "bg-yellow-500" },
-            { label: "Alta", cor: "bg-orange-500" },
-            { label: "Muito alta", cor: "bg-red-500" },
-            { label: "Sem endereço", cor: "bg-gray-400", icone: true },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-2">
-              {item.icone ? (
-                <AlertTriangle className="w-3 h-3 text-gray-400" />
-              ) : (
-                <div className={`w-3 h-3 rounded-full ${item.cor}`} />
               )}
-              <span className="text-xs text-muted-foreground">{item.label}</span>
             </div>
-          ))}
-        </div>
-
-        {/* Lista resumida */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          {dados.slice(0, 8).map((loc) => {
-            const style = getIntensidadeCor(loc.intensidade);
-            return (
-              <div key={loc.local} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                <div className={`w-2.5 h-2.5 rounded-full ${style.bg}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{loc.local}</p>
-                  <p className="text-xs text-muted-foreground">{loc.clientes.toLocaleString()}</p>
-                </div>
-              </div>
-            );
-          })}
+          )}
         </div>
       </Card>
 
@@ -298,12 +297,12 @@ export const MapaBrasilClientes = () => {
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground mb-4">
-            Período: {getLabelPeriodo(periodo)} • {semEndereco.length} paciente(s)
+            {semEndereco.length} paciente(s)
           </p>
           <ScrollArea className="h-[300px]">
             <div className="space-y-2">
               {semEndereco.map((paciente) => (
-                <div 
+                <div
                   key={paciente.id}
                   className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
                 >
