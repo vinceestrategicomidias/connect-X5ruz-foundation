@@ -6,8 +6,9 @@ import { useLeadAtivoPaciente, useAtualizarEtapaLead, useReabrirLead } from "@/h
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { FunilVendidoModal } from "./FunilVendidoModal";
 import { FunilPerdidoModal } from "./FunilPerdidoModal";
+import { FunilReabrirModal } from "./FunilReabrirModal";
 import { toast } from "sonner";
-import { TrendingUp, RotateCcw, User, ShoppingCart, CalendarClock, XCircle } from "lucide-react";
+import { TrendingUp, RotateCcw, User, ShoppingCart, CalendarClock, XCircle, History } from "lucide-react";
 import { format } from "date-fns";
 
 interface FunilIndicadorProps {
@@ -27,19 +28,33 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
   const reabrirLead = useReabrirLead();
   const [vendidoOpen, setVendidoOpen] = useState(false);
   const [perdidoOpen, setPerdidoOpen] = useState(false);
+  const [reabrirOpen, setReabrirOpen] = useState(false);
 
   if (!lead) return null;
+
+  const historicoReaberturas = (lead as any).historico_reaberturas || [];
 
   const handleClickEtapa = (etapa: string) => {
     if (etapa === lead.etapa) return;
     if (etapa === "vendido") setVendidoOpen(true);
     if (etapa === "perdido") setPerdidoOpen(true);
     if (etapa === "em_negociacao" && lead.etapa !== "em_negociacao") {
-      reabrirLead.mutate(
-        { leadId: lead.id, pacienteId: lead.paciente_id },
-        { onSuccess: () => toast.success("Lead reaberto!") }
-      );
+      setReabrirOpen(true);
     }
+  };
+
+  const handleReabrir = (observacao: string) => {
+    if (!atendenteLogado) return;
+    reabrirLead.mutate(
+      {
+        leadId: lead.id,
+        pacienteId: lead.paciente_id,
+        reaberto_por_id: atendenteLogado.id,
+        observacao,
+        etapa_anterior: lead.etapa,
+      },
+      { onSuccess: () => { toast.success("Negociação retomada!"); setReabrirOpen(false); } }
+    );
   };
 
   const handleVendido = (dados: { valor_final: number; forma_pagamento: string }) => {
@@ -228,6 +243,26 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
                           )}
                         </div>
                       )}
+
+                      {/* Histórico de reaberturas */}
+                      {historicoReaberturas.length > 0 && (
+                        <div className="border-t border-border/50 pt-2 mt-2 space-y-2">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <History className="h-3 w-3 shrink-0" />
+                            <span className="font-medium">Histórico ({historicoReaberturas.length})</span>
+                          </div>
+                          {historicoReaberturas.map((h: any, idx: number) => (
+                            <div key={idx} className="pl-4 border-l-2 border-muted space-y-0.5 text-[10px]">
+                              <p className="text-muted-foreground">
+                                {h.etapa_anterior === "vendido" ? "Foi vendido" : "Foi perdido"} → Reaberto em {formatDate(h.reaberto_em)}
+                              </p>
+                              {h.observacao_reabertura && (
+                                <p className="italic text-muted-foreground">"{h.observacao_reabertura}"</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </PopoverContent>
                 </Popover>
@@ -272,6 +307,13 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
         open={perdidoOpen}
         onOpenChange={setPerdidoOpen}
         onConfirmar={handlePerdido}
+      />
+
+      <FunilReabrirModal
+        open={reabrirOpen}
+        onOpenChange={setReabrirOpen}
+        onConfirmar={handleReabrir}
+        etapaAnterior={lead.etapa as "vendido" | "perdido"}
       />
     </TooltipProvider>
   );

@@ -1038,6 +1038,7 @@ export type Database = {
           etapa: string
           fechado_por_id: string | null
           forma_pagamento: string | null
+          historico_reaberturas: Json | null
           id: string
           motivo_perda: string | null
           observacoes: string | null
@@ -1045,6 +1046,8 @@ export type Database = {
           paciente_id: string
           perdido_por_id: string | null
           produto_servico: string
+          reaberto_em: string | null
+          reaberto_por_id: string | null
           setor_id: string | null
           updated_at: string
           valor_final: number | null
@@ -1060,6 +1063,7 @@ export type Database = {
           etapa?: string
           fechado_por_id?: string | null
           forma_pagamento?: string | null
+          historico_reaberturas?: Json | null
           id?: string
           motivo_perda?: string | null
           observacoes?: string | null
@@ -1067,6 +1071,8 @@ export type Database = {
           paciente_id: string
           perdido_por_id?: string | null
           produto_servico: string
+          reaberto_em?: string | null
+          reaberto_por_id?: string | null
           setor_id?: string | null
           updated_at?: string
           valor_final?: number | null
@@ -1082,6 +1088,7 @@ export type Database = {
           etapa?: string
           fechado_por_id?: string | null
           forma_pagamento?: string | null
+          historico_reaberturas?: Json | null
           id?: string
           motivo_perda?: string | null
           observacoes?: string | null
@@ -1089,6 +1096,8 @@ export type Database = {
           paciente_id?: string
           perdido_por_id?: string | null
           produto_servico?: string
+          reaberto_em?: string | null
+          reaberto_por_id?: string | null
           setor_id?: string | null
           updated_at?: string
           valor_final?: number | null
@@ -1126,6 +1135,13 @@ export type Database = {
           {
             foreignKeyName: "leads_funil_perdido_por_id_fkey"
             columns: ["perdido_por_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_funil_reaberto_por_id_fkey"
+            columns: ["reaberto_por_id"]
             isOneToOne: false
             referencedRelation: "atendentes"
             referencedColumns: ["id"]
