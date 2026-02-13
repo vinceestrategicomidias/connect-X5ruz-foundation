@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLeadAtivoPaciente, useAtualizarEtapaLead, useReabrirLead } from "@/hooks/useLeadsFunil";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { FunilVendidoModal } from "./FunilVendidoModal";
@@ -143,20 +144,52 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
           {ETAPAS.map((etapa, idx) => {
             const isActive = lead.etapa === etapa.key;
             const canClick = lead.etapa !== etapa.key;
+            const isEmNegociacaoAtivo = etapa.key === "em_negociacao" && isActive;
+
+            const btnClass = cn(
+              "px-2 py-0.5 text-[10px] font-medium transition-all border",
+              idx === 0 && "rounded-l-full",
+              idx === ETAPAS.length - 1 && "rounded-r-full",
+              isActive
+                ? `${etapa.color} text-white border-transparent`
+                : `${etapa.bgLight} ${etapa.textColor} border-transparent opacity-50 hover:opacity-80`,
+              (canClick || isEmNegociacaoAtivo) && "cursor-pointer"
+            );
+
+            if (isEmNegociacaoAtivo) {
+              return (
+                <Popover key={etapa.key}>
+                  <PopoverTrigger asChild>
+                    <button className={btnClass}>{etapa.label}</button>
+                  </PopoverTrigger>
+                  <PopoverContent side="bottom" className="w-56 p-3">
+                    <div className="space-y-2 text-xs">
+                      <p className="font-semibold text-sm">{lead.produto_servico}</p>
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <ShoppingCart className="h-3 w-3 shrink-0" />
+                        <span>Orçamento: {formatCurrency(lead.valor_orcamento)}</span>
+                      </div>
+                      {lead.vendedor_nome && (
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-3 w-3 shrink-0 text-primary" />
+                          <span>Vendedor: <span className="font-medium">{lead.vendedor_nome}</span></span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <CalendarClock className="h-3 w-3 shrink-0" />
+                        <span>Enviado: {formatDate(lead.data_envio_orcamento)}</span>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              );
+            }
 
             return (
               <button
                 key={etapa.key}
                 onClick={() => canClick && handleClickEtapa(etapa.key)}
-                className={cn(
-                  "px-2 py-0.5 text-[10px] font-medium transition-all border",
-                  idx === 0 && "rounded-l-full",
-                  idx === ETAPAS.length - 1 && "rounded-r-full",
-                  isActive
-                    ? `${etapa.color} text-white border-transparent`
-                    : `${etapa.bgLight} ${etapa.textColor} border-transparent opacity-50 hover:opacity-80`,
-                  canClick && "cursor-pointer"
-                )}
+                className={btnClass}
               >
                 {etapa.label}
               </button>
