@@ -304,7 +304,7 @@ export const MeuPerfilDialog = ({ open, onOpenChange }: MeuPerfilDialogProps) =>
             </TabsTrigger>
             <TabsTrigger value="ideias" className="gap-2">
               <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-              Ideia das Estrelas
+              Ideias das Estrelas
             </TabsTrigger>
           </TabsList>
 

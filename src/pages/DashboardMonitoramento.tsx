@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Maximize2, Users, Clock, TrendingUp, Phone, MessageSquare, Timer, Target, Award, UserCheck, Coffee, ArrowLeft, ChevronUp, ChevronDown, Minus } from "lucide-react";
+import { StatusAtendentesBlock } from "@/components/StatusAtendentesBlock";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { usePacientes } from "@/hooks/usePacientes";
 import { useChamadas } from "@/hooks/useChamadas";
@@ -260,15 +261,14 @@ export default function DashboardMonitoramento() {
       </div>
 
       {/* Indicadores principais */}
-      <div className="grid grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <MetricCard icon={Users} label="Em atendimento" value={metrics.emAtendimento} />
         <MetricCard icon={Clock} label="Na fila agora" value={metrics.naFila} alert={metrics.naFila > 25} />
-        <MetricCard icon={MessageSquare} label="Aguardando resposta" value={metrics.aguardandoResposta} />
         <MetricCard icon={Timer} label="TMA" value={`${metrics.tma.toFixed(1)} min`} alert={metrics.tma > 4} />
         <MetricCard icon={Timer} label="TME" value={`${metrics.tme.toFixed(1)} min`} alert={metrics.tme > 7} />
       </div>
 
-      <div className="grid grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <MetricCard icon={Target} label="SLA resposta" value={`${metrics.sla.toFixed(0)}%`} alert={metrics.sla < 85} />
         <MetricCard icon={Award} label="NPS médio hoje" value={metrics.nps.toFixed(0)} />
         <MetricCard icon={Phone} label="Encerrados hoje" value={metrics.encerradosHoje} />
@@ -278,8 +278,10 @@ export default function DashboardMonitoramento() {
         >
           <MetricCard icon={UserCheck} label="Atendentes online" value={metrics.atendentesOnline} />
         </div>
-        <MetricCard icon={Coffee} label="Em pausa" value={metrics.atendentesPausa} />
       </div>
+
+      {/* Status dos Atendentes em Tempo Real */}
+      <StatusAtendentesBlock onOpenMonitoramento={() => setMonitoramentoOpen(true)} />
 
       {/* Painéis principais */}
       <div className="grid grid-cols-2 gap-6 mb-6">

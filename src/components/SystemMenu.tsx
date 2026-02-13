@@ -33,6 +33,7 @@ import { CriarPerfilAcessoDialog } from "./CriarPerfilAcessoDialog";
 import { EditarPerfilAcessoDialog } from "./EditarPerfilAcessoDialog";
 import { EditarUnidadeDialog } from "./EditarUnidadeDialog";
 import { MonitoramentoAtendentesPanel } from "./MonitoramentoAtendentesPanel";
+import { MensagensRapidasManagement } from "./MensagensRapidasManagement";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { useEmpresas, useAtualizarEmpresa } from "@/hooks/useEmpresas";
 import { useUnidades, useCriarUnidade } from "@/hooks/useUnidades";
@@ -77,7 +78,8 @@ type MenuSection =
   | "relatorios"
   | "dashboard"
   | "alertas"
-  | "api";
+  | "api"
+  | "mensagens_rapidas";
 
 const menuItems = [
   { id: "dashboard" as MenuSection, label: "Dashboard", icon: BarChart3 },
@@ -88,6 +90,7 @@ const menuItems = [
   { id: "usuarios" as MenuSection, label: "Usuários", icon: Users },
   { id: "perfis" as MenuSection, label: "Perfis de Acesso", icon: ShieldCheck },
   { id: "validacoes" as MenuSection, label: "Validações de Perfil", icon: UserCheck, requiresCoordenacao: true },
+  { id: "mensagens_rapidas" as MenuSection, label: "Mensagens Rápidas", icon: FileText },
   { id: "ura" as MenuSection, label: "URA (Telefonia)", icon: Phone },
   { id: "mensageria" as MenuSection, label: "Thalí e Mensageria", icon: Bot },
   { id: "alertas" as MenuSection, label: "Alertas", icon: Bell },
@@ -901,6 +904,9 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
             </Tabs>
           </div>
         );
+
+      case "mensagens_rapidas":
+        return <MensagensRapidasManagement />;
 
       default:
         return null;

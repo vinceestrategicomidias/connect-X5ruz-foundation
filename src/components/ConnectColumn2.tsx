@@ -28,6 +28,7 @@ import { MensagemAcoesBar } from "./MensagemAcoesBar";
 import { EncaminharMensagemDialog } from "./EncaminharMensagemDialog";
 import { adicionarMensagemFavoritada } from "@/hooks/useMensagensFavoritadas";
 import { useFinalizarAtendimento } from "@/hooks/useFinalizarAtendimento";
+import { MensagensRapidasDropdown } from "./MensagensRapidasDropdown";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -548,77 +549,88 @@ export const ConnectColumn2 = () => {
       </ScrollArea>
 
       {/* Input de Mensagem */}
-      <div className="border-t border-border bg-card p-4">
+      <div className="border-t border-border bg-card p-4 relative">
         {isRecordingAudio ? (
           <AudioRecorder
             onAudioRecorded={handleAudioRecorded}
             disabled={!pacienteSelecionado}
           />
         ) : (
-          <div className="flex items-center gap-2">
-            <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  disabled={!pacienteSelecionado}
-                  title="Emojis e figurinhas"
-                >
-                  <Smile className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent 
-                side="top" 
-                align="start" 
-                className="p-0 w-auto border-0"
-                sideOffset={8}
-              >
-                <EmojiStickerPicker
-                  onEmojiSelect={handleEmojiSelect}
-                  onStickerSelect={handleStickerSelect}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <AttachmentMenu
-              onFileSelect={handleFileSelect}
-              disabled={!pacienteSelecionado}
-            >
-              <Button variant="outline" size="icon" disabled={!pacienteSelecionado}>
-                <Paperclip className="h-4 w-4" />
-              </Button>
-            </AttachmentMenu>
-            
-            <Input
-              ref={inputRef}
-              placeholder="Digite sua mensagem..."
-              className="flex-1"
-              disabled={!pacienteSelecionado}
-              value={mensagemTexto}
-              onChange={(e) => {
-                setMensagemTexto(e.target.value);
-                setDigitando(e.target.value.length > 0);
+          <>
+            <MensagensRapidasDropdown
+              searchText={mensagemTexto}
+              onSelect={(texto) => {
+                setMensagemTexto(texto);
+                setDigitando(true);
+                inputRef.current?.focus();
               }}
-              onKeyPress={handleKeyPress}
+              visible={mensagemTexto.startsWith("/") && mensagemTexto.length >= 1}
             />
-            
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!pacienteSelecionado}
-              onClick={() => setIsRecordingAudio(true)}
-            >
-              <Mic className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              size="icon"
-              disabled={!pacienteSelecionado || !mensagemTexto.trim()}
-              onClick={handleEnviarMensagem}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+            <div className="flex items-center gap-2">
+              <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    disabled={!pacienteSelecionado}
+                    title="Emojis e figurinhas"
+                  >
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  side="top" 
+                  align="start" 
+                  className="p-0 w-auto border-0"
+                  sideOffset={8}
+                >
+                  <EmojiStickerPicker
+                    onEmojiSelect={handleEmojiSelect}
+                    onStickerSelect={handleStickerSelect}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <AttachmentMenu
+                onFileSelect={handleFileSelect}
+                disabled={!pacienteSelecionado}
+              >
+                <Button variant="outline" size="icon" disabled={!pacienteSelecionado}>
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+              </AttachmentMenu>
+              
+              <Input
+                ref={inputRef}
+                placeholder="Digite '/' para mensagens rápidas..."
+                className="flex-1"
+                disabled={!pacienteSelecionado}
+                value={mensagemTexto}
+                onChange={(e) => {
+                  setMensagemTexto(e.target.value);
+                  setDigitando(e.target.value.length > 0);
+                }}
+                onKeyPress={handleKeyPress}
+              />
+              
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={!pacienteSelecionado}
+                onClick={() => setIsRecordingAudio(true)}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                size="icon"
+                disabled={!pacienteSelecionado || !mensagemTexto.trim()}
+                onClick={handleEnviarMensagem}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
         )}
       </div>
 
