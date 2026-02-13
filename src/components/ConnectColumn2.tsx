@@ -29,6 +29,9 @@ import { EncaminharMensagemDialog } from "./EncaminharMensagemDialog";
 import { adicionarMensagemFavoritada } from "@/hooks/useMensagensFavoritadas";
 import { useFinalizarAtendimento } from "@/hooks/useFinalizarAtendimento";
 import { MensagensRapidasDropdown } from "./MensagensRapidasDropdown";
+import { FunilIndicador } from "./FunilIndicador";
+import { FunilClassificacaoModal } from "./FunilClassificacaoModal";
+import { useLeadAtivoPaciente, useCriarLead } from "@/hooks/useLeadsFunil";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +67,10 @@ export const ConnectColumn2 = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadAnexo = useUploadAnexo();
   const atualizarContato = useAtualizarContatoPaciente();
+  const { data: leadAtivo } = useLeadAtivoPaciente(pacienteSelecionado?.id || null);
+  const criarLead = useCriarLead();
+  const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
+  const [pendingOrcamentoCallback, setPendingOrcamentoCallback] = useState<(() => void) | null>(null);
 
   // Scroll automático para última mensagem
   useEffect(() => {
@@ -362,11 +369,51 @@ export const ConnectColumn2 = () => {
   };
 
   const handleEncaminharMensagem = (contatosIds: string[]) => {
-    // Lógica para encaminhar mensagem para os contatos selecionados
     console.log("Encaminhando mensagem para:", contatosIds);
-    // TODO: Implementar envio real via Supabase
     setEncaminharDialogOpen(false);
     setMensagemSelecionada(null);
+  };
+
+  // Funnel: trigger classification when sending first budget
+  const handleEnviarOrcamentoComFunil = (callback: () => void) => {
+    if (!pacienteSelecionado || !atendenteLogado) {
+      callback();
+      return;
+    }
+    // If lead already exists, just send
+    if (leadAtivo) {
+      callback();
+      return;
+    }
+    // First budget → open classification modal
+    setPendingOrcamentoCallback(() => callback);
+    setClassificacaoModalOpen(true);
+  };
+
+  const handleClassificacao = (tipo: "venda" | "apenas_contato", dados?: {
+    produto_servico: string;
+    valor_orcamento: number;
+    origem_lead?: string;
+    observacoes?: string;
+  }) => {
+    if (tipo === "venda" && dados && pacienteSelecionado && atendenteLogado) {
+      criarLead.mutate({
+        paciente_id: pacienteSelecionado.id,
+        conversa_id: conversa?.id,
+        atendente_id: atendenteLogado.id,
+        setor_id: atendenteLogado.setor_id || undefined,
+        produto_servico: dados.produto_servico,
+        valor_orcamento: dados.valor_orcamento,
+        origem_lead: dados.origem_lead,
+        observacoes: dados.observacoes,
+      });
+    }
+    setClassificacaoModalOpen(false);
+    // Execute the pending callback (send the budget)
+    if (pendingOrcamentoCallback) {
+      pendingOrcamentoCallback();
+      setPendingOrcamentoCallback(null);
+    }
   };
 
   return (
@@ -395,6 +442,7 @@ export const ConnectColumn2 = () => {
                   {pacienteSelecionado?.nome || "Selecione um paciente"}
                 </h3>
               </div>
+              {pacienteSelecionado && <FunilIndicador pacienteId={pacienteSelecionado.id} />}
               {pacienteSelecionado && (
                 <>
                   <Button
@@ -680,6 +728,20 @@ export const ConnectColumn2 = () => {
           onEncaminhar={handleEncaminharMensagem}
         />
       )}
+
+      {/* Modal de Classificação do Funil */}
+      <FunilClassificacaoModal
+        open={classificacaoModalOpen}
+        onOpenChange={(open) => {
+          setClassificacaoModalOpen(open);
+          if (!open && pendingOrcamentoCallback) {
+            // If modal closed without classifying, still send
+            pendingOrcamentoCallback();
+            setPendingOrcamentoCallback(null);
+          }
+        }}
+        onClassificar={handleClassificacao}
+      />
     </div>
   );
 };

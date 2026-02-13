@@ -1027,6 +1027,98 @@ export type Database = {
           },
         ]
       }
+      leads_funil: {
+        Row: {
+          atendente_id: string | null
+          ativo: boolean
+          conversa_id: string | null
+          created_at: string
+          data_envio_orcamento: string
+          data_fechamento: string | null
+          etapa: string
+          forma_pagamento: string | null
+          id: string
+          motivo_perda: string | null
+          observacoes: string | null
+          origem_lead: string | null
+          paciente_id: string
+          produto_servico: string
+          setor_id: string | null
+          updated_at: string
+          valor_final: number | null
+          valor_orcamento: number
+        }
+        Insert: {
+          atendente_id?: string | null
+          ativo?: boolean
+          conversa_id?: string | null
+          created_at?: string
+          data_envio_orcamento?: string
+          data_fechamento?: string | null
+          etapa?: string
+          forma_pagamento?: string | null
+          id?: string
+          motivo_perda?: string | null
+          observacoes?: string | null
+          origem_lead?: string | null
+          paciente_id: string
+          produto_servico: string
+          setor_id?: string | null
+          updated_at?: string
+          valor_final?: number | null
+          valor_orcamento?: number
+        }
+        Update: {
+          atendente_id?: string | null
+          ativo?: boolean
+          conversa_id?: string | null
+          created_at?: string
+          data_envio_orcamento?: string
+          data_fechamento?: string | null
+          etapa?: string
+          forma_pagamento?: string | null
+          id?: string
+          motivo_perda?: string | null
+          observacoes?: string | null
+          origem_lead?: string | null
+          paciente_id?: string
+          produto_servico?: string
+          setor_id?: string | null
+          updated_at?: string
+          valor_final?: number | null
+          valor_orcamento?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_funil_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_funil_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_funil_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_funil_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loss_reasons: {
         Row: {
           ativo: boolean | null
