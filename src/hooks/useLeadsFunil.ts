@@ -143,10 +143,49 @@ export const useAtualizarEtapaLead = () => {
 export const useReabrirLead = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (params: { leadId: string; pacienteId: string }) => {
+    mutationFn: async (params: {
+      leadId: string;
+      pacienteId: string;
+      reaberto_por_id: string;
+      observacao?: string;
+      etapa_anterior: string;
+    }) => {
+      // First get current lead to preserve history
+      const { data: currentLead, error: fetchError } = await (supabase
+        .from("leads_funil" as any)
+        .select("*") as any)
+        .eq("id", params.leadId)
+        .single();
+      if (fetchError) throw fetchError;
+
+      const historicoAtual = (currentLead as any)?.historico_reaberturas || [];
+      const novaEntrada = {
+        etapa_anterior: params.etapa_anterior,
+        motivo_perda_anterior: (currentLead as any)?.motivo_perda || null,
+        valor_final_anterior: (currentLead as any)?.valor_final || null,
+        forma_pagamento_anterior: (currentLead as any)?.forma_pagamento || null,
+        fechado_por_id_anterior: (currentLead as any)?.fechado_por_id || null,
+        perdido_por_id_anterior: (currentLead as any)?.perdido_por_id || null,
+        data_fechamento_anterior: (currentLead as any)?.data_fechamento || null,
+        reaberto_por_id: params.reaberto_por_id,
+        reaberto_em: new Date().toISOString(),
+        observacao_reabertura: params.observacao || null,
+      };
+
       const { data, error } = await (supabase
         .from("leads_funil" as any)
-        .update({ etapa: "em_negociacao", motivo_perda: null, data_fechamento: null }) as any)
+        .update({
+          etapa: "em_negociacao",
+          motivo_perda: null,
+          data_fechamento: null,
+          valor_final: null,
+          forma_pagamento: null,
+          fechado_por_id: null,
+          perdido_por_id: null,
+          reaberto_por_id: params.reaberto_por_id,
+          reaberto_em: new Date().toISOString(),
+          historico_reaberturas: [...historicoAtual, novaEntrada],
+        }) as any)
         .eq("id", params.leadId)
         .select()
         .single();
