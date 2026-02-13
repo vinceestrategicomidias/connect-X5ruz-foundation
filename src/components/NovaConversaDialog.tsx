@@ -18,6 +18,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NovaConversaDialogProps {
   open: boolean;
@@ -38,6 +40,7 @@ export const NovaConversaDialog = ({ open, onOpenChange }: NovaConversaDialogPro
   const criarPaciente = useCriarPaciente();
   const { setPacienteSelecionado } = usePacienteContext();
   const { atendenteLogado } = useAtendenteContext();
+  const queryClient = useQueryClient();
 
   // Filtrar pacientes pela busca
   const pacientesFiltrados = todosPacientes?.filter(p => 
@@ -54,7 +57,6 @@ export const NovaConversaDialog = ({ open, onOpenChange }: NovaConversaDialogPro
   const handleSelecionarContato = async (paciente: any) => {
     // Se o paciente não está em atendimento, mover para "Meus Atendimentos"
     if (paciente.status !== "em_atendimento" && atendenteLogado?.id) {
-      const { supabase } = await import("@/integrations/supabase/client");
       await supabase
         .from("pacientes")
         .update({
@@ -64,6 +66,7 @@ export const NovaConversaDialog = ({ open, onOpenChange }: NovaConversaDialogPro
         .eq("id", paciente.id);
       
       paciente = { ...paciente, status: "em_atendimento", atendente_responsavel: atendenteLogado.id };
+      queryClient.invalidateQueries({ queryKey: ["pacientes"] });
     }
     setPacienteSelecionado(paciente);
     onOpenChange(false);
@@ -108,12 +111,12 @@ export const NovaConversaDialog = ({ open, onOpenChange }: NovaConversaDialogPro
 
       // Atribuir atendente ao paciente criado
       if (atendenteLogado?.id) {
-        const { supabase } = await import("@/integrations/supabase/client");
         await supabase
           .from("pacientes")
           .update({ atendente_responsavel: atendenteLogado.id })
           .eq("id", novoPaciente.id);
         novoPaciente.atendente_responsavel = atendenteLogado.id;
+        queryClient.invalidateQueries({ queryKey: ["pacientes"] });
       }
 
       setPacienteSelecionado(novoPaciente);
