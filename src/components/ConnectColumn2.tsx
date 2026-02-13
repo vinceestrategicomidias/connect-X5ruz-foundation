@@ -104,10 +104,9 @@ export const ConnectColumn2 = () => {
     };
   }, [conversa?.id]);
 
-  const handleEnviarMensagem = async () => {
+  const enviarMensagemDireto = async () => {
     if (!mensagemTexto.trim() || !conversa?.id || !pacienteSelecionado) return;
 
-    // Se for a primeira mensagem do atendente e o paciente está na fila, mudar status
     const ehPrimeiraMensagemAtendente = !mensagens?.some(m => m.autor === "atendente");
     if (ehPrimeiraMensagemAtendente && pacienteSelecionado.status === "fila" && atendenteLogado) {
       await atualizarStatus.mutateAsync({
@@ -125,6 +124,27 @@ export const ConnectColumn2 = () => {
 
     setMensagemTexto("");
     setDigitando(false);
+  };
+
+  // Detect budget-related keywords to trigger funnel classification
+  const isOrcamentoMessage = (texto: string) => {
+    const keywords = ["orçamento", "orcamento", "orçamentos", "valor", "preço", "preco", "proposta", "budget", "cotação", "cotacao"];
+    const lower = texto.toLowerCase();
+    return keywords.some(k => lower.includes(k));
+  };
+
+  const handleEnviarMensagem = async () => {
+    if (!mensagemTexto.trim() || !conversa?.id || !pacienteSelecionado) return;
+
+    // If message looks like a budget and no active lead, trigger funnel
+    if (isOrcamentoMessage(mensagemTexto) && !leadAtivo && atendenteLogado) {
+      handleEnviarOrcamentoComFunil(() => {
+        enviarMensagemDireto();
+      });
+      return;
+    }
+
+    await enviarMensagemDireto();
   };
 
   const handleEmojiSelect = (emoji: string) => {
