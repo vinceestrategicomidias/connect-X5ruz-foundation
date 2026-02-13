@@ -268,9 +268,7 @@ const PacientesLista = ({
   const pacientesFiltrados =
     status === "em_atendimento"
       ? pacientes?.filter(
-          (p) =>
-            p.setor_id === atendenteLogado?.setor_id &&
-            p.atendente_responsavel === atendenteLogado?.id
+          (p) => p.atendente_responsavel === atendenteLogado?.id
         )
       : pacientes?.filter((p) => p.setor_id === atendenteLogado?.setor_id);
 
