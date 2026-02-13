@@ -431,7 +431,8 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
           }
         }}
         onClassificar={handleClassificacao}
-        valorOrcamento={parseFloat(orcamento.valorProduto) || undefined}
+        valorOrcamento={calcularTotal() || undefined}
+        produtoServico={orcamento.descricao || undefined}
       />
     </div>
   );
