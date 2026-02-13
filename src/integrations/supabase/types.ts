@@ -1043,6 +1043,7 @@ export type Database = {
           observacoes: string | null
           origem_lead: string | null
           paciente_id: string
+          perdido_por_id: string | null
           produto_servico: string
           setor_id: string | null
           updated_at: string
@@ -1064,6 +1065,7 @@ export type Database = {
           observacoes?: string | null
           origem_lead?: string | null
           paciente_id: string
+          perdido_por_id?: string | null
           produto_servico: string
           setor_id?: string | null
           updated_at?: string
@@ -1085,6 +1087,7 @@ export type Database = {
           observacoes?: string | null
           origem_lead?: string | null
           paciente_id?: string
+          perdido_por_id?: string | null
           produto_servico?: string
           setor_id?: string | null
           updated_at?: string
@@ -1118,6 +1121,13 @@ export type Database = {
             columns: ["paciente_id"]
             isOneToOne: false
             referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_funil_perdido_por_id_fkey"
+            columns: ["perdido_por_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
             referencedColumns: ["id"]
           },
           {
