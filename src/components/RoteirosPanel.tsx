@@ -10,6 +10,7 @@ import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente } from "@/hooks/useConversas";
 import { useLeadAtivoPaciente, useCriarLead } from "@/hooks/useLeadsFunil";
+import { useEnviarMensagem } from "@/hooks/useMutations";
 import { FunilClassificacaoModal } from "./FunilClassificacaoModal";
 
 interface RoteirosNode {
@@ -112,6 +113,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const { data: conversa } = useConversaByPaciente(pacienteSelecionado?.id || null);
   const { data: leadAtivo } = useLeadAtivoPaciente(pacienteSelecionado?.id || null);
   const criarLead = useCriarLead();
+  const enviarMensagem = useEnviarMensagem();
   const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
   const [pendingOrcamentoCallback, setPendingOrcamentoCallback] = useState<(() => void) | null>(null);
   const [orcamento, setOrcamento] = useState<OrcamentoData>({
@@ -170,11 +172,23 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
 
   const enviarOrcamentoDireto = () => {
     const mensagem = gerarMensagemOrcamento();
-    navigator.clipboard.writeText(mensagem);
-    toast({
-      title: "Orçamento copiado!",
-      description: "O orçamento foi copiado para a área de transferência",
-    });
+    if (conversa?.id) {
+      enviarMensagem.mutate({
+        conversaId: conversa.id,
+        texto: mensagem,
+        autor: "atendente",
+      });
+      toast({
+        title: "Orçamento enviado!",
+        description: "O orçamento foi enviado na conversa",
+      });
+    } else {
+      navigator.clipboard.writeText(mensagem);
+      toast({
+        title: "Orçamento copiado!",
+        description: "O orçamento foi copiado para a área de transferência",
+      });
+    }
   };
 
   const handleEnviarOrcamento = () => {
@@ -425,8 +439,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
         open={classificacaoModalOpen}
         onOpenChange={(open) => {
           setClassificacaoModalOpen(open);
-          if (!open && pendingOrcamentoCallback) {
-            pendingOrcamentoCallback();
+          if (!open) {
             setPendingOrcamentoCallback(null);
           }
         }}
