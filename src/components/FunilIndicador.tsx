@@ -7,7 +7,7 @@ import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { FunilVendidoModal } from "./FunilVendidoModal";
 import { FunilPerdidoModal } from "./FunilPerdidoModal";
 import { toast } from "sonner";
-import { TrendingUp, RotateCcw, User, ShoppingCart, CalendarClock } from "lucide-react";
+import { TrendingUp, RotateCcw, User, ShoppingCart, CalendarClock, XCircle } from "lucide-react";
 import { format } from "date-fns";
 
 interface FunilIndicadorProps {
@@ -63,6 +63,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
         pacienteId: lead.paciente_id,
         etapa: "perdido",
         motivo_perda: motivo,
+        perdido_por_id: atendenteLogado?.id,
       },
       { onSuccess: () => { toast.info("Lead marcado como perdido"); setPerdidoOpen(false); } }
     );
@@ -144,7 +145,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
           {ETAPAS.map((etapa, idx) => {
             const isActive = lead.etapa === etapa.key;
             const canClick = lead.etapa !== etapa.key;
-            const isEmNegociacaoAtivo = etapa.key === "em_negociacao" && isActive;
+            const showPopover = isActive && etapa.key !== "em_negociacao" ? false : (etapa.key === "em_negociacao" && isActive);
 
             const btnClass = cn(
               "px-2 py-0.5 text-[10px] font-medium transition-all border",
@@ -153,32 +154,80 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
               isActive
                 ? `${etapa.color} text-white border-transparent`
                 : `${etapa.bgLight} ${etapa.textColor} border-transparent opacity-50 hover:opacity-80`,
-              (canClick || isEmNegociacaoAtivo) && "cursor-pointer"
+              "cursor-pointer"
             );
 
-            if (isEmNegociacaoAtivo) {
+            // All active stages get a popover with history
+            if (isActive) {
               return (
                 <Popover key={etapa.key}>
                   <PopoverTrigger asChild>
                     <button className={btnClass}>{etapa.label}</button>
                   </PopoverTrigger>
-                  <PopoverContent side="bottom" className="w-56 p-3">
+                  <PopoverContent side="bottom" className="w-64 p-3">
                     <div className="space-y-2 text-xs">
                       <p className="font-semibold text-sm">{lead.produto_servico}</p>
+
+                      {/* Orçamento */}
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <ShoppingCart className="h-3 w-3 shrink-0" />
                         <span>Orçamento: {formatCurrency(lead.valor_orcamento)}</span>
                       </div>
+
+                      {/* Vendedor que enviou */}
                       {lead.vendedor_nome && (
                         <div className="flex items-center gap-1.5">
                           <User className="h-3 w-3 shrink-0 text-primary" />
-                          <span>Vendedor: <span className="font-medium">{lead.vendedor_nome}</span></span>
+                          <span>Enviado por: <span className="font-medium">{lead.vendedor_nome}</span></span>
                         </div>
                       )}
+
+                      {/* Data envio */}
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <CalendarClock className="h-3 w-3 shrink-0" />
-                        <span>Enviado: {formatDate(lead.data_envio_orcamento)}</span>
+                        <span>Enviado em: {formatDate(lead.data_envio_orcamento)}</span>
                       </div>
+
+                      {/* Vendido details */}
+                      {lead.etapa === "vendido" && (
+                        <div className="border-t border-border/50 pt-2 mt-2 space-y-1.5">
+                          {lead.valor_final != null && (
+                            <p className="text-green-600 font-medium">
+                              Valor fechado: {formatCurrency(lead.valor_final)}
+                            </p>
+                          )}
+                          {lead.fechado_por_nome && (
+                            <div className="flex items-center gap-1.5">
+                              <User className="h-3 w-3 shrink-0 text-green-600" />
+                              <span>Vendido por: <span className="font-medium">{lead.fechado_por_nome}</span></span>
+                            </div>
+                          )}
+                          {lead.data_fechamento && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <CalendarClock className="h-3 w-3 shrink-0" />
+                              <span>Fechado em: {formatDate(lead.data_fechamento)}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Perdido details */}
+                      {lead.etapa === "perdido" && (
+                        <div className="border-t border-border/50 pt-2 mt-2 space-y-1.5">
+                          {lead.motivo_perda && (
+                            <div className="flex items-center gap-1.5 text-destructive">
+                              <XCircle className="h-3 w-3 shrink-0" />
+                              <span>Motivo: <span className="font-medium">{lead.motivo_perda}</span></span>
+                            </div>
+                          )}
+                          {lead.perdido_por_nome && (
+                            <div className="flex items-center gap-1.5">
+                              <User className="h-3 w-3 shrink-0 text-destructive" />
+                              <span>Classificado por: <span className="font-medium">{lead.perdido_por_nome}</span></span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </PopoverContent>
                 </Popover>
