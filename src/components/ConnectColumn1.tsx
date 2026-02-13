@@ -102,6 +102,7 @@ export const ConnectColumn1 = () => {
   const { atendenteLogado } = useAtendenteContext();
   const { data: setores } = useSetores();
   const [novaConversaOpen, setNovaConversaOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("espera");
   const { data: pacientesFila } = usePacientes("fila");
   const { data: pacientesEmAtendimento } = usePacientes("em_atendimento");
   const config = useConfigFila();
@@ -137,11 +138,17 @@ export const ConnectColumn1 = () => {
 
       <NovaConversaDialog
         open={novaConversaOpen}
-        onOpenChange={setNovaConversaOpen}
+        onOpenChange={(open) => {
+          setNovaConversaOpen(open);
+          if (!open) {
+            // Quando fechar o dialog após iniciar conversa, ir para "Meus Atend."
+            setActiveTab("andamento");
+          }
+        }}
       />
 
       {/* Tabs de Status */}
-      <Tabs defaultValue="espera" className="flex-1 flex flex-col">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <div className="px-4 pt-4 pb-2">
           <TabsList className="w-full h-auto grid grid-cols-3 gap-1 bg-muted/50 p-1">
             <TabsTrigger 
