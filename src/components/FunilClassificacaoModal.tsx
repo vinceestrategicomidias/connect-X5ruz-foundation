@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,7 @@ interface FunilClassificacaoModalProps {
     observacoes?: string;
   }) => void;
   valorOrcamento?: number;
+  produtoServico?: string;
 }
 
 export const FunilClassificacaoModal = ({
@@ -38,12 +39,20 @@ export const FunilClassificacaoModal = ({
   onOpenChange,
   onClassificar,
   valorOrcamento,
+  produtoServico: produtoServicoInicial,
 }: FunilClassificacaoModalProps) => {
   const [tipo, setTipo] = useState<"venda" | "apenas_contato">("venda");
-  const [produtoServico, setProdutoServico] = useState("");
+  const [produtoServico, setProdutoServico] = useState(produtoServicoInicial || "");
   const [valor, setValor] = useState(valorOrcamento?.toString() || "");
   const [origemLead, setOrigemLead] = useState("");
   const [observacoes, setObservacoes] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setProdutoServico(produtoServicoInicial || "");
+      setValor(valorOrcamento?.toString() || "");
+    }
+  }, [open, produtoServicoInicial, valorOrcamento]);
 
   const handleConfirmar = () => {
     if (tipo === "apenas_contato") {

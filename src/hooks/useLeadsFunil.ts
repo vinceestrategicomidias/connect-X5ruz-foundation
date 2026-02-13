@@ -20,6 +20,7 @@ export interface LeadFunil {
   ativo: boolean;
   created_at: string;
   updated_at: string;
+  vendedor_nome?: string;
 }
 
 export const useLeadAtivoPaciente = (pacienteId: string | null) => {
@@ -29,12 +30,16 @@ export const useLeadAtivoPaciente = (pacienteId: string | null) => {
       if (!pacienteId) return null;
       const { data, error } = await (supabase
         .from("leads_funil" as any)
-        .select("*") as any)
+        .select("*, atendentes:atendente_id(nome)") as any)
         .eq("paciente_id", pacienteId)
         .eq("ativo", true)
         .maybeSingle();
       if (error) throw error;
-      return data as unknown as LeadFunil | null;
+      if (!data) return null;
+      const lead = { ...data } as any;
+      lead.vendedor_nome = lead.atendentes?.nome || null;
+      delete lead.atendentes;
+      return lead as LeadFunil;
     },
     enabled: !!pacienteId,
   });

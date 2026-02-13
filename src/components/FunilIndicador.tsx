@@ -80,6 +80,11 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
             <p className="font-medium">{lead.produto_servico}</p>
             <p>Orçamento: {formatCurrency(lead.valor_orcamento)}</p>
             {lead.valor_final && <p>Fechado: {formatCurrency(lead.valor_final)}</p>}
+            {lead.vendedor_nome && (
+              <p className="mt-1 border-t border-border/50 pt-1">
+                👤 Vendedor: <span className="font-medium">{lead.vendedor_nome}</span>
+              </p>
+            )}
           </TooltipContent>
         </Tooltip>
 
