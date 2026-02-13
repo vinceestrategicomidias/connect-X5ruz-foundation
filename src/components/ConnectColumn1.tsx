@@ -375,21 +375,11 @@ const PacientesLista = ({
   };
 
   // Função para obter quantidade de mensagens não lidas
-  const getMensagensNaoLidas = (pacienteId: string, nome: string): number => {
-    // Primeiro verifica se há dados reais do banco
+  const getMensagensNaoLidas = (pacienteId: string): number => {
     if (mensagensNaoLidas && typeof mensagensNaoLidas[pacienteId] === 'number') {
       return mensagensNaoLidas[pacienteId];
     }
-    
-    // Fallback para dados de protótipo
-    const naoLidasEspecificas: Record<string, number> = {
-      "Lúcia Andrade": 3,
-      "Pedro Oliveira": 1,
-      "Ricardo Fernandes": 2,
-      "Vanessa Lima": 3,
-    };
-    
-    return naoLidasEspecificas[nome] ?? 0;
+    return 0;
   };
   
   // Função para obter prévia de mensagem
@@ -433,7 +423,7 @@ const PacientesLista = ({
           const tempoFila = getTempoNaFila(paciente.nome, paciente.tempo_na_fila || 0);
           const tempoSemResposta = calcularTempoSemResposta(paciente);
           const previewMensagem = getPreviewMensagem(paciente.nome, paciente.ultima_mensagem || undefined);
-          const naoLidas = getMensagensNaoLidas(paciente.id, paciente.nome);
+          const naoLidas = getMensagensNaoLidas(paciente.id);
           
           return (
             <ConnectPatientCard

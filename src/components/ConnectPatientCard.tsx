@@ -146,7 +146,7 @@ export const ConnectPatientCard = ({
                   </span>
                 </>
               )}
-              {unread && unread > 0 && (
+              {!!unread && unread > 0 && (
                 <>
                   <span className="text-[10px] text-muted-foreground">|</span>
                   <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
