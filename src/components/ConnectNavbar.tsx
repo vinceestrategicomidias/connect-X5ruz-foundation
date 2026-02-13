@@ -18,7 +18,7 @@ export const ConnectNavbar = () => {
   const [painelOpen, setPainelOpen] = useState(false);
 
   return (
-    <nav className="h-16 border-b border-border bg-card px-6 flex-1 items-center justify-between connect-shadow">
+    <nav className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
       {/* Logo / Brand */}
       <div className="flex items-center gap-3">
         <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
