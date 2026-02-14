@@ -474,10 +474,6 @@ export const RelatoriosInteligentesPanel = () => {
             <BarChart3 className="h-3 w-3 mr-1" />
             Visão Comercial
           </TabsTrigger>
-          <TabsTrigger value="conversao_por_atendente" className="text-xs">
-            <UserCheck className="h-3 w-3 mr-1" />
-            Conversão
-          </TabsTrigger>
           <TabsTrigger value="funil_de_vendas" className="text-xs">
             <TrendingDown className="h-3 w-3 mr-1" />
             Funil
@@ -650,51 +646,6 @@ export const RelatoriosInteligentesPanel = () => {
               <VisaoComercialPanel />
             </TabsContent>
 
-            {/* Conversão por Atendente */}
-            <TabsContent value="conversao_por_atendente" className="mt-0 space-y-4">
-              <FiltrosRelatorio filtros={["Data", "Mês", "Ano", "Produto", "Atendente"]} />
-
-              <Card className="p-4">
-                <h4 className="font-semibold mb-4">Taxa de Conversão por Atendente</h4>
-                <div className="space-y-4">
-                  {mockData.conversaoPorAtendente.map((atendente, idx) => (
-                    <div key={idx} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm",
-                            idx === 0 ? "bg-yellow-500" : idx === 1 ? "bg-gray-400" : idx === 2 ? "bg-orange-400" : "bg-muted-foreground"
-                          )}>
-                            {idx + 1}
-                          </div>
-                          <span className="font-semibold">{atendente.nome}</span>
-                        </div>
-                        <Badge variant={atendente.taxa >= 55 ? "default" : "secondary"}>
-                          {atendente.taxa}% conversão
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Leads: </span>
-                          <span className="font-medium">{atendente.leads}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Conversões: </span>
-                          <span className="font-medium text-green-600">{atendente.conversoes}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {atendente.taxa >= 55 ? (
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-600" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </TabsContent>
 
             {/* Funil de Vendas */}
             <TabsContent value="funil_de_vendas" className="mt-0 space-y-4">
