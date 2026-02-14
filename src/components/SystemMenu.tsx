@@ -155,11 +155,25 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
     ia_ativa: false,
   });
   
-  const [alertasConfig, setAlertasConfig] = useState({
-    fila_alta: 12,
-    nps_baixo: 7,
-    tempo_resposta_alto: 6,
+  const [alertasConfig, setAlertasConfig] = useState<
+    Record<string, { ativo: boolean; intensidade: string; intervalo: number }>
+  >({
+    fila_alta: { ativo: true, intensidade: "moderado", intervalo: 5 },
+    tempo_espera: { ativo: true, intensidade: "intenso", intervalo: 3 },
+    nps_baixo: { ativo: true, intensidade: "moderado", intervalo: 10 },
+    atendente_tempo: { ativo: false, intensidade: "leve", intervalo: 5 },
+    pico_atendimento: { ativo: true, intensidade: "leve", intervalo: 15 },
+    relatorio_critico: { ativo: false, intensidade: "moderado", intervalo: 5 },
   });
+
+  const alertasMeta = [
+    { id: "fila_alta", nome: "Fila Alta", desc: "Quando a fila de espera exceder o limite configurado" },
+    { id: "tempo_espera", nome: "Tempo excessivo de espera", desc: "Paciente aguardando além do tempo aceitável" },
+    { id: "nps_baixo", nome: "NPS baixo", desc: "Quando o NPS cair abaixo do esperado" },
+    { id: "atendente_tempo", nome: "Atendente com tempo elevado", desc: "Atendente com TMA acima da meta" },
+    { id: "pico_atendimento", nome: "Pico de atendimento", desc: "Volume de atendimentos acima do normal" },
+    { id: "relatorio_critico", nome: "Relatório crítico", desc: "Relatório com indicadores fora do padrão" },
+  ];
   
   const [apiConfig, setApiConfig] = useState({
     chave_api: "LIRUZ-API-KEY-001",
@@ -747,78 +761,108 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
             <div>
               <h3 className="text-lg font-semibold">Configuração de Alertas</h3>
               <p className="text-sm text-muted-foreground">
-                Configure limites e notificações
+                Configure os tipos de alertas, intensidade e intervalo de disparo
               </p>
             </div>
             
             <Card>
               <CardHeader>
-                <CardTitle>Limites de Alertas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Fila Alta (nº de pessoas)</Label>
-                  <Input
-                    type="number"
-                    value={alertasConfig.fila_alta}
-                    onChange={(e) => setAlertasConfig({ ...alertasConfig, fila_alta: Number(e.target.value) })}
-                  />
-                  <p className="text-xs text-muted-foreground">Alerta quando fila ultrapassar este número</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>NPS Baixo (nota mínima)</Label>
-                  <Input
-                    type="number"
-                    value={alertasConfig.nps_baixo}
-                    onChange={(e) => setAlertasConfig({ ...alertasConfig, nps_baixo: Number(e.target.value) })}
-                  />
-                  <p className="text-xs text-muted-foreground">Alerta quando NPS for menor que esta nota</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Tempo de Resposta Alto (minutos)</Label>
-                  <Input
-                    type="number"
-                    value={alertasConfig.tempo_resposta_alto}
-                    onChange={(e) => setAlertasConfig({ ...alertasConfig, tempo_resposta_alto: Number(e.target.value) })}
-                  />
-                  <p className="text-xs text-muted-foreground">Alerta quando tempo ultrapassar este limite</p>
-                </div>
-                
-                <Button className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Configurações de Alertas
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Tipos de Alertas Ativos</CardTitle>
+                <CardTitle>Tipos de Alertas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-2 border rounded">
-                    <Bell className="h-4 w-4" />
-                    <span className="text-sm">Fila Alta</span>
+                <ScrollArea className="h-[480px] pr-4">
+                  <div className="space-y-4">
+                    {alertasMeta.map((alerta) => {
+                      const config = alertasConfig[alerta.id];
+                      return (
+                        <div
+                          key={alerta.id}
+                          className={cn(
+                            "p-4 border rounded-lg space-y-4 transition-colors",
+                            config.ativo
+                              ? "border-primary/30 bg-card"
+                              : "border-muted bg-muted/30 opacity-70"
+                          )}
+                        >
+                          {/* Header: título + toggle */}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-semibold text-sm">{alerta.nome}</h4>
+                              <p className="text-xs text-muted-foreground">{alerta.desc}</p>
+                            </div>
+                            <Switch
+                              checked={config.ativo}
+                              onCheckedChange={(checked) =>
+                                setAlertasConfig({
+                                  ...alertasConfig,
+                                  [alerta.id]: { ...config, ativo: checked },
+                                })
+                              }
+                            />
+                          </div>
+
+                          {/* Intensidade + Intervalo (só se ativo) */}
+                          {config.ativo && (
+                            <>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs text-muted-foreground">Intensidade</Label>
+                                <div className="flex gap-2">
+                                  {(["leve", "moderado", "intenso"] as const).map((nivel) => (
+                                    <button
+                                      key={nivel}
+                                      onClick={() =>
+                                        setAlertasConfig({
+                                          ...alertasConfig,
+                                          [alerta.id]: { ...config, intensidade: nivel },
+                                        })
+                                      }
+                                      className={cn(
+                                        "px-3 py-1.5 rounded-md text-xs font-medium transition-colors border",
+                                        config.intensidade === nivel
+                                          ? "bg-primary/10 border-primary text-primary"
+                                          : "bg-background border-border text-muted-foreground hover:bg-muted"
+                                      )}
+                                    >
+                                      {nivel.charAt(0).toUpperCase() + nivel.slice(1)}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <Label className="text-xs text-muted-foreground">Disparar a cada</Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    value={config.intervalo}
+                                    onChange={(e) =>
+                                      setAlertasConfig({
+                                        ...alertasConfig,
+                                        [alerta.id]: {
+                                          ...config,
+                                          intervalo: Math.max(1, parseInt(e.target.value) || 1),
+                                        },
+                                      })
+                                    }
+                                    className="w-20 h-8 text-sm"
+                                  />
+                                  <span className="text-xs text-muted-foreground">minutos</span>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex items-center gap-2 p-2 border rounded">
-                    <Bell className="h-4 w-4" />
-                    <span className="text-sm">NPS Baixo</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 border rounded">
-                    <Bell className="h-4 w-4" />
-                    <span className="text-sm">Tempo de Resposta Alto</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 border rounded">
-                    <Bell className="h-4 w-4" />
-                    <span className="text-sm">Previsão de Pico</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 border rounded">
-                    <Bell className="h-4 w-4" />
-                    <span className="text-sm">Relatório Crítico</span>
-                  </div>
+                </ScrollArea>
+
+                <div className="pt-4">
+                  <Button className="w-full">
+                    <Save className="h-4 w-4 mr-2" />
+                    Salvar Configurações de Alertas
+                  </Button>
                 </div>
               </CardContent>
             </Card>
