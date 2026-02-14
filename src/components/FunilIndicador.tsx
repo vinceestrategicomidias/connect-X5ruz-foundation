@@ -50,6 +50,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
         leadId: lead.id,
         pacienteId: lead.paciente_id,
         reaberto_por_id: atendenteLogado.id,
+        reaberto_por_nome: atendenteLogado.nome,
         observacao,
         etapa_anterior: lead.etapa,
       },
@@ -296,6 +297,12 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
                               <p className="text-muted-foreground">
                                 {h.etapa_anterior === "vendido" ? "Foi vendido" : "Foi perdido"} → Reaberto em {formatDate(h.reaberto_em)}
                               </p>
+                              {h.reaberto_por_nome && (
+                                <p className="text-muted-foreground">
+                                  <User className="h-2.5 w-2.5 inline mr-1" />
+                                  Reaberto por: <span className="font-medium">{h.reaberto_por_nome}</span>
+                                </p>
+                              )}
                               {h.observacao_reabertura && (
                                 <p className="italic text-muted-foreground">"{h.observacao_reabertura}"</p>
                               )}
