@@ -53,7 +53,7 @@ export default function Login() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        navigate("/chat");
       }
     };
     checkSession();
@@ -78,7 +78,7 @@ export default function Login() {
     try {
       if (email === "connect@grupoliruz.com" && senha === "123456") {
         toast.success("Login realizado com sucesso!");
-        navigate("/");
+        navigate("/chat");
         return;
       }
 
@@ -91,7 +91,7 @@ export default function Login() {
         toast.error("Credenciais inválidas. Verifique e tente novamente.");
       } else {
         toast.success("Login realizado com sucesso!");
-        navigate("/");
+        navigate("/chat");
       }
     } catch {
       toast.error("Credenciais inválidas. Verifique e tente novamente.");
