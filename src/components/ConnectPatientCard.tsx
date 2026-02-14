@@ -150,7 +150,16 @@ export const ConnectPatientCard = ({
               {!!unread && unread > 0 && (
                 <>
                   <span className="text-[10px] text-muted-foreground">|</span>
-                  <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                  <span className={cn(
+                    "text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1",
+                    isEspera && tempoExibido < 15
+                      ? "bg-emerald-500 text-white"
+                      : isEspera && tempoExibido < 30
+                        ? "bg-yellow-500 text-white"
+                        : isEspera && tempoExibido >= 30
+                          ? "bg-destructive text-destructive-foreground"
+                          : "bg-primary text-primary-foreground"
+                  )}>
                     {unread}
                   </span>
                 </>
