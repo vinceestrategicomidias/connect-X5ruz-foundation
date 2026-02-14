@@ -113,9 +113,9 @@ export const ConnectColumn1 = () => {
   // Contar pacientes na fila do setor do atendente
   const countFila = pacientesFila?.filter(p => p.setor_id === atendenteLogado?.setor_id)?.length || 0;
   
-  // Contar pacientes em atendimento pelo atendente
+  // Contar pacientes em atendimento pelo atendente (mesma lógica do filtro da lista)
   const countMeusAtendimentos = pacientesEmAtendimento?.filter(
-    p => p.setor_id === atendenteLogado?.setor_id && p.atendente_responsavel === atendenteLogado?.id
+    p => p.atendente_responsavel === atendenteLogado?.id
   )?.length || 0;
 
   return (
