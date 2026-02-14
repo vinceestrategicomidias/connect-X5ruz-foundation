@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ConnectAvatar } from "./ConnectAvatar";
-import { Users, Headphones, Coffee, PhoneCall, Search, X } from "lucide-react";
+import { Coffee, PhoneCall, Search } from "lucide-react";
 
 interface AtendenteStatus {
   id: string;
@@ -31,10 +31,8 @@ const ATENDENTES_STATUS: AtendenteStatus[] = [
 ];
 
 const statusConfig = {
-  online: { label: "Online", icon: Users, color: "bg-green-500", textColor: "text-green-700 dark:text-green-400", bgLight: "bg-green-50 dark:bg-green-900/20" },
-  em_atendimento: { label: "Em atendimento", icon: Headphones, color: "bg-blue-500", textColor: "text-blue-700 dark:text-blue-400", bgLight: "bg-blue-50 dark:bg-blue-900/20" },
-  em_pausa: { label: "Em pausa", icon: Coffee, color: "bg-yellow-500", textColor: "text-yellow-700 dark:text-yellow-400", bgLight: "bg-yellow-50 dark:bg-yellow-900/20" },
-  em_ligacao: { label: "Em ligação", icon: PhoneCall, color: "bg-purple-500", textColor: "text-purple-700 dark:text-purple-400", bgLight: "bg-purple-50 dark:bg-purple-900/20" },
+  em_pausa: { label: "Em pausa", icon: Coffee, color: "bg-primary/10", dotColor: "bg-yellow-500" },
+  em_ligacao: { label: "Em ligação", icon: PhoneCall, color: "bg-primary/10", dotColor: "bg-purple-500" },
 };
 
 interface StatusAtendentesBlockProps {
@@ -46,8 +44,6 @@ export const StatusAtendentesBlock = ({ onOpenMonitoramento }: StatusAtendentesB
   const [busca, setBusca] = useState("");
 
   const contadores = {
-    online: ATENDENTES_STATUS.filter(a => a.status === "online").length,
-    em_atendimento: ATENDENTES_STATUS.filter(a => a.status === "em_atendimento").length,
     em_pausa: ATENDENTES_STATUS.filter(a => a.status === "em_pausa").length,
     em_ligacao: ATENDENTES_STATUS.filter(a => a.status === "em_ligacao").length,
   };
@@ -63,29 +59,27 @@ export const StatusAtendentesBlock = ({ onOpenMonitoramento }: StatusAtendentesB
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-4">
-        {(Object.entries(statusConfig) as [keyof typeof statusConfig, typeof statusConfig[keyof typeof statusConfig]][]).map(([key, config]) => {
-          const Icon = config.icon;
-          const count = contadores[key];
-          return (
-            <Card
-              key={key}
-              onClick={() => { setModalStatus(key); setBusca(""); }}
-              className="p-4 cursor-pointer transition-all hover:ring-2 hover:ring-primary/50"
-            >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${config.bgLight}`}>
-                  <Icon className={`h-5 w-5 ${config.textColor}`} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{count}</p>
-                  <p className="text-xs text-muted-foreground">{config.label}</p>
-                </div>
+      {(Object.entries(statusConfig) as [keyof typeof statusConfig, typeof statusConfig[keyof typeof statusConfig]][]).map(([key, config]) => {
+        const Icon = config.icon;
+        const count = contadores[key];
+        return (
+          <Card
+            key={key}
+            onClick={() => { setModalStatus(key); setBusca(""); }}
+            className="p-4 cursor-pointer transition-all hover:ring-2 hover:ring-primary/50"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Icon className="h-5 w-5 text-primary" />
               </div>
-            </Card>
-          );
-        })}
-      </div>
+              <div>
+                <p className="text-2xl font-bold">{count}</p>
+                <p className="text-xs text-muted-foreground">{config.label}</p>
+              </div>
+            </div>
+          </Card>
+        );
+      })}
 
       <Dialog open={!!modalStatus} onOpenChange={(open) => { if (!open) setModalStatus(null); }}>
         <DialogContent className="sm:max-w-md">
@@ -93,7 +87,7 @@ export const StatusAtendentesBlock = ({ onOpenMonitoramento }: StatusAtendentesB
             <DialogTitle className="flex items-center gap-2">
               {configAtual && (
                 <>
-                  <div className={`w-3 h-3 rounded-full ${configAtual.color}`} />
+                  <div className={`w-3 h-3 rounded-full ${configAtual.dotColor}`} />
                   Atendentes {configAtual.label.toLowerCase()}
                   <Badge variant="secondary" className="ml-1">{atendentesFiltrados.length}</Badge>
                 </>
@@ -121,7 +115,7 @@ export const StatusAtendentesBlock = ({ onOpenMonitoramento }: StatusAtendentesB
                 >
                   <div className="relative">
                     <ConnectAvatar name={atendente.nome} size="sm" />
-                    <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background ${configAtual?.color}`} />
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background ${configAtual?.dotColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{atendente.nome}</p>
