@@ -200,8 +200,7 @@ export default function DashboardMonitoramento() {
   ];
 
   const filaEmTempoReal = pacientes?.filter(p => p.status === "fila")
-    .sort((a, b) => (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0))
-    .slice(0, 10) || [];
+    .sort((a, b) => (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0)) || [];
 
   return (
     <div className="min-h-screen bg-background p-4">
