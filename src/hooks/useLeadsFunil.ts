@@ -147,6 +147,7 @@ export const useReabrirLead = () => {
       leadId: string;
       pacienteId: string;
       reaberto_por_id: string;
+      reaberto_por_nome?: string;
       observacao?: string;
       etapa_anterior: string;
     }) => {
@@ -168,6 +169,7 @@ export const useReabrirLead = () => {
         perdido_por_id_anterior: (currentLead as any)?.perdido_por_id || null,
         data_fechamento_anterior: (currentLead as any)?.data_fechamento || null,
         reaberto_por_id: params.reaberto_por_id,
+        reaberto_por_nome: params.reaberto_por_nome || null,
         reaberto_em: new Date().toISOString(),
         observacao_reabertura: params.observacao || null,
       };
