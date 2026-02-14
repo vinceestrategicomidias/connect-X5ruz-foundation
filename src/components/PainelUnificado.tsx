@@ -81,16 +81,16 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { id: "dashboards", label: "Dashboards", icon: LayoutGrid },
   { id: "roteiros", label: "Roteiros", icon: FileText },
-  { id: "relatorios", label: "Relatórios Inteligentes", icon: BarChart3 },
   { id: "nps", label: "Net Promoter Score (NPS)", icon: ThumbsUp },
   { id: "alertas", label: "Alertas", icon: Bell },
   { id: "preditiva", label: "Thalí Preditiva", icon: TrendingUp },
   { id: "feedback", label: "Feedback da Thalí", icon: MessageSquare },
   { id: "indicadores", label: "Indicadores", icon: Activity },
-  { id: "auditoria", label: "Auditoria de Ações", icon: History },
   { id: "ideias", label: "Ideias", icon: Lightbulb },
   { id: "etiquetas", label: "Etiquetas", icon: Award, apenasGestor: true },
+  { id: "relatorios", label: "Relatórios Inteligentes", icon: BarChart3 },
   { id: "configuracoes", label: "Configurações", icon: Settings, apenasGestor: true },
+  { id: "auditoria", label: "Auditoria", icon: History },
 ];
 
 // Dados NPS comparativos
