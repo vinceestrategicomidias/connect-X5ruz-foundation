@@ -100,7 +100,7 @@ const menuItems = [
 export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
   const { isCoordenacao, isGestor } = useAtendenteContext();
   const navigate = useNavigate();
-  const [selectedSection, setSelectedSection] = useState<MenuSection>("empresa");
+  const [selectedSection, setSelectedSection] = useState<MenuSection>("dashboard");
   const [validacoesOpen, setValidacoesOpen] = useState(false);
   const [criarSetorOpen, setCriarSetorOpen] = useState(false);
   const [criarUsuarioOpen, setCriarUsuarioOpen] = useState(false);
