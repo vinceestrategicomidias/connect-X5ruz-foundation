@@ -210,7 +210,7 @@ export const CentralIdeiasPanel = () => {
         <div className="flex items-center gap-2">
           <Lightbulb className="h-6 w-6 text-[#0A2647]" />
           <h3 className="text-2xl font-bold text-[#0A2647]">
-            Central de Ideias - Gestão
+            Ideias das Estrelas - Gestão
           </h3>
         </div>
         {totalPendentes > 0 && (

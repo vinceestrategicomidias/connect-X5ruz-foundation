@@ -269,6 +269,8 @@ interface PainelUnificadoProps {
 
 export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) => {
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoPainel>("dashboards");
+  const [filtroAlertaSetor, setFiltroAlertaSetor] = useState("todos");
+  const [filtroAlertaTipo, setFiltroAlertaTipo] = useState("todos");
   const { isCoordenacao, isGestor } = useAtendenteContext();
 
   const renderConteudo = () => {
@@ -724,7 +726,19 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
           </div>
         );
 
-      case "alertas":
+      case "alertas": {
+        const setoresUnicos = Array.from(new Set(
+          dadosEmpresaGrande.alertas
+            .map(a => a.setor)
+            .filter(Boolean)
+        ));
+        
+        const alertasFiltrados = dadosEmpresaGrande.alertas.filter((alerta) => {
+          if (filtroAlertaSetor && filtroAlertaSetor !== "todos" && alerta.setor !== filtroAlertaSetor) return false;
+          if (filtroAlertaTipo && filtroAlertaTipo !== "todos" && alerta.tipo !== filtroAlertaTipo) return false;
+          return true;
+        });
+
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-2">
@@ -733,8 +747,36 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 Alertas Automáticos da Thalí
               </h3>
             </div>
+
+            {/* Filtros */}
+            <div className="flex items-center gap-3">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={filtroAlertaSetor} onValueChange={setFiltroAlertaSetor}>
+                <SelectTrigger className="w-[180px] h-9">
+                  <SelectValue placeholder="Filtrar por setor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os setores</SelectItem>
+                  {setoresUnicos.map((setor) => (
+                    <SelectItem key={setor} value={setor!}>{setor}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={filtroAlertaTipo} onValueChange={setFiltroAlertaTipo}>
+                <SelectTrigger className="w-[200px] h-9">
+                  <SelectValue placeholder="Filtrar por tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os tipos</SelectItem>
+                  {Array.from(new Set(dadosEmpresaGrande.alertas.map(a => a.tipo))).map((tipo) => (
+                    <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-              {dadosEmpresaGrande.alertas.map((alerta, idx) => (
+              {alertasFiltrados.length > 0 ? alertasFiltrados.map((alerta, idx) => (
                 <Card
                   key={idx}
                   className={cn(
@@ -763,10 +805,15 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                     </div>
                   </div>
                 </Card>
-              ))}
+              )) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum alerta encontrado com os filtros selecionados
+                </div>
+              )}
             </div>
           </div>
         );
+      }
 
       case "preditiva":
         return (
