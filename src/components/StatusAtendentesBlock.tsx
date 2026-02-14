@@ -63,29 +63,29 @@ export const StatusAtendentesBlock = ({ onOpenMonitoramento }: StatusAtendentesB
 
   return (
     <>
-      <Card className="p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Status dos Atendentes (tempo real)</h3>
-        <div className="grid grid-cols-4 gap-3">
-          {(Object.entries(statusConfig) as [keyof typeof statusConfig, typeof statusConfig[keyof typeof statusConfig]][]).map(([key, config]) => {
-            const Icon = config.icon;
-            const count = contadores[key];
-            return (
-              <div
-                key={key}
-                onClick={() => { setModalStatus(key); setBusca(""); }}
-                className={`p-3 rounded-lg border cursor-pointer transition-all hover:ring-2 hover:ring-primary/50 ${config.bgLight}`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <div className={`w-2.5 h-2.5 rounded-full ${config.color}`} />
-                  <Icon className={`h-4 w-4 ${config.textColor}`} />
+      <div className="grid grid-cols-4 gap-4">
+        {(Object.entries(statusConfig) as [keyof typeof statusConfig, typeof statusConfig[keyof typeof statusConfig]][]).map(([key, config]) => {
+          const Icon = config.icon;
+          const count = contadores[key];
+          return (
+            <Card
+              key={key}
+              onClick={() => { setModalStatus(key); setBusca(""); }}
+              className="p-4 cursor-pointer transition-all hover:ring-2 hover:ring-primary/50"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${config.bgLight}`}>
+                  <Icon className={`h-5 w-5 ${config.textColor}`} />
                 </div>
-                <p className="text-2xl font-bold">{count}</p>
-                <p className="text-xs text-muted-foreground">{config.label}</p>
+                <div>
+                  <p className="text-2xl font-bold">{count}</p>
+                  <p className="text-xs text-muted-foreground">{config.label}</p>
+                </div>
               </div>
-            );
-          })}
-        </div>
-      </Card>
+            </Card>
+          );
+        })}
+      </div>
 
       <Dialog open={!!modalStatus} onOpenChange={(open) => { if (!open) setModalStatus(null); }}>
         <DialogContent className="sm:max-w-md">

@@ -280,8 +280,10 @@ export default function DashboardMonitoramento() {
         </div>
       </div>
 
-      {/* Status dos Atendentes em Tempo Real */}
-      <StatusAtendentesBlock onOpenMonitoramento={() => setMonitoramentoOpen(true)} />
+      {/* Status dos Atendentes - cards integrados ao grid */}
+      <div className="mb-6">
+        <StatusAtendentesBlock onOpenMonitoramento={() => setMonitoramentoOpen(true)} />
+      </div>
 
       {/* Painéis principais */}
       <div className="grid grid-cols-2 gap-6 mb-6">
