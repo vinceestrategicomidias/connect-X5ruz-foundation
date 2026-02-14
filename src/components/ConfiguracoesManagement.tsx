@@ -100,12 +100,25 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
     },
   });
 
-  const [alertasConfig, setAlertasConfig] = useState({
-    fila_alta: { ativo: true, limite: 12 },
-    nps_baixo: { ativo: true, limite: 7 },
-    tempo_resposta_alto: { ativo: true, limite: "6m" },
-    previsao_pico: { ativo: true, limite: "80%" },
+  const [alertasConfig, setAlertasConfig] = useState<
+    Record<string, { ativo: boolean; intensidade: string; intervalo: number }>
+  >({
+    fila_alta: { ativo: true, intensidade: "moderado", intervalo: 5 },
+    tempo_espera: { ativo: true, intensidade: "intenso", intervalo: 3 },
+    nps_baixo: { ativo: true, intensidade: "moderado", intervalo: 10 },
+    atendente_tempo: { ativo: false, intensidade: "leve", intervalo: 5 },
+    pico_atendimento: { ativo: true, intensidade: "leve", intervalo: 15 },
+    relatorio_critico: { ativo: false, intensidade: "moderado", intervalo: 5 },
   });
+
+  const alertasMeta = [
+    { id: "fila_alta", nome: "Fila Alta", desc: "Quando a fila de espera exceder o limite configurado" },
+    { id: "tempo_espera", nome: "Tempo excessivo de espera", desc: "Paciente aguardando além do tempo aceitável" },
+    { id: "nps_baixo", nome: "NPS baixo", desc: "Quando o NPS cair abaixo do esperado" },
+    { id: "atendente_tempo", nome: "Atendente com tempo elevado", desc: "Atendente com TMA acima da meta" },
+    { id: "pico_atendimento", nome: "Pico de atendimento", desc: "Volume de atendimentos acima do normal" },
+    { id: "relatorio_critico", nome: "Relatório crítico", desc: "Relatório com indicadores fora do padrão" },
+  ];
 
   const [apiConfig, setApiConfig] = useState({
     chave_api: "LIRUZ-API-KEY-001",
@@ -554,146 +567,106 @@ export function ConfiguracoesManagement({ open, onOpenChange }: ConfiguracoesMan
 
               {/* ALERTAS */}
               <TabsContent value="alertas" className="mt-0 space-y-4">
-                {/* Seção 1: Notificações e Alertas */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Bell className="h-5 w-5" />
-                      Notificações e Alertas
+                      Tipos de Alertas
                     </CardTitle>
-                    <CardDescription>Ativar/desativar tipos de alertas e configurar notificações push</CardDescription>
+                    <CardDescription>Configure os alertas do sistema: ative, defina intensidade e intervalo de disparo</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {[
-                      { id: 'fila_alta', nome: 'Fila alta', desc: 'Quando a fila de espera exceder o limite' },
-                      { id: 'nps_baixo', nome: 'NPS baixo', desc: 'Quando o NPS cair abaixo do esperado' },
-                      { id: 'sem_resposta', nome: 'Paciente sem resposta', desc: 'Tempo sem resposta acima do limite' },
-                      { id: 'tma_acima', nome: 'Tempo médio acima da meta', desc: 'TMA excedeu a meta configurada' },
-                      { id: 'ligacao_perdida', nome: 'Ligação perdida', desc: 'Chamada não atendida' },
-                    ].map((alerta) => (
-                      <div key={alerta.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium text-sm">{alerta.nome}</h4>
-                          <p className="text-xs text-muted-foreground">{alerta.desc}</p>
-                        </div>
-                        <Switch
-                          checked={alertasConfig[alerta.id as keyof typeof alertasConfig]?.ativo ?? true}
-                          onCheckedChange={(checked) =>
-                            setAlertasConfig({
-                              ...alertasConfig,
-                              [alerta.id]: { ...alertasConfig[alerta.id as keyof typeof alertasConfig], ativo: checked },
-                            })
-                          }
-                        />
-                      </div>
-                    ))}
-                    
-                    <Separator />
-                    <div>
-                      <h4 className="font-medium text-sm mb-2">Notificações Push</h4>
-                      <p className="text-xs text-muted-foreground mb-3">Quais alertas aparecem como notificação na tela</p>
-                      <div className="space-y-2">
-                        {['Fila alta', 'NPS baixo', 'Paciente sem resposta', 'Ligação perdida'].map((nome) => (
-                          <div key={nome} className="flex items-center justify-between py-2 border-b last:border-0">
-                            <span className="text-sm">{nome}</span>
-                            <Switch defaultChecked />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Seção 2: Limites e Sensibilidades */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Limites e Sensibilidades</CardTitle>
-                    <CardDescription>Defina os limiares para disparo de alertas</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Tempo crítico de fila (minutos)</Label>
-                        <Input
-                          type="number"
-                          value={alertasConfig.fila_alta.limite}
-                          onChange={(e) =>
-                            setAlertasConfig({
-                              ...alertasConfig,
-                              fila_alta: { ...alertasConfig.fila_alta, limite: parseInt(e.target.value) },
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Tempo sem resposta (minutos)</Label>
-                        <Input
-                          value={alertasConfig.tempo_resposta_alto.limite}
-                          onChange={(e) =>
-                            setAlertasConfig({
-                              ...alertasConfig,
-                              tempo_resposta_alto: { ...alertasConfig.tempo_resposta_alto, limite: e.target.value },
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Sensibilidade de sentimento</Label>
-                        <div className="flex gap-2">
-                          {['Baixa', 'Média', 'Alta'].map((nivel) => (
-                            <Badge
-                              key={nivel}
-                              variant={nivel === 'Média' ? 'default' : 'outline'}
-                              className="cursor-pointer"
+                  <CardContent>
+                    <ScrollArea className="h-[520px] pr-4">
+                      <div className="space-y-4">
+                        {alertasMeta.map((alerta) => {
+                          const config = alertasConfig[alerta.id];
+                          return (
+                            <div
+                              key={alerta.id}
+                              className={`p-4 border rounded-lg space-y-4 transition-colors ${
+                                config.ativo ? "border-primary/30 bg-card" : "border-muted bg-muted/30 opacity-70"
+                              }`}
                             >
-                              {nivel}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Sensibilidade de pico de demanda</Label>
-                        <div className="flex gap-2">
-                          {['Baixa', 'Média', 'Alta'].map((nivel) => (
-                            <Badge
-                              key={nivel}
-                              variant={nivel === 'Média' ? 'default' : 'outline'}
-                              className="cursor-pointer"
-                            >
-                              {nivel}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                              {/* Header: título + toggle */}
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h4 className="font-semibold text-sm">{alerta.nome}</h4>
+                                  <p className="text-xs text-muted-foreground">{alerta.desc}</p>
+                                </div>
+                                <Switch
+                                  checked={config.ativo}
+                                  onCheckedChange={(checked) =>
+                                    setAlertasConfig({
+                                      ...alertasConfig,
+                                      [alerta.id]: { ...config, ativo: checked },
+                                    })
+                                  }
+                                />
+                              </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>NPS baixo para alerta (≤)</Label>
-                        <Input
-                          type="number"
-                          value={alertasConfig.nps_baixo.limite}
-                          onChange={(e) =>
-                            setAlertasConfig({
-                              ...alertasConfig,
-                              nps_baixo: { ...alertasConfig.nps_baixo, limite: parseInt(e.target.value) },
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>NPS alto para reconhecimento (≥)</Label>
-                        <Input type="number" defaultValue={9} />
-                      </div>
-                    </div>
+                              {/* Intensidade */}
+                              {config.ativo && (
+                                <>
+                                  <div className="space-y-1.5">
+                                    <Label className="text-xs text-muted-foreground">Intensidade</Label>
+                                    <div className="flex gap-2">
+                                      {(["leve", "moderado", "intenso"] as const).map((nivel) => (
+                                        <button
+                                          key={nivel}
+                                          onClick={() =>
+                                            setAlertasConfig({
+                                              ...alertasConfig,
+                                              [alerta.id]: { ...config, intensidade: nivel },
+                                            })
+                                          }
+                                          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors border ${
+                                            config.intensidade === nivel
+                                              ? "bg-primary/10 border-primary text-primary"
+                                              : "bg-background border-border text-muted-foreground hover:bg-muted"
+                                          }`}
+                                        >
+                                          {nivel.charAt(0).toUpperCase() + nivel.slice(1)}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
 
-                    <Button className="w-full gap-2">
-                      <Save className="h-4 w-4" />
-                      Salvar Configurações de Alertas
-                    </Button>
+                                  {/* Intervalo de disparo */}
+                                  <div className="space-y-1.5">
+                                    <Label className="text-xs text-muted-foreground">Disparar a cada</Label>
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        type="number"
+                                        min={1}
+                                        value={config.intervalo}
+                                        onChange={(e) =>
+                                          setAlertasConfig({
+                                            ...alertasConfig,
+                                            [alerta.id]: {
+                                              ...config,
+                                              intervalo: Math.max(1, parseInt(e.target.value) || 1),
+                                            },
+                                          })
+                                        }
+                                        className="w-20 h-8 text-sm"
+                                      />
+                                      <span className="text-xs text-muted-foreground">minutos</span>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+
+                    <div className="pt-4">
+                      <Button className="w-full gap-2">
+                        <Save className="h-4 w-4" />
+                        Salvar Configurações de Alertas
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
