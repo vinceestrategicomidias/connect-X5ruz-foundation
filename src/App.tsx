@@ -27,9 +27,10 @@ const App = () => {
               <ChamadaProvider>
                 <PacienteProvider>
                   <Routes>
+                    <Route path="/" element={<Login />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/" element={<Index />} />
+                    <Route path="/chat" element={<Index />} />
                     <Route path="/dashboard" element={<DashboardMonitoramento />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
