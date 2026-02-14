@@ -250,8 +250,8 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-background border-l shadow-2xl animate-in slide-in-from-right">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" onClick={onClose}>
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-background border-l shadow-2xl animate-in slide-in-from-right" onClick={(e) => e.stopPropagation()}>
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">

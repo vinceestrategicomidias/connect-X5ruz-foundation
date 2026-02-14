@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +22,9 @@ import { CheckCircle } from "lucide-react";
 interface FunilVendidoModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirmar: (dados: { valor_final: number; forma_pagamento: string }) => void;
+  onConfirmar: (dados: { valor_final: number; forma_pagamento: string; produto_servico?: string }) => void;
   valorOrcamento?: number;
+  produtoServico?: string;
 }
 
 export const FunilVendidoModal = ({
@@ -31,17 +32,28 @@ export const FunilVendidoModal = ({
   onOpenChange,
   onConfirmar,
   valorOrcamento,
+  produtoServico: produtoInicial,
 }: FunilVendidoModalProps) => {
   const [valorFinal, setValorFinal] = useState(valorOrcamento?.toString() || "");
   const [formaPagamento, setFormaPagamento] = useState("");
+  const [produto, setProduto] = useState(produtoInicial || "");
+
+  useEffect(() => {
+    if (open) {
+      setValorFinal(valorOrcamento?.toString() || "");
+      setProduto(produtoInicial || "");
+    }
+  }, [open, valorOrcamento, produtoInicial]);
 
   const handleConfirmar = () => {
     onConfirmar({
       valor_final: parseFloat(valorFinal) || 0,
       forma_pagamento: formaPagamento,
+      produto_servico: produto || undefined,
     });
     setValorFinal("");
     setFormaPagamento("");
+    setProduto("");
   };
 
   return (
@@ -56,6 +68,14 @@ export const FunilVendidoModal = ({
         </DialogHeader>
 
         <div className="space-y-3 py-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Produto/Serviço</Label>
+            <Input
+              value={produto}
+              onChange={(e) => setProduto(e.target.value)}
+              placeholder="Ex: Connect, CRM..."
+            />
+          </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Valor final fechado (R$) *</Label>
             <Input
@@ -73,11 +93,10 @@ export const FunilVendidoModal = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pix">PIX</SelectItem>
-                <SelectItem value="cartao_credito">Cartão de crédito</SelectItem>
-                <SelectItem value="cartao_debito">Cartão de débito</SelectItem>
+                <SelectItem value="cartao">Cartão</SelectItem>
                 <SelectItem value="boleto">Boleto</SelectItem>
-                <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                <SelectItem value="convenio">Convênio</SelectItem>
+                <SelectItem value="transferencia">Transferência</SelectItem>
+                <SelectItem value="nao_informado">Não informado</SelectItem>
               </SelectContent>
             </Select>
           </div>

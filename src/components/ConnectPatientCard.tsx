@@ -86,7 +86,8 @@ export const ConnectPatientCard = ({
   const isFinalizado = status === "finalizado";
   
   const tempoExibido = isEspera ? tempoNaFila : (isAndamento ? tempoSemResposta : 0);
-  const mostrarTempo = isEspera || isAndamento;
+  // Em "Meus Atend." (andamento): só exibir tempo quando há mensagens não lidas (badge > 0)
+  const mostrarTempo = isEspera || (isAndamento && (unread || 0) > 0);
   const mostrarBolinha = mostrarTempo && tempoExibido > 0;
   const avatarColor = getAvatarColor(name);
   
