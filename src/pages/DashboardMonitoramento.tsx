@@ -262,7 +262,12 @@ export default function DashboardMonitoramento() {
 
       {/* Indicadores principais */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <MetricCard icon={Users} label="Em atendimento" value={metrics.emAtendimento} />
+        <div 
+          className="cursor-pointer transition-transform hover:scale-105"
+          onClick={() => setMonitoramentoOpen(true)}
+        >
+          <MetricCard icon={Users} label="Em atendimento" value={metrics.emAtendimento} />
+        </div>
         <MetricCard icon={Clock} label="Na fila agora" value={metrics.naFila} alert={metrics.naFila > 25} />
         <MetricCard icon={Timer} label="TMA" value={`${metrics.tma.toFixed(1)} min`} alert={metrics.tma > 4} />
         <MetricCard icon={Timer} label="TME" value={`${metrics.tme.toFixed(1)} min`} alert={metrics.tme > 7} />
@@ -271,17 +276,6 @@ export default function DashboardMonitoramento() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <MetricCard icon={Target} label="SLA resposta" value={`${metrics.sla.toFixed(0)}%`} alert={metrics.sla < 85} />
         <MetricCard icon={Award} label="NPS médio hoje" value={metrics.nps.toFixed(0)} />
-        <MetricCard icon={Phone} label="Encerrados hoje" value={metrics.encerradosHoje} />
-        <div 
-          className="cursor-pointer transition-transform hover:scale-105"
-          onClick={() => setMonitoramentoOpen(true)}
-        >
-          <MetricCard icon={UserCheck} label="Atendentes online" value={metrics.atendentesOnline} />
-        </div>
-      </div>
-
-      {/* Status dos Atendentes - cards integrados ao grid */}
-      <div className="mb-6">
         <StatusAtendentesBlock onOpenMonitoramento={() => setMonitoramentoOpen(true)} />
       </div>
 
