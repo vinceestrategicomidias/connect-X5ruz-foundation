@@ -75,7 +75,7 @@ export const FunilClassificacaoModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-sm max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo orçamento para negociação</DialogTitle>
           <DialogDescription>
