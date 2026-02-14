@@ -203,13 +203,13 @@ export const ConnectColumn1 = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="espera" className="flex-1 mt-2">
+        <TabsContent value="espera" className="flex-1 mt-2 overflow-hidden">
           <PacientesLista status="fila" config={config} ordenacao={ordenacaoFila} />
         </TabsContent>
-        <TabsContent value="andamento" className="flex-1 mt-2">
+        <TabsContent value="andamento" className="flex-1 mt-2 overflow-hidden">
           <PacientesLista status="em_atendimento" config={config} ordenacao="decrescente" />
         </TabsContent>
-        <TabsContent value="finalizados" className="flex-1 mt-2">
+        <TabsContent value="finalizados" className="flex-1 mt-2 overflow-hidden">
           <PacientesLista status="finalizado" config={config} ordenacao="decrescente" />
         </TabsContent>
       </Tabs>
@@ -306,7 +306,7 @@ const PacientesLista = ({
     };
 
     return (
-      <ScrollArea className="h-full px-4">
+      <ScrollArea className="h-full px-4 [&>[data-radix-scroll-area-viewport]+div>div[data-orientation=vertical]]:!opacity-100">
         <div className="flex items-center justify-center h-64">
           <p className="text-sm text-muted-foreground text-center">{mensagens[status]}</p>
         </div>
@@ -417,7 +417,7 @@ const PacientesLista = ({
   };
 
   return (
-    <ScrollArea className="h-full px-4">
+    <ScrollArea className="h-full px-4 [&>[data-radix-scroll-area-viewport]+div>div[data-orientation=vertical]]:!opacity-100">
       <div className="space-y-2">
         {pacientesOrdenados.map((paciente) => {
           const tempoFila = getTempoNaFila(paciente.nome, paciente.tempo_na_fila || 0);
