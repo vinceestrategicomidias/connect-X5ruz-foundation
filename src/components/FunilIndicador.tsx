@@ -57,7 +57,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
     );
   };
 
-  const handleVendido = (dados: { valor_final: number; forma_pagamento: string }) => {
+  const handleVendido = (dados: { valor_final: number; forma_pagamento: string; produto_servico?: string }) => {
     atualizarEtapa.mutate(
       {
         leadId: lead.id,
@@ -89,6 +89,17 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
 
   const formatDate = (d: string) => {
     try { return format(new Date(d), "dd/MM/yyyy HH:mm"); } catch { return d; }
+  };
+
+  const formatPagamento = (p: string | null) => {
+    if (!p) return null;
+    const map: Record<string, string> = {
+      pix: "PIX", cartao: "Cartão", boleto: "Boleto",
+      transferencia: "Transferência", nao_informado: "Não informado",
+      cartao_credito: "Cartão de crédito", cartao_debito: "Cartão de débito",
+      dinheiro: "Dinheiro", convenio: "Convênio",
+    };
+    return map[p] || p;
   };
 
   const renderTooltipContent = () => {
@@ -206,10 +217,22 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
                       {/* Vendido details */}
                       {lead.etapa === "vendido" && (
                         <div className="border-t border-border/50 pt-2 mt-2 space-y-1.5">
+                          <p className="font-medium text-green-600">✅ Vendido</p>
+                          {lead.produto_servico && (
+                            <div className="flex items-center gap-1.5">
+                              <ShoppingCart className="h-3 w-3 shrink-0 text-green-600" />
+                              <span>Produto: <span className="font-medium">{lead.produto_servico}</span></span>
+                            </div>
+                          )}
                           {lead.valor_final != null && (
                             <p className="text-green-600 font-medium">
                               Valor fechado: {formatCurrency(lead.valor_final)}
                             </p>
+                          )}
+                          {lead.forma_pagamento && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <span>Pagamento: <span className="font-medium">{formatPagamento(lead.forma_pagamento)}</span></span>
+                            </div>
                           )}
                           {lead.fechado_por_nome && (
                             <div className="flex items-center gap-1.5">
@@ -229,6 +252,17 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
                       {/* Perdido details */}
                       {lead.etapa === "perdido" && (
                         <div className="border-t border-border/50 pt-2 mt-2 space-y-1.5">
+                          <p className="font-medium text-destructive">❌ Perdido</p>
+                          {lead.produto_servico && (
+                            <div className="flex items-center gap-1.5">
+                              <ShoppingCart className="h-3 w-3 shrink-0" />
+                              <span>Produto orçado: <span className="font-medium">{lead.produto_servico}</span></span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <ShoppingCart className="h-3 w-3 shrink-0" />
+                            <span>Valor orçado: {formatCurrency(lead.valor_orcamento)}</span>
+                          </div>
                           {lead.motivo_perda && (
                             <div className="flex items-center gap-1.5 text-destructive">
                               <XCircle className="h-3 w-3 shrink-0" />
@@ -239,6 +273,12 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
                             <div className="flex items-center gap-1.5">
                               <User className="h-3 w-3 shrink-0 text-destructive" />
                               <span>Classificado por: <span className="font-medium">{lead.perdido_por_nome}</span></span>
+                            </div>
+                          )}
+                          {lead.data_fechamento && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <CalendarClock className="h-3 w-3 shrink-0" />
+                              <span>Data: {formatDate(lead.data_fechamento)}</span>
                             </div>
                           )}
                         </div>
@@ -301,6 +341,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
         onOpenChange={setVendidoOpen}
         onConfirmar={handleVendido}
         valorOrcamento={lead.valor_orcamento}
+        produtoServico={lead.produto_servico}
       />
 
       <FunilPerdidoModal
