@@ -346,6 +346,7 @@ const PacientesLista = ({
       "Pedro Oliveira": "08:41",
       "Ricardo Fernandes": "08:28",
       "Vanessa Lima": "08:10",
+      "Beatriz Monteiro": "08:14",
       "Thiago Mendes": "07:52",
       "Fernanda Souza": "08:15",
       "Carlos Eduardo": "08:33",
@@ -411,6 +412,7 @@ const PacientesLista = ({
       "Pedro Oliveira": "Olá, preciso de informações",
       "Ricardo Fernandes": "Consegue me enviar a proposta com desconto?",
       "Vanessa Lima": "Qual a forma de pagamento para confirmar hoje?",
+      "Beatriz Monteiro": "Perfeito, vou aguardar então!",
     };
     
     if (previasEspecificas[nome]) {
@@ -428,6 +430,7 @@ const PacientesLista = ({
       "Pedro Oliveira": 5,
       "Ricardo Fernandes": 8,
       "Vanessa Lima": 15,
+      "Beatriz Monteiro": 3,
     };
     
     if (temposEspecificosAtendimento[paciente.nome] !== undefined) {
