@@ -207,7 +207,7 @@ export default function DashboardMonitoramento() {
       {/* Header com filtros */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/chat")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
