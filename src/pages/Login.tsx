@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, MessageSquare, Users, BarChart3, Shield, Sparkles, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, MessageSquare, Users, BarChart3, Shield, Sparkles, Mail, Lock, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -100,8 +100,23 @@ export default function Login() {
     }
   };
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "linear-gradient(135deg, hsl(210 79% 8%) 0%, hsl(210 79% 14%) 50%, hsl(214 60% 18%) 100%)" }}>
+    <div className="min-h-screen flex items-center justify-center p-6 relative" style={{ background: "linear-gradient(135deg, hsl(210 79% 8%) 0%, hsl(210 79% 14%) 50%, hsl(214 60% 18%) 100%)" }}>
+      <button
+        onClick={toggleFullscreen}
+        className="absolute top-4 right-4 z-10 p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+        title="Tela cheia"
+      >
+        <Maximize2 className="w-4 h-4 text-white/50 hover:text-white/80" />
+      </button>
       <div className="w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
         {/* LEFT COLUMN – Marketing */}
