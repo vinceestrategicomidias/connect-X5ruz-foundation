@@ -117,7 +117,7 @@ const mockData = {
   ],
   funilVendas: [
     { etapa: "Leads", valor: 2847, fill: "#0A2647" },
-    { etapa: "Qualificados", valor: 1823, fill: "#144272" },
+    
     { etapa: "Orçamento", valor: 847, fill: "#205295" },
     { etapa: "Negociação", valor: 523, fill: "#2C74B3" },
     { etapa: "Fechados", valor: 312, fill: "#3B82F6" },
