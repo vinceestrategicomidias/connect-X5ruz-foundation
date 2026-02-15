@@ -1,7 +1,16 @@
 import { useState } from "react";
-import { 
-  X, Plus, Trash2, Save, Pencil, GripVertical, 
-  ChevronDown, ChevronUp, MessageSquare, GitBranch, AlertTriangle
+import {
+  X,
+  Plus,
+  Trash2,
+  Save,
+  Pencil,
+  GripVertical,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  GitBranch,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,20 +20,8 @@ import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter 
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -146,11 +143,13 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
     setFormNome("");
     setFormSetor("");
     setFormNumeracao(true);
-    setFormGrupos([{
-      id: `g-${Date.now()}`,
-      titulo: "",
-      mensagens: [],
-    }]);
+    setFormGrupos([
+      {
+        id: `g-${Date.now()}`,
+        titulo: "",
+        mensagens: [],
+      },
+    ]);
     setFormObjecoes([]);
     setFormHabilitarObjecoes(false);
     setEditorOpen(true);
@@ -173,8 +172,8 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
       return;
     }
 
-    const setorNome = setoresMock.find(s => s.id === formSetor)?.nome || "";
-    
+    const setorNome = setoresMock.find((s) => s.id === formSetor)?.nome || "";
+
     const novoRoteiro: Roteiro = {
       id: roteiroEditando?.id || `r-${Date.now()}`,
       nome: formNome,
@@ -187,7 +186,7 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
     };
 
     if (roteiroEditando) {
-      setRoteiros(roteiros.map(r => r.id === roteiroEditando.id ? novoRoteiro : r));
+      setRoteiros(roteiros.map((r) => (r.id === roteiroEditando.id ? novoRoteiro : r)));
       toast.success("Roteiro atualizado com sucesso!");
     } else {
       setRoteiros([...roteiros, novoRoteiro]);
@@ -198,30 +197,33 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
   };
 
   const handleExcluirRoteiro = (id: string) => {
-    setRoteiros(roteiros.filter(r => r.id !== id));
+    setRoteiros(roteiros.filter((r) => r.id !== id));
     toast.success("Roteiro excluído");
   };
 
   // Grupo handlers
   const handleAdicionarGrupo = () => {
-    setFormGrupos([...formGrupos, {
-      id: `g-${Date.now()}`,
-      titulo: "",
-      mensagens: [],
-    }]);
+    setFormGrupos([
+      ...formGrupos,
+      {
+        id: `g-${Date.now()}`,
+        titulo: "",
+        mensagens: [],
+      },
+    ]);
   };
 
   const handleRemoverGrupo = (grupoId: string) => {
-    setFormGrupos(formGrupos.filter(g => g.id !== grupoId));
+    setFormGrupos(formGrupos.filter((g) => g.id !== grupoId));
   };
 
   const handleAtualizarTituloGrupo = (grupoId: string, titulo: string) => {
-    setFormGrupos(formGrupos.map(g => g.id === grupoId ? { ...g, titulo } : g));
+    setFormGrupos(formGrupos.map((g) => (g.id === grupoId ? { ...g, titulo } : g)));
   };
 
   // Mensagem handlers
   const handleAdicionarMensagem = (grupoId: string) => {
-    const grupo = formGrupos.find(g => g.id === grupoId);
+    const grupo = formGrupos.find((g) => g.id === grupoId);
     if (!grupo) return;
 
     const novaMensagem: Mensagem = {
@@ -231,54 +233,55 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
       tipo: "mensagem_simples",
     };
 
-    setFormGrupos(formGrupos.map(g => 
-      g.id === grupoId 
-        ? { ...g, mensagens: [...g.mensagens, novaMensagem] }
-        : g
-    ));
+    setFormGrupos(formGrupos.map((g) => (g.id === grupoId ? { ...g, mensagens: [...g.mensagens, novaMensagem] } : g)));
   };
 
   const handleRemoverMensagem = (grupoId: string, mensagemId: string) => {
-    setFormGrupos(formGrupos.map(g => 
-      g.id === grupoId 
-        ? { 
-            ...g, 
-            mensagens: g.mensagens
-              .filter(m => m.id !== mensagemId)
-              .map((m, idx) => ({ ...m, numero: formNumeracao ? idx + 1 : undefined }))
-          }
-        : g
-    ));
+    setFormGrupos(
+      formGrupos.map((g) =>
+        g.id === grupoId
+          ? {
+              ...g,
+              mensagens: g.mensagens
+                .filter((m) => m.id !== mensagemId)
+                .map((m, idx) => ({ ...m, numero: formNumeracao ? idx + 1 : undefined })),
+            }
+          : g,
+      ),
+    );
   };
 
   const handleAtualizarMensagem = (grupoId: string, mensagemId: string, updates: Partial<Mensagem>) => {
-    setFormGrupos(formGrupos.map(g => 
-      g.id === grupoId 
-        ? { 
-            ...g, 
-            mensagens: g.mensagens.map(m => 
-              m.id === mensagemId ? { ...m, ...updates } : m
-            )
-          }
-        : g
-    ));
+    setFormGrupos(
+      formGrupos.map((g) =>
+        g.id === grupoId
+          ? {
+              ...g,
+              mensagens: g.mensagens.map((m) => (m.id === mensagemId ? { ...m, ...updates } : m)),
+            }
+          : g,
+      ),
+    );
   };
 
   // Objecao handlers
   const handleAdicionarObjecao = () => {
-    setFormObjecoes([...formObjecoes, {
-      id: `o-${Date.now()}`,
-      nome: "",
-      resposta: "",
-    }]);
+    setFormObjecoes([
+      ...formObjecoes,
+      {
+        id: `o-${Date.now()}`,
+        nome: "",
+        resposta: "",
+      },
+    ]);
   };
 
   const handleRemoverObjecao = (id: string) => {
-    setFormObjecoes(formObjecoes.filter(o => o.id !== id));
+    setFormObjecoes(formObjecoes.filter((o) => o.id !== id));
   };
 
   const handleAtualizarObjecao = (id: string, updates: Partial<Objecao>) => {
-    setFormObjecoes(formObjecoes.map(o => o.id === id ? { ...o, ...updates } : o));
+    setFormObjecoes(formObjecoes.map((o) => (o.id === id ? { ...o, ...updates } : o)));
   };
 
   const toggleGroupExpanded = (grupoId: string) => {
@@ -292,21 +295,22 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
   };
 
   // Group by setor
-  const roteirosPorSetor = roteiros.reduce((acc, roteiro) => {
-    if (!acc[roteiro.setorNome]) {
-      acc[roteiro.setorNome] = [];
-    }
-    acc[roteiro.setorNome].push(roteiro);
-    return acc;
-  }, {} as Record<string, Roteiro[]>);
+  const roteirosPorSetor = roteiros.reduce(
+    (acc, roteiro) => {
+      if (!acc[roteiro.setorNome]) {
+        acc[roteiro.setorNome] = [];
+      }
+      acc[roteiro.setorNome].push(roteiro);
+      return acc;
+    },
+    {} as Record<string, Roteiro[]>,
+  );
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-[#0A2647]">
-          Roteiros de Atendimento
-        </h3>
+        <h3 className="text-2xl font-bold text-[#0A2647]">Roteiros de Atendimento</h3>
         <Button onClick={handleNovoRoteiro} className="bg-[#0A2647] hover:bg-[#144272]">
           <Plus className="h-4 w-4 mr-2" />
           Criar Roteiro
@@ -323,9 +327,9 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                 Setor: {setor}
               </h4>
               <div className="space-y-3">
-                {roteirosSetor.map(roteiro => (
-                  <div 
-                    key={roteiro.id} 
+                {roteirosSetor.map((roteiro) => (
+                  <div
+                    key={roteiro.id}
                     className="p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -350,28 +354,24 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                           )}
                         </div>
                         <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                          {roteiro.grupos.slice(0, 3).map(g => (
-                            <li key={g.id} className="truncate">{g.titulo || "Grupo sem título"}</li>
+                          {roteiro.grupos.slice(0, 3).map((g) => (
+                            <li key={g.id} className="truncate">
+                              {g.titulo || "Grupo sem título"}
+                            </li>
                           ))}
                           {roteiro.grupos.length > 3 && (
-                            <li className="text-muted-foreground/60">
-                              + {roteiro.grupos.length - 3} grupos...
-                            </li>
+                            <li className="text-muted-foreground/60">+ {roteiro.grupos.length - 3} grupos...</li>
                           )}
                         </ol>
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleEditarRoteiro(roteiro)}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => handleEditarRoteiro(roteiro)}>
                           <Pencil className="h-3 w-3 mr-1" />
                           Editar
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="text-destructive hover:text-destructive"
                           onClick={() => handleExcluirRoteiro(roteiro.id)}
                         >
@@ -389,9 +389,7 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
             <Card className="p-12 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <p className="text-muted-foreground">Nenhum roteiro cadastrado.</p>
-              <p className="text-sm text-muted-foreground/60 mt-1">
-                Clique em "Criar Roteiro" para começar.
-              </p>
+              <p className="text-sm text-muted-foreground/60 mt-1">Clique em "Criar Roteiro" para começar.</p>
             </Card>
           )}
         </div>
@@ -401,9 +399,7 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 overflow-hidden">
           <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
-            <DialogTitle>
-              {roteiroEditando ? "Editar Roteiro" : "Criar Novo Roteiro"}
-            </DialogTitle>
+            <DialogTitle>{roteiroEditando ? "Editar Roteiro" : "Criar Novo Roteiro"}</DialogTitle>
           </DialogHeader>
 
           <ScrollArea className="flex-1 max-h-[calc(90vh-140px)]">
@@ -416,7 +412,7 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                     id="nome"
                     placeholder="Ex.: Roteiro Pré-venda – Particular"
                     value={formNome}
-                    onChange={e => setFormNome(e.target.value)}
+                    onChange={(e) => setFormNome(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -426,7 +422,7 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                       <SelectValue placeholder="Selecione o setor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {setoresMock.map(setor => (
+                      {setoresMock.map((setor) => (
                         <SelectItem key={setor.id} value={setor.id}>
                           {setor.nome}
                         </SelectItem>
@@ -444,10 +440,7 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                     Exibir número sequencial em cada mensagem (01, 02, 03...)
                   </p>
                 </div>
-                <Switch 
-                  checked={formNumeracao} 
-                  onCheckedChange={setFormNumeracao}
-                />
+                <Switch checked={formNumeracao} onCheckedChange={setFormNumeracao} />
               </div>
 
               {/* Grupos de mensagens */}
@@ -469,14 +462,10 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                         <Input
                           placeholder="Título do grupo (Ex.: Boas-vindas e qualificação)"
                           value={grupo.titulo}
-                          onChange={e => handleAtualizarTituloGrupo(grupo.id, e.target.value)}
+                          onChange={(e) => handleAtualizarTituloGrupo(grupo.id, e.target.value)}
                           className="flex-1"
                         />
-                        <Button 
-                          size="icon" 
-                          variant="ghost"
-                          onClick={() => toggleGroupExpanded(grupo.id)}
-                        >
+                        <Button size="icon" variant="ghost" onClick={() => toggleGroupExpanded(grupo.id)}>
                           {expandedGroups.has(grupo.id) ? (
                             <ChevronUp className="h-4 w-4" />
                           ) : (
@@ -484,9 +473,9 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                           )}
                         </Button>
                         {formGrupos.length > 1 && (
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
+                          <Button
+                            size="icon"
+                            variant="ghost"
                             className="text-destructive hover:text-destructive"
                             onClick={() => handleRemoverGrupo(grupo.id)}
                           >
@@ -504,13 +493,13 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                                 <div className="flex items-start gap-3">
                                   {formNumeracao && (
                                     <Badge variant="outline" className="mt-1 flex-shrink-0">
-                                      {String(mensagem.numero).padStart(2, '0')}
+                                      {String(mensagem.numero).padStart(2, "0")}
                                     </Badge>
                                   )}
                                   <div className="flex-1 space-y-2">
-                                    <Select 
+                                    <Select
                                       value={mensagem.tipo}
-                                      onValueChange={(value: "mensagem_simples" | "mensagem_com_dupla_escolha") => 
+                                      onValueChange={(value: "mensagem_simples" | "mensagem_com_dupla_escolha") =>
                                         handleAtualizarMensagem(grupo.id, mensagem.id, { tipo: value })
                                       }
                                     >
@@ -537,7 +526,9 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                                       <Textarea
                                         placeholder="Digite o texto da mensagem..."
                                         value={mensagem.texto}
-                                        onChange={e => handleAtualizarMensagem(grupo.id, mensagem.id, { texto: e.target.value })}
+                                        onChange={(e) =>
+                                          handleAtualizarMensagem(grupo.id, mensagem.id, { texto: e.target.value })
+                                        }
                                         rows={2}
                                       />
                                     ) : (
@@ -545,28 +536,40 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                                         <Input
                                           placeholder="Pergunta base (Ex.: Qual opção se aplica?)"
                                           value={mensagem.perguntaBase || ""}
-                                          onChange={e => handleAtualizarMensagem(grupo.id, mensagem.id, { perguntaBase: e.target.value })}
+                                          onChange={(e) =>
+                                            handleAtualizarMensagem(grupo.id, mensagem.id, {
+                                              perguntaBase: e.target.value,
+                                            })
+                                          }
                                         />
                                         <div className="grid grid-cols-2 gap-3">
                                           <div className="space-y-2">
                                             <Input
                                               placeholder="Opção 1 (Ex.: Particular)"
                                               value={mensagem.opcao1 || ""}
-                                              onChange={e => handleAtualizarMensagem(grupo.id, mensagem.id, { opcao1: e.target.value })}
+                                              onChange={(e) =>
+                                                handleAtualizarMensagem(grupo.id, mensagem.id, {
+                                                  opcao1: e.target.value,
+                                                })
+                                              }
                                             />
-                                            <Select 
+                                            <Select
                                               value={mensagem.grupoOpcao1 || ""}
-                                              onValueChange={value => handleAtualizarMensagem(grupo.id, mensagem.id, { grupoOpcao1: value })}
+                                              onValueChange={(value) =>
+                                                handleAtualizarMensagem(grupo.id, mensagem.id, { grupoOpcao1: value })
+                                              }
                                             >
                                               <SelectTrigger className="text-xs">
-                                                <SelectValue placeholder="Vincular grupo..." />
+                                                <Input placeholder="Vincular grupo..." />
                                               </SelectTrigger>
                                               <SelectContent>
-                                                {formGrupos.filter(g => g.id !== grupo.id).map(g => (
-                                                  <SelectItem key={g.id} value={g.id}>
-                                                    {g.titulo || "Grupo sem título"}
-                                                  </SelectItem>
-                                                ))}
+                                                {formGrupos
+                                                  .filter((g) => g.id !== grupo.id)
+                                                  .map((g) => (
+                                                    <SelectItem key={g.id} value={g.id}>
+                                                      {g.titulo || "Grupo sem título"}
+                                                    </SelectItem>
+                                                  ))}
                                               </SelectContent>
                                             </Select>
                                           </div>
@@ -574,21 +577,29 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                                             <Input
                                               placeholder="Opção 2 (Ex.: Convênio)"
                                               value={mensagem.opcao2 || ""}
-                                              onChange={e => handleAtualizarMensagem(grupo.id, mensagem.id, { opcao2: e.target.value })}
+                                              onChange={(e) =>
+                                                handleAtualizarMensagem(grupo.id, mensagem.id, {
+                                                  opcao2: e.target.value,
+                                                })
+                                              }
                                             />
-                                            <Select 
+                                            <Select
                                               value={mensagem.grupoOpcao2 || ""}
-                                              onValueChange={value => handleAtualizarMensagem(grupo.id, mensagem.id, { grupoOpcao2: value })}
+                                              onValueChange={(value) =>
+                                                handleAtualizarMensagem(grupo.id, mensagem.id, { grupoOpcao2: value })
+                                              }
                                             >
                                               <SelectTrigger className="text-xs">
-                                                <SelectValue placeholder="Vincular grupo..." />
+                                                <Input placeholder="Vincular grupo..." />
                                               </SelectTrigger>
                                               <SelectContent>
-                                                {formGrupos.filter(g => g.id !== grupo.id).map(g => (
-                                                  <SelectItem key={g.id} value={g.id}>
-                                                    {g.titulo || "Grupo sem título"}
-                                                  </SelectItem>
-                                                ))}
+                                                {formGrupos
+                                                  .filter((g) => g.id !== grupo.id)
+                                                  .map((g) => (
+                                                    <SelectItem key={g.id} value={g.id}>
+                                                      {g.titulo || "Grupo sem título"}
+                                                    </SelectItem>
+                                                  ))}
                                               </SelectContent>
                                             </Select>
                                           </div>
@@ -596,9 +607,9 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                                       </div>
                                     )}
                                   </div>
-                                  <Button 
-                                    size="icon" 
-                                    variant="ghost" 
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
                                     className="text-destructive hover:text-destructive flex-shrink-0"
                                     onClick={() => handleRemoverMensagem(grupo.id, mensagem.id)}
                                   >
@@ -609,9 +620,9 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                             </Card>
                           ))}
 
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => handleAdicionarMensagem(grupo.id)}
                             className="w-full"
                           >
@@ -632,38 +643,33 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                     <AlertTriangle className="h-5 w-5 text-orange-600" />
                     <div>
                       <Label>Bloco de Objeções</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Mensagens prontas para contornar objeções comuns
-                      </p>
+                      <p className="text-sm text-muted-foreground">Mensagens prontas para contornar objeções comuns</p>
                     </div>
                   </div>
-                  <Switch 
-                    checked={formHabilitarObjecoes} 
-                    onCheckedChange={setFormHabilitarObjecoes}
-                  />
+                  <Switch checked={formHabilitarObjecoes} onCheckedChange={setFormHabilitarObjecoes} />
                 </div>
 
                 {formHabilitarObjecoes && (
                   <div className="space-y-3 pl-4">
-                    {formObjecoes.map(objecao => (
+                    {formObjecoes.map((objecao) => (
                       <Card key={objecao.id} className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="flex-1 space-y-2">
                             <Input
                               placeholder="Nome da objeção (Ex.: Financeiro)"
                               value={objecao.nome}
-                              onChange={e => handleAtualizarObjecao(objecao.id, { nome: e.target.value })}
+                              onChange={(e) => handleAtualizarObjecao(objecao.id, { nome: e.target.value })}
                             />
                             <Textarea
                               placeholder="Resposta para contornar..."
                               value={objecao.resposta}
-                              onChange={e => handleAtualizarObjecao(objecao.id, { resposta: e.target.value })}
+                              onChange={(e) => handleAtualizarObjecao(objecao.id, { resposta: e.target.value })}
                               rows={2}
                             />
                           </div>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
+                          <Button
+                            size="icon"
+                            variant="ghost"
                             className="text-destructive hover:text-destructive"
                             onClick={() => handleRemoverObjecao(objecao.id)}
                           >
@@ -673,11 +679,7 @@ export const EditorRoteirosPanel = ({ onClose }: EditorRoteirosPanelProps) => {
                       </Card>
                     ))}
 
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={handleAdicionarObjecao}
-                    >
+                    <Button size="sm" variant="outline" onClick={handleAdicionarObjecao}>
                       <Plus className="h-4 w-4 mr-1" />
                       Adicionar Objeção
                     </Button>
