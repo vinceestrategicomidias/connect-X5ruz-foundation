@@ -56,13 +56,13 @@ import { RelatoriosInteligentesPanel } from "./RelatoriosInteligentesPanel";
 import { CentralIdeiasPanel } from "./CentralIdeiasPanel";
 import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type SecaoPainel =
   | "dashboards"
   | "roteiros"
   | "relatorios"
   | "nps"
-  | "alertas"
   | "preditiva"
   | "feedback"
   | "indicadores"
@@ -82,7 +82,6 @@ const menuItems: MenuItem[] = [
   { id: "dashboards", label: "Dashboards", icon: LayoutGrid },
   { id: "roteiros", label: "Roteiros", icon: FileText },
   { id: "nps", label: "Net Promoter Score (NPS)", icon: ThumbsUp },
-  { id: "alertas", label: "Alertas", icon: Bell },
   { id: "preditiva", label: "Thalí Preditiva", icon: TrendingUp },
   { id: "feedback", label: "Feedback da Thalí", icon: MessageSquare },
   { id: "indicadores", label: "Indicadores", icon: Activity },
@@ -580,7 +579,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
           </div>
         );
 
-      case "alertas": {
+      case "preditiva": {
         const setoresUnicos = Array.from(new Set(
           dadosEmpresaGrande.alertas.map(a => a.setor).filter(Boolean)
         ));
@@ -593,107 +592,111 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
         return (
           <div className="space-y-6">
-            <SectionHeader icon={Bell} title="Alertas Automáticos da Thalí" />
+            <SectionHeader icon={TrendingUp} title="Thalí Preditiva" />
 
-            <FilterBar>
-              <Select value={filtroAlertaSetor} onValueChange={setFiltroAlertaSetor}>
-                <SelectTrigger className="w-44 h-8 text-xs">
-                  <SelectValue placeholder="Filtrar por setor" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os setores</SelectItem>
-                  {setoresUnicos.map((setor) => (
-                    <SelectItem key={setor} value={setor!}>{setor}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={filtroAlertaTipo} onValueChange={setFiltroAlertaTipo}>
-                <SelectTrigger className="w-44 h-8 text-xs">
-                  <SelectValue placeholder="Filtrar por tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os tipos</SelectItem>
-                  {Array.from(new Set(dadosEmpresaGrande.alertas.map(a => a.tipo))).map((tipo) => (
-                    <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FilterBar>
+            <Tabs defaultValue="analise" className="w-full">
+              <TabsList className="mb-5">
+                <TabsTrigger value="analise" className="text-xs">Análise Preditiva</TabsTrigger>
+                <TabsTrigger value="alertas" className="text-xs">Alertas</TabsTrigger>
+              </TabsList>
 
-            <div className="space-y-3">
-              {alertasFiltrados.length > 0 ? alertasFiltrados.map((alerta, idx) => (
-                <Card
-                  key={idx}
-                  className={cn(
-                    "p-4 border-l-[3px] border-border/60",
-                    alerta.cor === "red" && "border-l-destructive bg-destructive/5",
-                    alerta.cor === "orange" && "border-l-warning bg-warning/5",
-                    alerta.cor === "yellow" && "border-l-warning bg-warning/5"
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                      alerta.cor === "red" && "bg-destructive/10",
-                      alerta.cor === "orange" && "bg-warning/10",
-                      alerta.cor === "yellow" && "bg-warning/10"
-                    )}>
-                      <Bell className={cn(
-                        "h-4 w-4",
-                        alerta.cor === "red" && "text-destructive",
-                        alerta.cor === "orange" && "text-warning",
-                        alerta.cor === "yellow" && "text-warning"
-                      )} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-foreground mb-0.5">
-                        {alerta.tipo}
-                        {alerta.setor && ` · ${alerta.setor}`}
-                        {alerta.atendente && ` · ${alerta.atendente}`}
-                      </h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{alerta.detalhes}</p>
-                    </div>
+              <TabsContent value="analise" className="space-y-6 mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <MetricCard label="Horário de Pico Previsto" value={dadosEmpresaGrande.preditiva.horarioPicoPrevisto} accent />
+                  <MetricCard label="Volume Esperado Hoje" value={dadosEmpresaGrande.preditiva.volumeEsperadoHoje} />
+                  <MetricCard label="Setor Mais Demandado" value={dadosEmpresaGrande.preditiva.setorMaisDemandado} />
+                </div>
+
+                <Card className="p-5 border-border/60">
+                  <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-warning" />
+                    Recomendações da Thalí
+                  </h4>
+                  <div className="space-y-2.5">
+                    {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, idx) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-muted/15 border border-border/30">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-[10px] font-bold text-primary">{idx + 1}</span>
+                        </div>
+                        <p className="text-xs text-foreground leading-relaxed flex-1">{rec}</p>
+                      </div>
+                    ))}
                   </div>
                 </Card>
-              )) : (
-                <div className="text-center py-12 text-sm text-muted-foreground">
-                  Nenhum alerta encontrado com os filtros selecionados
+              </TabsContent>
+
+              <TabsContent value="alertas" className="space-y-6 mt-0">
+                <FilterBar>
+                  <Select value={filtroAlertaSetor} onValueChange={setFiltroAlertaSetor}>
+                    <SelectTrigger className="w-44 h-8 text-xs">
+                      <SelectValue placeholder="Filtrar por setor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os setores</SelectItem>
+                      {setoresUnicos.map((setor) => (
+                        <SelectItem key={setor} value={setor!}>{setor}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filtroAlertaTipo} onValueChange={setFiltroAlertaTipo}>
+                    <SelectTrigger className="w-44 h-8 text-xs">
+                      <SelectValue placeholder="Filtrar por tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os tipos</SelectItem>
+                      {Array.from(new Set(dadosEmpresaGrande.alertas.map(a => a.tipo))).map((tipo) => (
+                        <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FilterBar>
+
+                <div className="space-y-3">
+                  {alertasFiltrados.length > 0 ? alertasFiltrados.map((alerta, idx) => (
+                    <Card
+                      key={idx}
+                      className={cn(
+                        "p-4 border-l-[3px] border-border/60",
+                        alerta.cor === "red" && "border-l-destructive bg-destructive/5",
+                        alerta.cor === "orange" && "border-l-warning bg-warning/5",
+                        alerta.cor === "yellow" && "border-l-warning bg-warning/5"
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+                          alerta.cor === "red" && "bg-destructive/10",
+                          alerta.cor === "orange" && "bg-warning/10",
+                          alerta.cor === "yellow" && "bg-warning/10"
+                        )}>
+                          <Bell className={cn(
+                            "h-4 w-4",
+                            alerta.cor === "red" && "text-destructive",
+                            alerta.cor === "orange" && "text-warning",
+                            alerta.cor === "yellow" && "text-warning"
+                          )} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-foreground mb-0.5">
+                            {alerta.tipo}
+                            {alerta.setor && ` · ${alerta.setor}`}
+                            {alerta.atendente && ` · ${alerta.atendente}`}
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{alerta.detalhes}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  )) : (
+                    <div className="text-center py-12 text-sm text-muted-foreground">
+                      Nenhum alerta encontrado com os filtros selecionados
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </TabsContent>
+            </Tabs>
           </div>
         );
       }
-
-      case "preditiva":
-        return (
-          <div className="space-y-6">
-            <SectionHeader icon={TrendingUp} title="Análise Preditiva da Thalí" />
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <MetricCard label="Horário de Pico Previsto" value={dadosEmpresaGrande.preditiva.horarioPicoPrevisto} accent />
-              <MetricCard label="Volume Esperado Hoje" value={dadosEmpresaGrande.preditiva.volumeEsperadoHoje} />
-              <MetricCard label="Setor Mais Demandado" value={dadosEmpresaGrande.preditiva.setorMaisDemandado} />
-            </div>
-
-            <Card className="p-5 border-border/60">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-warning" />
-                Recomendações da Thalí
-              </h4>
-              <div className="space-y-2.5">
-                {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-muted/15 border border-border/30">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-[10px] font-bold text-primary">{idx + 1}</span>
-                    </div>
-                    <p className="text-xs text-foreground leading-relaxed flex-1">{rec}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        );
 
       case "feedback":
         return (
