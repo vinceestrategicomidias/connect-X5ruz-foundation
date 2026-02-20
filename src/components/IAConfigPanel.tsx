@@ -2,9 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,13 +32,6 @@ export const IAConfigPanel = () => {
   const [observacoesOpen, setObservacoesOpen] = useState(false);
   const [observacoesNivel, setObservacoesNivel] = useState("");
   const [concordoRegras, setConcordoRegras] = useState(true);
-  const [alertasAtivos, setAlertasAtivos] = useState({
-    fila_alta: true,
-    nps_baixo: true,
-    sem_resposta: true,
-    tma_acima: true,
-    ligacao_perdida: true,
-  });
 
   useEffect(() => {
     if (config) {
@@ -66,26 +57,16 @@ export const IAConfigPanel = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Brain className="h-6 w-6 text-primary" />
-          Configurações da Thalí
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Configure como a Thalí irá auxiliar nos atendimentos
-        </p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Status e Nível de Atuação</CardTitle>
+    <div className="space-y-5">
+      <Card className="border-border/60">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Status e Nível de Atuação</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-base">Thalí Ativa</Label>
-              <p className="text-sm text-muted-foreground">Ativar/desativar todos os módulos da Thalí</p>
+              <Label className="text-xs font-medium">Thalí Ativa</Label>
+              <p className="text-[10px] text-muted-foreground">Ativar/desativar todos os módulos da Thalí</p>
             </div>
             <Switch
               checked={formData.ia_ativa}
@@ -97,17 +78,17 @@ export const IAConfigPanel = () => {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Nível de Atuação</Label>
+              <Label className="text-xs font-medium">Nível de Atuação</Label>
               <Dialog open={observacoesOpen} onOpenChange={setObservacoesOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 gap-1">
+                  <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1">
                     <Plus className="h-3 w-3" />
                     Observações
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Observações para {formData.nivel_atuacao === 'observador' ? 'Observador' : formData.nivel_atuacao === 'assistente' ? 'Assistente' : 'Automatizado'}</DialogTitle>
+                    <DialogTitle className="text-sm">Observações para {formData.nivel_atuacao === 'observador' ? 'Observador' : formData.nivel_atuacao === 'assistente' ? 'Assistente' : 'Automatizado'}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Textarea
@@ -115,21 +96,22 @@ export const IAConfigPanel = () => {
                       value={observacoesNivel}
                       onChange={(e) => setObservacoesNivel(e.target.value)}
                       rows={4}
+                      className="text-xs"
                     />
-                    <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                    <div className="bg-warning/5 border border-warning/20 rounded-lg p-3">
                       <div className="flex items-start gap-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
-                        <div className="text-xs text-amber-800 dark:text-amber-200">
-                          <p className="font-medium mb-1">Políticas de uso da Thalí</p>
-                          <p>A Thalí deve ser sempre respeitosa, não agressiva, sem discriminação, seguindo LGPD e diretrizes de atendimento humano.</p>
+                        <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5" />
+                        <div className="text-[10px] text-foreground">
+                          <p className="font-medium mb-0.5">Políticas de uso da Thalí</p>
+                          <p className="text-muted-foreground">A Thalí deve ser sempre respeitosa, não agressiva, sem discriminação, seguindo LGPD e diretrizes de atendimento humano.</p>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Checkbox id="concordo" checked={concordoRegras} onCheckedChange={(c) => setConcordoRegras(!!c)} />
-                      <label htmlFor="concordo" className="text-sm">Concordo com as regras de uso da Thalí</label>
+                      <label htmlFor="concordo" className="text-xs">Concordo com as regras de uso da Thalí</label>
                     </div>
-                    <Button onClick={() => setObservacoesOpen(false)} className="w-full" disabled={!concordoRegras}>
+                    <Button onClick={() => setObservacoesOpen(false)} className="w-full h-8 text-xs" disabled={!concordoRegras}>
                       Salvar Observações
                     </Button>
                   </div>
@@ -139,34 +121,34 @@ export const IAConfigPanel = () => {
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setFormData({ ...formData, nivel_atuacao: 'observador' })}
-                className={`p-4 border rounded-lg text-left transition-colors ${
+                className={`p-3 border border-border/60 rounded-lg text-left transition-colors ${
                   formData.nivel_atuacao === 'observador' ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                 }`}
               >
-                <div className="font-medium">Observador</div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs font-medium">Observador</div>
+                <div className="text-[10px] text-muted-foreground mt-1">
                   Apenas análise, sem ações
                 </div>
               </button>
               <button
                 onClick={() => setFormData({ ...formData, nivel_atuacao: 'assistente' })}
-                className={`p-4 border rounded-lg text-left transition-colors ${
+                className={`p-3 border border-border/60 rounded-lg text-left transition-colors ${
                   formData.nivel_atuacao === 'assistente' ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                 }`}
               >
-                <div className="font-medium">Assistente</div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs font-medium">Assistente</div>
+                <div className="text-[10px] text-muted-foreground mt-1">
                   Sugere ações, usuário decide
                 </div>
               </button>
               <button
                 onClick={() => setFormData({ ...formData, nivel_atuacao: 'automatizado_parcial' })}
-                className={`p-4 border rounded-lg text-left transition-colors ${
+                className={`p-3 border border-border/60 rounded-lg text-left transition-colors ${
                   formData.nivel_atuacao === 'automatizado_parcial' ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                 }`}
               >
-                <div className="font-medium">Automatizado</div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs font-medium">Automatizado</div>
+                <div className="text-[10px] text-muted-foreground mt-1">
                   Pré-atendimento automático
                 </div>
               </button>
@@ -175,17 +157,17 @@ export const IAConfigPanel = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Módulos da Thalí</CardTitle>
+      <Card className="border-border/60">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Módulos da Thalí</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-500" />
+              <Zap className="h-3.5 w-3.5 text-warning" />
               <div>
-                <Label>Pré-atendimento Automatizado</Label>
-                <p className="text-xs text-muted-foreground">Captar dados antes de transferir</p>
+                <Label className="text-xs font-medium">Pré-atendimento Automatizado</Label>
+                <p className="text-[10px] text-muted-foreground">Captar dados antes de transferir</p>
               </div>
             </div>
             <Switch
@@ -196,10 +178,10 @@ export const IAConfigPanel = () => {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-purple-500" />
+              <Brain className="h-3.5 w-3.5 text-primary" />
               <div>
-                <Label>Análise de Intenção</Label>
-                <p className="text-xs text-muted-foreground">Identificar propósito da mensagem</p>
+                <Label className="text-xs font-medium">Análise de Intenção</Label>
+                <p className="text-[10px] text-muted-foreground">Identificar propósito da mensagem</p>
               </div>
             </div>
             <Switch
@@ -210,10 +192,10 @@ export const IAConfigPanel = () => {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
               <div>
-                <Label>Análise Preditiva</Label>
-                <p className="text-xs text-muted-foreground">Prever picos e demandas</p>
+                <Label className="text-xs font-medium">Análise Preditiva</Label>
+                <p className="text-[10px] text-muted-foreground">Prever picos e demandas</p>
               </div>
             </div>
             <Switch
@@ -224,10 +206,10 @@ export const IAConfigPanel = () => {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-red-500" />
+              <Bell className="h-3.5 w-3.5 text-destructive" />
               <div>
-                <Label>Alertas Inteligentes</Label>
-                <p className="text-xs text-muted-foreground">Notificações baseadas em padrões</p>
+                <Label className="text-xs font-medium">Alertas Inteligentes</Label>
+                <p className="text-[10px] text-muted-foreground">Notificações baseadas em padrões</p>
               </div>
             </div>
             <Switch
@@ -238,10 +220,10 @@ export const IAConfigPanel = () => {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-green-500" />
+              <MessageSquare className="h-3.5 w-3.5 text-success" />
               <div>
-                <Label>Sugestão de Respostas</Label>
-                <p className="text-xs text-muted-foreground">Auxiliar atendente com respostas prontas</p>
+                <Label className="text-xs font-medium">Sugestão de Respostas</Label>
+                <p className="text-[10px] text-muted-foreground">Auxiliar atendente com respostas prontas</p>
               </div>
             </div>
             <Switch
@@ -252,10 +234,10 @@ export const IAConfigPanel = () => {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ThumbsUp className="h-5 w-5 text-orange-500" />
+              <ThumbsUp className="h-3.5 w-3.5 text-warning" />
               <div>
-                <Label>Feedback Automatizado</Label>
-                <p className="text-xs text-muted-foreground">Gerar feedbacks para gestão</p>
+                <Label className="text-xs font-medium">Feedback Automatizado</Label>
+                <p className="text-[10px] text-muted-foreground">Gerar feedbacks para gestão</p>
               </div>
             </div>
             <Switch
@@ -266,8 +248,8 @@ export const IAConfigPanel = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={handleSalvar} className="w-full" size="lg">
-        <Save className="h-4 w-4 mr-2" />
+      <Button onClick={handleSalvar} size="sm" className="w-full h-8 text-xs">
+        <Save className="h-3.5 w-3.5 mr-1.5" />
         Salvar Configurações da Thalí
       </Button>
     </div>

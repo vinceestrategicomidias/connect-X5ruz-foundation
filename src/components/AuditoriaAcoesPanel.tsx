@@ -206,6 +206,20 @@ const atendentes = [
   { value: "coordenacao", label: "Coordenação" },
 ];
 
+const getTipoColor = (tipo: string) => {
+  const colors: Record<string, string> = {
+    "Mensagem Enviada": "bg-primary/10 text-primary border-primary/20",
+    "Encaminhou Conversa": "bg-primary/10 text-primary border-primary/20",
+    "Favoritou Mensagem": "bg-warning/10 text-warning border-warning/20",
+    "Iniciou Atendimento": "bg-success/10 text-success border-success/20",
+    "Adicionou Orçamento": "bg-success/10 text-success border-success/20",
+    "Realizou Ligação": "bg-primary/10 text-primary border-primary/20",
+    "Alteração de URA": "bg-warning/10 text-warning border-warning/20",
+    "Edição de Roteiro": "bg-primary/10 text-primary border-primary/20",
+  };
+  return colors[tipo] || "bg-muted text-muted-foreground border-border";
+};
+
 export const AuditoriaAcoesPanel = () => {
   const [busca, setBusca] = useState("");
   const [buscaNumero, setBuscaNumero] = useState("");
@@ -215,18 +229,13 @@ export const AuditoriaAcoesPanel = () => {
   const [acaoSelecionada, setAcaoSelecionada] = useState<AcaoAuditoria | null>(null);
 
   const acoesFiltradas = acoesSimuladas.filter(acao => {
-    // Filtro por busca de conversa/descrição
     if (busca && !acao.descricao.toLowerCase().includes(busca.toLowerCase()) &&
         !acao.paciente?.toLowerCase().includes(busca.toLowerCase())) {
       return false;
     }
-
-    // Filtro por número
     if (buscaNumero && !acao.pacienteTelefone?.includes(buscaNumero)) {
       return false;
     }
-
-    // Filtro por tipo
     if (filtroTipo !== "todas") {
       const tipoMap: Record<string, string[]> = {
         mensagem: ["Mensagem Enviada"],
@@ -240,74 +249,52 @@ export const AuditoriaAcoesPanel = () => {
       };
       if (!tipoMap[filtroTipo]?.includes(acao.tipo)) return false;
     }
-
-    // Filtro por usuário
     if (filtroUsuario !== "todos" && 
         acao.usuario.toLowerCase() !== filtroUsuario.toLowerCase()) {
       return false;
     }
-
     return true;
   });
 
-  const getTipoColor = (tipo: string) => {
-    const colors: Record<string, string> = {
-      "Mensagem Enviada": "bg-blue-100 text-blue-700 border-blue-200",
-      "Encaminhou Conversa": "bg-purple-100 text-purple-700 border-purple-200",
-      "Favoritou Mensagem": "bg-yellow-100 text-yellow-700 border-yellow-200",
-      "Iniciou Atendimento": "bg-green-100 text-green-700 border-green-200",
-      "Adicionou Orçamento": "bg-emerald-100 text-emerald-700 border-emerald-200",
-      "Realizou Ligação": "bg-cyan-100 text-cyan-700 border-cyan-200",
-      "Alteração de URA": "bg-orange-100 text-orange-700 border-orange-200",
-      "Edição de Roteiro": "bg-pink-100 text-pink-700 border-pink-200",
-    };
-    return colors[tipo] || "bg-gray-100 text-gray-700 border-gray-200";
-  };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <History className="h-6 w-6 text-[#0A2647]" />
-          <h3 className="text-2xl font-bold text-[#0A2647]">
-            Auditoria de Ações
-          </h3>
-        </div>
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-xs text-muted-foreground">Histórico completo de ações do sistema</p>
+        <Button variant="outline" size="sm" className="h-8 text-xs">
+          <Download className="h-3.5 w-3.5 mr-1.5" />
           Exportar
         </Button>
       </div>
 
       {/* Barra de Busca */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Pesquisar conversa, paciente..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-8 text-xs"
           />
         </div>
-        <div className="relative w-48">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative w-44">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Buscar por número..."
             value={buscaNumero}
             onChange={(e) => setBuscaNumero(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-8 text-xs"
           />
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
-        <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+      <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border/60 bg-muted/10">
+        <Filter className="h-3 w-3 text-muted-foreground mt-1.5" />
         
         <Select value={filtroData} onValueChange={setFiltroData}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-32 h-7 text-[10px]">
             <Calendar className="h-3 w-3 mr-1" />
             <SelectValue placeholder="Data" />
           </SelectTrigger>
@@ -321,7 +308,7 @@ export const AuditoriaAcoesPanel = () => {
         </Select>
 
         <Select value={filtroTipo} onValueChange={setFiltroTipo}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-44 h-7 text-[10px]">
             <SelectValue placeholder="Tipo de Ação" />
           </SelectTrigger>
           <SelectContent>
@@ -334,7 +321,7 @@ export const AuditoriaAcoesPanel = () => {
         </Select>
 
         <Select value={filtroUsuario} onValueChange={setFiltroUsuario}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-40 h-7 text-[10px]">
             <Users className="h-3 w-3 mr-1" />
             <SelectValue placeholder="Atendente" />
           </SelectTrigger>
@@ -349,42 +336,42 @@ export const AuditoriaAcoesPanel = () => {
       </div>
 
       {/* Lista de Ações */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-border/60">
         <ScrollArea className="h-[500px]">
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/50">
             {acoesFiltradas.map((acao) => {
               const IconeAcao = acao.tipoIcone;
               return (
                 <div
                   key={acao.id}
-                  className="p-4 hover:bg-muted/30 transition-colors cursor-pointer"
+                  className="p-3 hover:bg-muted/20 transition-colors cursor-pointer"
                   onClick={() => setAcaoSelecionada(acao)}
                 >
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-10 w-10 flex-shrink-0">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
                       <AvatarImage src={acao.usuarioAvatar} />
-                      <AvatarFallback className="text-sm bg-primary/10 text-primary">
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
                         {acao.usuario.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-semibold">{acao.usuario}</span>
-                        <span className="text-xs text-muted-foreground">({acao.cargo})</span>
-                        <Badge className={cn("text-xs gap-1", getTipoColor(acao.tipo))}>
-                          <IconeAcao className="h-3 w-3" />
+                      <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                        <span className="text-xs font-semibold">{acao.usuario}</span>
+                        <span className="text-[10px] text-muted-foreground">({acao.cargo})</span>
+                        <Badge className={cn("text-[10px] gap-0.5", getTipoColor(acao.tipo))}>
+                          <IconeAcao className="h-2.5 w-2.5" />
                           {acao.tipo}
                         </Badge>
                       </div>
 
-                      <p className="text-sm text-muted-foreground mb-1">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">
                         {acao.descricao}
                       </p>
 
                       {acao.paciente && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                        <div className="flex items-center gap-1.5 text-[10px]">
+                          <MessageSquare className="h-2.5 w-2.5 text-muted-foreground" />
                           <span className="font-medium">{acao.paciente}</span>
                           {acao.pacienteTelefone && (
                             <span className="text-muted-foreground">
@@ -395,21 +382,21 @@ export const AuditoriaAcoesPanel = () => {
                       )}
 
                       {acao.detalhes?.valor && (
-                        <div className="mt-1 text-sm text-emerald-600 font-medium">
+                        <div className="mt-0.5 text-[10px] text-success font-medium">
                           {acao.detalhes.valor}
                         </div>
                       )}
                     </div>
 
                     <div className="text-right flex-shrink-0">
-                      <div className="text-sm font-medium">{acao.data}</div>
-                      <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-                        <Clock className="h-3 w-3" />
+                      <div className="text-[10px] font-medium">{acao.data}</div>
+                      <div className="text-[10px] text-muted-foreground flex items-center justify-end gap-0.5">
+                        <Clock className="h-2.5 w-2.5" />
                         {acao.horario}
                       </div>
                     </div>
 
-                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                   </div>
                 </div>
               );
@@ -417,8 +404,8 @@ export const AuditoriaAcoesPanel = () => {
 
             {acoesFiltradas.length === 0 && (
               <div className="p-8 text-center text-muted-foreground">
-                <History className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Nenhuma ação encontrada com os filtros selecionados.</p>
+                <History className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                <p className="text-xs">Nenhuma ação encontrada com os filtros selecionados.</p>
               </div>
             )}
           </div>
@@ -429,8 +416,8 @@ export const AuditoriaAcoesPanel = () => {
       <Dialog open={!!acaoSelecionada} onOpenChange={() => setAcaoSelecionada(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-primary" />
+            <DialogTitle className="text-sm flex items-center gap-2">
+              <Eye className="h-4 w-4 text-primary" />
               Detalhes da Ação
             </DialogTitle>
           </DialogHeader>
@@ -438,58 +425,58 @@ export const AuditoriaAcoesPanel = () => {
           {acaoSelecionada && (
             <div className="space-y-4 py-4">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
+                <Avatar className="h-10 w-10">
                   <AvatarImage src={acaoSelecionada.usuarioAvatar} />
-                  <AvatarFallback className="bg-primary/10 text-primary">
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
                     {acaoSelecionada.usuario.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-semibold">{acaoSelecionada.usuario}</div>
-                  <div className="text-sm text-muted-foreground">{acaoSelecionada.cargo}</div>
+                  <div className="text-xs font-semibold">{acaoSelecionada.usuario}</div>
+                  <div className="text-[10px] text-muted-foreground">{acaoSelecionada.cargo}</div>
                 </div>
               </div>
 
-              <div className="space-y-3 p-4 bg-muted/30 rounded-lg">
+              <div className="space-y-2.5 p-3 bg-muted/10 rounded-lg border border-border/60">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Tipo:</span>
-                  <Badge className={cn("text-xs", getTipoColor(acaoSelecionada.tipo))}>
+                  <span className="text-[10px] text-muted-foreground">Tipo:</span>
+                  <Badge className={cn("text-[10px]", getTipoColor(acaoSelecionada.tipo))}>
                     {acaoSelecionada.tipo}
                   </Badge>
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Data/Hora:</span>
-                  <span className="text-sm font-medium">
+                  <span className="text-[10px] text-muted-foreground">Data/Hora:</span>
+                  <span className="text-xs font-medium">
                     {acaoSelecionada.data} às {acaoSelecionada.horario}
                   </span>
                 </div>
 
                 {acaoSelecionada.paciente && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Paciente:</span>
-                    <span className="text-sm font-medium">{acaoSelecionada.paciente}</span>
+                    <span className="text-[10px] text-muted-foreground">Paciente:</span>
+                    <span className="text-xs font-medium">{acaoSelecionada.paciente}</span>
                   </div>
                 )}
 
                 {acaoSelecionada.pacienteTelefone && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Telefone:</span>
-                    <span className="text-sm font-medium">{acaoSelecionada.pacienteTelefone}</span>
+                    <span className="text-[10px] text-muted-foreground">Telefone:</span>
+                    <span className="text-xs font-medium">{acaoSelecionada.pacienteTelefone}</span>
                   </div>
                 )}
 
                 {acaoSelecionada.detalhes?.destinatario && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Encaminhado para:</span>
-                    <span className="text-sm font-medium">{acaoSelecionada.detalhes.destinatario}</span>
+                    <span className="text-[10px] text-muted-foreground">Encaminhado para:</span>
+                    <span className="text-xs font-medium">{acaoSelecionada.detalhes.destinatario}</span>
                   </div>
                 )}
 
                 {acaoSelecionada.detalhes?.valor && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Valor:</span>
-                    <span className="text-sm font-medium text-emerald-600">
+                    <span className="text-[10px] text-muted-foreground">Valor:</span>
+                    <span className="text-xs font-medium text-success">
                       {acaoSelecionada.detalhes.valor}
                     </span>
                   </div>
@@ -497,25 +484,32 @@ export const AuditoriaAcoesPanel = () => {
 
                 {acaoSelecionada.detalhes?.campo && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Campo:</span>
-                    <span className="text-sm font-medium">{acaoSelecionada.detalhes.campo}</span>
+                    <span className="text-[10px] text-muted-foreground">Campo:</span>
+                    <span className="text-xs font-medium">{acaoSelecionada.detalhes.campo}</span>
+                  </div>
+                )}
+
+                {acaoSelecionada.detalhes?.valorAnterior && acaoSelecionada.detalhes?.valorNovo && (
+                  <div className="space-y-1.5 pt-1">
+                    <div className="text-[10px] text-muted-foreground">Alteração:</div>
+                    <div className="text-[10px] bg-destructive/5 p-1.5 rounded border border-destructive/10 line-through">
+                      {acaoSelecionada.detalhes.valorAnterior}
+                    </div>
+                    <div className="text-[10px] bg-success/5 p-1.5 rounded border border-success/10">
+                      {acaoSelecionada.detalhes.valorNovo}
+                    </div>
+                  </div>
+                )}
+
+                {acaoSelecionada.detalhes?.mensagem && (
+                  <div className="space-y-1 pt-1">
+                    <div className="text-[10px] text-muted-foreground">Mensagem:</div>
+                    <div className="text-xs bg-muted/20 p-2 rounded border border-border/40 italic">
+                      "{acaoSelecionada.detalhes.mensagem}"
+                    </div>
                   </div>
                 )}
               </div>
-
-              {acaoSelecionada.detalhes?.mensagem && (
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="text-xs text-blue-600 mb-1">Mensagem enviada:</div>
-                  <p className="text-sm">{acaoSelecionada.detalhes.mensagem}</p>
-                </div>
-              )}
-
-              {acaoSelecionada.conversa_id && (
-                <Button className="w-full bg-[#0A2647] hover:bg-[#144272]">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Ver Conversa Completa
-                </Button>
-              )}
             </div>
           )}
         </DialogContent>

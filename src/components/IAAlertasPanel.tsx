@@ -16,22 +16,22 @@ export const IAAlertasPanel = () => {
   const getSeveridadeIcon = (severidade: string) => {
     switch (severidade) {
       case 'critical':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
       default:
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-4 w-4 text-primary" />;
     }
   };
 
   const getSeveridadeBadge = (severidade: string) => {
     switch (severidade) {
       case 'critical':
-        return <Badge variant="destructive">Crítico</Badge>;
+        return <Badge variant="destructive" className="text-[10px]">Crítico</Badge>;
       case 'warning':
-        return <Badge className="bg-yellow-500">Aviso</Badge>;
+        return <Badge className="bg-warning text-warning-foreground text-[10px]">Aviso</Badge>;
       default:
-        return <Badge variant="secondary">Info</Badge>;
+        return <Badge variant="secondary" className="text-[10px]">Info</Badge>;
     }
   };
 
@@ -43,79 +43,72 @@ export const IAAlertasPanel = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Alertas Inteligentes</h2>
-        <p className="text-muted-foreground mt-2">
-          Alertas gerados automaticamente pela Thalí
-        </p>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="border-border/60">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="h-4 w-4 text-destructive" />
               <div>
-                <div className="text-2xl font-bold">
+                <div className="text-xl font-bold">
                   {alertasNaoAtendidos?.filter(a => a.severidade === 'critical').length || 0}
                 </div>
-                <div className="text-xs text-muted-foreground">Críticos</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Críticos</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+        <Card className="border-border/60">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2.5">
+              <AlertTriangle className="h-4 w-4 text-warning" />
               <div>
-                <div className="text-2xl font-bold">
+                <div className="text-xl font-bold">
                   {alertasNaoAtendidos?.filter(a => a.severidade === 'warning').length || 0}
                 </div>
-                <div className="text-xs text-muted-foreground">Avisos</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Avisos</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Check className="h-5 w-5 text-green-500" />
+        <Card className="border-border/60">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2.5">
+              <Check className="h-4 w-4 text-success" />
               <div>
-                <div className="text-2xl font-bold">
+                <div className="text-xl font-bold">
                   {alertasAtendidos?.length || 0}
                 </div>
-                <div className="text-xs text-muted-foreground">Atendidos Hoje</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Atendidos Hoje</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Alertas Pendentes</CardTitle>
+      <Card className="border-border/60">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Alertas Pendentes</CardTitle>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px]">
             <div className="space-y-3">
               {alertasNaoAtendidos && alertasNaoAtendidos.length > 0 ? (
                 alertasNaoAtendidos.map((alerta) => (
-                  <div key={alerta.id} className="p-4 border rounded-lg space-y-3">
+                  <div key={alerta.id} className="p-4 border border-border/60 rounded-lg space-y-3">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-2.5">
                         {getSeveridadeIcon(alerta.severidade)}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold">{alerta.titulo}</h4>
+                            <h4 className="text-sm font-semibold">{alerta.titulo}</h4>
                             {getSeveridadeBadge(alerta.severidade)}
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-[10px]">
                               {alerta.tipo.replace(/_/g, ' ')}
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">{alerta.descricao}</p>
+                          <p className="text-xs text-muted-foreground">{alerta.descricao}</p>
                         </div>
                       </div>
                     </div>
@@ -124,33 +117,34 @@ export const IAAlertasPanel = () => {
                       <>
                         <Separator />
                         <div className="flex items-start gap-2">
-                          <Info className="h-4 w-4 text-muted-foreground mt-0.5" />
+                          <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
                           <div>
-                            <p className="text-xs font-medium">Ação Recomendada:</p>
-                            <p className="text-sm text-muted-foreground">{alerta.acao_recomendada}</p>
+                            <p className="text-[10px] font-medium">Ação Recomendada:</p>
+                            <p className="text-xs text-muted-foreground">{alerta.acao_recomendada}</p>
                           </div>
                         </div>
                       </>
                     )}
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {alerta.created_at && new Date(alerta.created_at).toLocaleString()}
                       </div>
                       <Button
                         size="sm"
+                        className="h-8 text-xs"
                         onClick={() => handleAtender(alerta.id)}
                         disabled={atenderAlerta.isPending}
                       >
-                        <Check className="h-4 w-4 mr-1" />
+                        <Check className="h-3.5 w-3.5 mr-1" />
                         Marcar como Atendido
                       </Button>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground text-xs">
                   Nenhum alerta pendente
                 </div>
               )}
@@ -159,21 +153,21 @@ export const IAAlertasPanel = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Histórico Recente</CardTitle>
+      <Card className="border-border/60">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Histórico Recente</CardTitle>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[200px]">
             <div className="space-y-2">
               {alertasAtendidos && alertasAtendidos.length > 0 ? (
                 alertasAtendidos.map((alerta) => (
-                  <div key={alerta.id} className="p-3 border rounded-lg flex items-center justify-between">
+                  <div key={alerta.id} className="p-3 border border-border/60 rounded-lg flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-3.5 w-3.5 text-success" />
                       <div>
-                        <p className="text-sm font-medium">{alerta.titulo}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-medium">{alerta.titulo}</p>
+                        <p className="text-[10px] text-muted-foreground">
                           Atendido em {alerta.atendido_em && new Date(alerta.atendido_em).toLocaleString()}
                         </p>
                       </div>
@@ -182,7 +176,7 @@ export const IAAlertasPanel = () => {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-4 text-muted-foreground text-sm">
+                <div className="text-center py-4 text-muted-foreground text-xs">
                   Nenhum alerta atendido hoje
                 </div>
               )}
