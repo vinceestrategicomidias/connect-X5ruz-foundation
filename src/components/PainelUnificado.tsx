@@ -111,21 +111,19 @@ const npsComparativo = {
     { mes: "Dez", nps: 92 },
   ],
   distribuicao: [
-    { name: "Promotores", value: 168, color: "#22C55E" },
-    { name: "Neutros", value: 22, color: "#F59E0B" },
-    { name: "Detratores", value: 18, color: "#EF4444" },
+    { name: "Promotores", value: 168, color: "hsl(142, 71%, 45%)" },
+    { name: "Neutros", value: 22, color: "hsl(48, 89%, 48%)" },
+    { name: "Detratores", value: 18, color: "hsl(0, 84%, 60%)" },
   ]
 };
 
 // Dados simulados de GRANDE EMPRESA
 const dadosEmpresaGrande = {
-  // Cards superiores
   totalAtendimentos: 2847,
   tmaSetor: "3m 42s",
   tmeSetor: "5m 11s",
   taxaConclusao: 87,
 
-  // Atendimentos por dia
   atendimentosPorDia: [
     { dia: "Seg", atendimentos: 412 },
     { dia: "Ter", atendimentos: 386 },
@@ -136,7 +134,6 @@ const dadosEmpresaGrande = {
     { dia: "Dom", atendimentos: 194 },
   ],
 
-  // TMA e TME por dia
   tmaTmePorDia: [
     { dia: "Seg", TMA: 3.2, TME: 4.8 },
     { dia: "Ter", TMA: 3.4, TME: 5.3 },
@@ -147,7 +144,6 @@ const dadosEmpresaGrande = {
     { dia: "Dom", TMA: 5.1, TME: 8.1 },
   ],
 
-  // Distribuição por atendente
   distribuicaoPorAtendente: [
     { nome: "Geovana", atendimentos: 314 },
     { nome: "Paloma", atendimentos: 287 },
@@ -156,25 +152,22 @@ const dadosEmpresaGrande = {
     { nome: "Bianca", atendimentos: 229 },
   ],
 
-  // Status de atendimentos
   statusAtendimentos: [
     { name: "Finalizados", value: 1124 },
     { name: "Em Atendimento", value: 382 },
-    { name: "Aguardando Resposta", value: 514 },
+    { name: "Aguardando", value: 514 },
     { name: "Em Fila", value: 827 },
   ],
 
-  // Horários de pico
   horariosPico: [
-    { horario: "08-09", msgs: 45, nivel: "Médio", cor: "bg-blue-100 text-blue-700" },
-    { horario: "09-10", msgs: 62, nivel: "Alto", cor: "bg-orange-100 text-orange-700" },
-    { horario: "10-11", msgs: 88, nivel: "Muito Alto", cor: "bg-red-100 text-red-700" },
-    { horario: "11-12", msgs: 44, nivel: "Médio", cor: "bg-blue-100 text-blue-700" },
-    { horario: "12-13", msgs: 29, nivel: "Baixo", cor: "bg-green-100 text-green-700" },
-    { horario: "13-14", msgs: 56, nivel: "Alto", cor: "bg-orange-100 text-orange-700" },
+    { horario: "08-09", msgs: 45, nivel: "Médio" },
+    { horario: "09-10", msgs: 62, nivel: "Alto" },
+    { horario: "10-11", msgs: 88, nivel: "Muito Alto" },
+    { horario: "11-12", msgs: 44, nivel: "Médio" },
+    { horario: "12-13", msgs: 29, nivel: "Baixo" },
+    { horario: "13-14", msgs: 56, nivel: "Alto" },
   ],
 
-  // Relatórios inteligentes
   npsGeral: 92,
   porcentagemTransferencia: 13,
   taxaReabertura: 8,
@@ -184,7 +177,6 @@ const dadosEmpresaGrande = {
     { atendente: "Paloma", atendimentos: 283, tempoMedio: "4m01s", nps: 93 },
   ],
 
-  // Transferências
   transferencias: [
     { hora: "09:33", de: "Marcos", para: "Geovana", paciente: "Ana Cristina" },
     { hora: "10:14", de: "Paloma", para: "Emilly", paciente: "Luiz Fernando" },
@@ -193,7 +185,6 @@ const dadosEmpresaGrande = {
     { hora: "14:52", de: "Geovana", para: "Paloma", paciente: "Maria Santos" },
   ],
 
-  // NPS Feedback
   nps: {
     totalRespondido: 208,
     npsMedio: 92,
@@ -207,14 +198,12 @@ const dadosEmpresaGrande = {
     ],
   },
 
-  // Alertas da Thalí
   alertas: [
     { tipo: "Fila alta", setor: "Pré-venda", detalhes: "14 pacientes aguardando acima de 10 minutos.", cor: "red" },
     { tipo: "NPS baixo", atendente: "Marcos", detalhes: "NPS nas últimas 24h caiu para 74.", cor: "orange" },
     { tipo: "Tempo médio alto", atendente: "Bianca", detalhes: "TMA subiu para 4m52s.", cor: "yellow" },
   ],
 
-  // Thalí Preditiva
   preditiva: {
     horarioPicoPrevisto: "10h–11h",
     volumeEsperadoHoje: 921,
@@ -226,7 +215,6 @@ const dadosEmpresaGrande = {
     ],
   },
 
-  // Feedback da Thalí
   feedbackIA: {
     elogios: [
       { atendente: "Geovana", motivo: "Maior índice de satisfação do setor" },
@@ -237,21 +225,18 @@ const dadosEmpresaGrande = {
     ],
   },
 
-  // Indicadores personalizados
   indicadores: [
     { nome: "Volume mensal", valor: "12.214" },
     { nome: "Atendimentos complexos", valor: "431" },
     { nome: "Taxa de resolutividade", valor: "89%" },
   ],
 
-  // Auditoria de ações
   auditoria: [
     { acao: "Alteração de URA", por: "Gestor", horario: "08:12", data: "Hoje" },
     { acao: "Edição de Roteiro", por: "Coordenação", horario: "10:47", data: "Hoje" },
     { acao: "Validação de perfil", por: "Coordenação", horario: "14:19", data: "Hoje" },
   ],
 
-  // Ideias
   ideias: [
     { usuario: "Paloma", ideia: "Criar scripts automáticos de resposta rápida.", status: "Em análise" },
     { usuario: "Marcos", ideia: "Otimizar fila com Thalí.", status: "Implementada" },
@@ -260,7 +245,59 @@ const dadosEmpresaGrande = {
   reconhecimentoSemana: { usuario: "Emilly", motivo: "Melhor evolução de NPS" },
 };
 
-const COLORS = ["#0A2647", "#144272", "#205295", "#2C74B3"];
+const COLORS = ["hsl(214, 85%, 51%)", "hsl(214, 85%, 41%)", "hsl(142, 71%, 45%)", "hsl(210, 14%, 72%)"];
+
+const getNivelStyle = (nivel: string) => {
+  switch (nivel) {
+    case "Muito Alto":
+      return "bg-destructive/10 text-destructive border-destructive/20";
+    case "Alto":
+      return "bg-warning/10 text-warning border-warning/20";
+    case "Médio":
+      return "bg-primary/10 text-primary border-primary/20";
+    case "Baixo":
+      return "bg-success/10 text-success border-success/20";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+};
+
+// Reusable section header
+const SectionHeader = ({ icon: Icon, title, children }: { icon: any; title: string; children?: React.ReactNode }) => (
+  <div className="flex items-center justify-between mb-6">
+    <div className="flex items-center gap-3">
+      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+        <Icon className="h-4.5 w-4.5 text-primary" />
+      </div>
+      <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+    </div>
+    {children}
+  </div>
+);
+
+// Reusable metric card
+const MetricCard = ({ label, value, accent = false }: { label: string; value: string | number; accent?: boolean }) => (
+  <Card className="p-5 border-border/60">
+    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">{label}</p>
+    <p className={cn("text-2xl font-bold", accent ? "text-primary" : "text-foreground")}>{value}</p>
+  </Card>
+);
+
+// Filter bar
+const FilterBar = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-lg border border-border/60 bg-muted/20">
+    <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+    {children}
+  </div>
+);
+
+// Chart wrapper
+const ChartCard = ({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) => (
+  <Card className={cn("p-5 border-border/60", className)}>
+    <h4 className="text-sm font-semibold text-foreground mb-4">{title}</h4>
+    <div className="w-full h-[260px]">{children}</div>
+  </Card>
+);
 
 interface PainelUnificadoProps {
   open: boolean;
@@ -278,22 +315,17 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "dashboards":
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between gap-4">
-              <h3 className="text-2xl font-bold text-[#0A2647] truncate">
-                Dashboards de Produtividade
-              </h3>
-              <select className="px-3 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 min-w-[160px]">
+            <SectionHeader icon={LayoutGrid} title="Dashboards de Produtividade">
+              <select className="px-3 py-1.5 border border-border/60 rounded-lg text-xs bg-background focus:outline-none focus:ring-2 focus:ring-primary/20">
                 <option>Últimos 7 dias</option>
                 <option>Últimos 30 dias</option>
                 <option>Últimos 90 dias</option>
               </select>
-            </div>
+            </SectionHeader>
 
-            {/* Filtros por Setor e Unidade */}
-            <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
-              <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+            <FilterBar>
               <Select defaultValue="todos">
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-40 h-8 text-xs">
                   <SelectValue placeholder="Setores" />
                 </SelectTrigger>
                 <SelectContent>
@@ -305,7 +337,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 </SelectContent>
               </Select>
               <Select defaultValue="todas">
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-40 h-8 text-xs">
                   <SelectValue placeholder="Unidades" />
                 </SelectTrigger>
                 <SelectContent>
@@ -315,169 +347,90 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                   <SelectItem value="rj">Unidade Rio de Janeiro</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FilterBar>
 
-            {/* Cards de métricas */}
+            {/* Metric cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6 bg-gradient-to-br from-[#0A2647]/5 to-[#0A2647]/10 border-[#0A2647]/20 overflow-hidden">
-                <div className="text-4xl font-bold text-[#0A2647] mb-1 truncate">
-                  {dadosEmpresaGrande.totalAtendimentos.toLocaleString()}
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  Total de Atendimentos
-                </p>
-              </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#144272]/5 to-[#144272]/10 border-[#144272]/20 overflow-hidden">
-                <div className="text-4xl font-bold text-[#144272] mb-1 truncate">
-                  {dadosEmpresaGrande.tmaSetor}
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  TMA - Tempo Médio Atendimento
-                </p>
-              </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#205295]/5 to-[#205295]/10 border-[#205295]/20 overflow-hidden">
-                <div className="text-4xl font-bold text-[#205295] mb-1 truncate">
-                  {dadosEmpresaGrande.tmeSetor}
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  TME - Tempo Médio Espera
-                </p>
-              </Card>
-              <Card className="p-6 bg-gradient-to-br from-[#2C74B3]/5 to-[#2C74B3]/10 border-[#2C74B3]/20 overflow-hidden">
-                <div className="text-4xl font-bold text-[#2C74B3] mb-1 truncate">
-                  {dadosEmpresaGrande.taxaConclusao}%
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  Taxa de Resolutividade
-                </p>
-                <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-                  <p>Pacientes no chat: 240</p>
-                  <p>Finalizados: 180</p>
-                </div>
-              </Card>
+              <MetricCard label="Total de Atendimentos" value={dadosEmpresaGrande.totalAtendimentos.toLocaleString()} accent />
+              <MetricCard label="TMA – Tempo Médio Atend." value={dadosEmpresaGrande.tmaSetor} />
+              <MetricCard label="TME – Tempo Médio Espera" value={dadosEmpresaGrande.tmeSetor} />
+              <MetricCard label="Taxa de Resolutividade" value={`${dadosEmpresaGrande.taxaConclusao}%`} accent />
             </div>
 
-            {/* Gráficos */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="p-6 overflow-hidden">
-                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                  Atendimentos por Dia da Semana
-                </h4>
-                <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="dia" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="atendimentos" fill="#0A2647" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <ChartCard title="Atendimentos por Dia da Semana">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-              <Card className="p-6 overflow-hidden">
-                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                  TMA e TME Diário (minutos)
-                </h4>
-                <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="dia" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="TMA"
-                        stroke="#0A2647"
-                        strokeWidth={3}
-                        dot={{ r: 5, fill: "#0A2647" }}
-                        name="TMA"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="TME"
-                        stroke="#2C74B3"
-                        strokeWidth={3}
-                        dot={{ r: 5, fill: "#2C74B3" }}
-                        name="TME"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              <ChartCard title="TMA e TME Diário (minutos)">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 3 }} name="TMA" />
+                    <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 3 }} name="TME" strokeDasharray="4 4" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-              <Card className="p-6 overflow-hidden">
-                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                  Distribuição por Atendente
-                </h4>
-                <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis type="number" />
-                      <YAxis dataKey="nome" type="category" width={80} />
-                      <Tooltip />
-                      <Bar dataKey="atendimentos" fill="#144272" radius={[0, 8, 8, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              <ChartCard title="Distribuição por Atendente">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="nome" type="category" width={70} tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 6, 6, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-              <Card className="p-6 overflow-hidden">
-                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                  Status de Atendimentos
-                </h4>
-                <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={dadosEmpresaGrande.statusAtendimentos}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={90}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {dadosEmpresaGrande.statusAtendimentos.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              <ChartCard title="Status de Atendimentos">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={dadosEmpresaGrande.statusAtendimentos}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={85}
+                      innerRadius={40}
+                      fill="#8884d8"
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {dadosEmpresaGrande.statusAtendimentos.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartCard>
             </div>
 
             {/* Horários de Pico */}
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                Horários de Pico (Classificação pela Thalí)
-              </h4>
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            <Card className="p-5 border-border/60">
+              <h4 className="text-sm font-semibold text-foreground mb-4">Horários de Pico</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {dadosEmpresaGrande.horariosPico.map((item) => (
-                  <div
-                    key={item.horario}
-                    className="flex justify-between items-center p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                  >
-                    <span className="font-semibold text-foreground">{item.horario}h</span>
-                    <span className="text-muted-foreground text-sm">
-                      {item.msgs} mensagens
-                    </span>
-                    <span
-                      className={cn(
-                        "px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap",
-                        item.cor
-                      )}
-                    >
+                  <div key={item.horario} className="flex flex-col items-center p-3 rounded-lg bg-muted/20 border border-border/40">
+                    <span className="text-sm font-semibold text-foreground">{item.horario}h</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">{item.msgs} msgs</span>
+                    <span className={cn("mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border", getNivelStyle(item.nivel))}>
                       {item.nivel}
                     </span>
                   </div>
@@ -496,22 +449,16 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "nps":
         return (
           <div className="space-y-6">
-            {/* Header com botão de relatório */}
-            <div className="flex items-center justify-between gap-4">
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Net Promoter Score (NPS)
-              </h3>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
+            <SectionHeader icon={ThumbsUp} title="Net Promoter Score (NPS)">
+              <Button variant="outline" size="sm" className="h-8 text-xs">
+                <Download className="h-3.5 w-3.5 mr-1.5" />
                 Gerar Relatório
               </Button>
-            </div>
+            </SectionHeader>
 
-            {/* Filtros */}
-            <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-lg border">
-              <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+            <FilterBar>
               <Select defaultValue="todos">
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="w-32 h-8 text-xs">
                   <Users className="h-3 w-3 mr-1" />
                   <SelectValue placeholder="Atendente" />
                 </SelectTrigger>
@@ -525,7 +472,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 </SelectContent>
               </Select>
               <Select defaultValue="jan">
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-28 h-8 text-xs">
                   <Calendar className="h-3 w-3 mr-1" />
                   <SelectValue placeholder="Mês" />
                 </SelectTrigger>
@@ -545,7 +492,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 </SelectContent>
               </Select>
               <Select defaultValue="2026">
-                <SelectTrigger className="w-28">
+                <SelectTrigger className="w-24 h-8 text-xs">
                   <SelectValue placeholder="Ano" />
                 </SelectTrigger>
                 <SelectContent>
@@ -554,170 +501,77 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                   <SelectItem value="2026">2026</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FilterBar>
 
-            {/* Cards de métricas */}
+            {/* Metric cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">
-                  Total Respondido
-                </div>
-                <div className="text-4xl font-bold text-[#0A2647] truncate">
-                  {dadosEmpresaGrande.nps.totalRespondido}
-                </div>
-              </Card>
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">
-                  NPS Médio
-                </div>
-                <div className="text-4xl font-bold text-green-600 truncate">
-                  {dadosEmpresaGrande.nps.npsMedio}
-                </div>
-              </Card>
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">
-                  Promotores
-                </div>
-                <div className="text-4xl font-bold text-green-600 truncate">
-                  {dadosEmpresaGrande.nps.promotores}
-                </div>
-              </Card>
-              <Card className="p-6 overflow-hidden">
-                <div className="text-sm text-muted-foreground mb-1 truncate">
-                  Detratores
-                </div>
-                <div className="text-4xl font-bold text-destructive truncate">
-                  {dadosEmpresaGrande.nps.detratores}
-                </div>
-              </Card>
+              <MetricCard label="Total Respondido" value={dadosEmpresaGrande.nps.totalRespondido} />
+              <MetricCard label="NPS Médio" value={dadosEmpresaGrande.nps.npsMedio} accent />
+              <MetricCard label="Promotores" value={dadosEmpresaGrande.nps.promotores} />
+              <MetricCard label="Detratores" value={dadosEmpresaGrande.nps.detratores} />
             </div>
 
-            {/* Gráficos comparativos */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* NPS por Atendente */}
-              <Card className="p-6 overflow-hidden">
-                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                  NPS por Atendente
-                </h4>
-                <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={npsComparativo.porAtendente}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="nome" />
-                      <YAxis domain={[0, 100]} />
-                      <Tooltip />
-                      <Bar dataKey="nps" fill="#0A2647" radius={[8, 8, 0, 0]} name="NPS" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <ChartCard title="NPS por Atendente">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={npsComparativo.porAtendente}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="nome" tick={{ fontSize: 11 }} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                    <Bar dataKey="nps" fill="hsl(214, 85%, 51%)" radius={[6, 6, 0, 0]} name="NPS" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-              {/* Evolução Mensal do NPS */}
-              <Card className="p-6 overflow-hidden">
-                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                  Evolução Mensal do NPS
-                </h4>
-                <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={npsComparativo.evolucaoMensal}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="mes" />
-                      <YAxis domain={[80, 100]} />
-                      <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="nps"
-                        stroke="#0A2647"
-                        strokeWidth={3}
-                        dot={{ r: 5, fill: "#0A2647" }}
-                        name="NPS"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              <ChartCard title="Evolução Mensal do NPS">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={npsComparativo.evolucaoMensal}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
+                    <YAxis domain={[80, 100]} tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                    <Line type="monotone" dataKey="nps" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 3 }} name="NPS" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-              {/* Distribuição Promotores/Neutros/Detratores */}
-              <Card className="p-6 overflow-hidden">
-                <h4 className="font-semibold mb-4 text-[#0A2647] text-lg">
-                  Distribuição de Respostas
-                </h4>
-                <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={npsComparativo.distribuicao}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={90}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {npsComparativo.distribuicao.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              <ChartCard title="Distribuição de Respostas">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={npsComparativo.distribuicao}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={85}
+                      innerRadius={40}
+                      fill="#8884d8"
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {npsComparativo.distribuicao.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
               {/* Feedbacks Recentes */}
-              <Card className="p-6 overflow-hidden col-span-1 lg:col-span-2">
-                <h4 className="font-semibold mb-4 text-lg">Feedbacks Recentes</h4>
-                {/* Filtros de Feedbacks Recentes */}
-                <div className="flex flex-wrap gap-3 mb-4 p-3 bg-muted/30 rounded-lg border">
-                  <Filter className="h-4 w-4 text-muted-foreground mt-2" />
-                  <Select defaultValue="todos">
-                    <SelectTrigger className="w-36">
-                      <Users className="h-3 w-3 mr-1" />
-                      <SelectValue placeholder="Atendente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="geovana">Geovana</SelectItem>
-                      <SelectItem value="paloma">Paloma</SelectItem>
-                      <SelectItem value="emilly">Emilly</SelectItem>
-                      <SelectItem value="marcos">Marcos</SelectItem>
-                      <SelectItem value="bianca">Bianca</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select defaultValue="todos">
-                    <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Setor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="pre-venda">Pré-venda</SelectItem>
-                      <SelectItem value="pos-venda">Pós-venda</SelectItem>
-                      <SelectItem value="suporte">Suporte</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3 w-3 text-muted-foreground" />
-                    <input type="date" className="px-2 py-1.5 border border-border rounded-md text-sm bg-background" placeholder="De" />
-                    <span className="text-xs text-muted-foreground">até</span>
-                    <input type="date" className="px-2 py-1.5 border border-border rounded-md text-sm bg-background" placeholder="Até" />
-                  </div>
-                </div>
-                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+              <Card className="p-5 border-border/60">
+                <h4 className="text-sm font-semibold text-foreground mb-4">Feedbacks Recentes</h4>
+                <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1">
                   {dadosEmpresaGrande.nps.feedbacksRecentes.map((feedback, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 rounded-lg border border-border"
-                    >
-                      <div className="flex items-center justify-between mb-2 gap-4">
-                        <span className="font-semibold truncate">{feedback.atendente}</span>
-                        <span className="text-2xl font-bold text-[#0A2647] flex-shrink-0">
-                          {feedback.nota}/10
-                        </span>
+                    <div key={idx} className="p-3.5 rounded-lg border border-border/50 bg-muted/10">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-sm font-medium text-foreground">{feedback.atendente}</span>
+                        <span className="text-lg font-bold text-primary">{feedback.nota}/10</span>
                       </div>
-                      <p className="text-sm text-muted-foreground italic line-clamp-2">
-                        "{feedback.comentario}"
-                      </p>
+                      <p className="text-xs text-muted-foreground italic leading-relaxed">"{feedback.comentario}"</p>
                     </div>
                   ))}
                 </div>
@@ -728,11 +582,9 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
       case "alertas": {
         const setoresUnicos = Array.from(new Set(
-          dadosEmpresaGrande.alertas
-            .map(a => a.setor)
-            .filter(Boolean)
+          dadosEmpresaGrande.alertas.map(a => a.setor).filter(Boolean)
         ));
-        
+
         const alertasFiltrados = dadosEmpresaGrande.alertas.filter((alerta) => {
           if (filtroAlertaSetor && filtroAlertaSetor !== "todos" && alerta.setor !== filtroAlertaSetor) return false;
           if (filtroAlertaTipo && filtroAlertaTipo !== "todos" && alerta.tipo !== filtroAlertaTipo) return false;
@@ -741,18 +593,11 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
 
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <Bell className="h-6 w-6 text-[#0A2647]" />
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Alertas Automáticos da Thalí
-              </h3>
-            </div>
+            <SectionHeader icon={Bell} title="Alertas Automáticos da Thalí" />
 
-            {/* Filtros */}
-            <div className="flex items-center gap-3">
-              <Filter className="h-4 w-4 text-muted-foreground" />
+            <FilterBar>
               <Select value={filtroAlertaSetor} onValueChange={setFiltroAlertaSetor}>
-                <SelectTrigger className="w-[180px] h-9">
+                <SelectTrigger className="w-44 h-8 text-xs">
                   <SelectValue placeholder="Filtrar por setor" />
                 </SelectTrigger>
                 <SelectContent>
@@ -763,7 +608,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 </SelectContent>
               </Select>
               <Select value={filtroAlertaTipo} onValueChange={setFiltroAlertaTipo}>
-                <SelectTrigger className="w-[200px] h-9">
+                <SelectTrigger className="w-44 h-8 text-xs">
                   <SelectValue placeholder="Filtrar por tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -773,40 +618,45 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </FilterBar>
 
-            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+            <div className="space-y-3">
               {alertasFiltrados.length > 0 ? alertasFiltrados.map((alerta, idx) => (
                 <Card
                   key={idx}
                   className={cn(
-                    "p-4 border-l-4 overflow-hidden",
-                    alerta.cor === "red" && "border-l-red-500 bg-red-50/50",
-                    alerta.cor === "orange" && "border-l-orange-500 bg-orange-50/50",
-                    alerta.cor === "yellow" && "border-l-yellow-500 bg-yellow-50/50"
+                    "p-4 border-l-[3px] border-border/60",
+                    alerta.cor === "red" && "border-l-destructive bg-destructive/5",
+                    alerta.cor === "orange" && "border-l-warning bg-warning/5",
+                    alerta.cor === "yellow" && "border-l-warning bg-warning/5"
                   )}
                 >
                   <div className="flex items-start gap-3">
-                    <Bell className={cn(
-                      "h-5 w-5 mt-0.5 flex-shrink-0",
-                      alerta.cor === "red" && "text-red-500",
-                      alerta.cor === "orange" && "text-orange-500",
-                      alerta.cor === "yellow" && "text-yellow-600"
-                    )} />
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+                      alerta.cor === "red" && "bg-destructive/10",
+                      alerta.cor === "orange" && "bg-warning/10",
+                      alerta.cor === "yellow" && "bg-warning/10"
+                    )}>
+                      <Bell className={cn(
+                        "h-4 w-4",
+                        alerta.cor === "red" && "text-destructive",
+                        alerta.cor === "orange" && "text-warning",
+                        alerta.cor === "yellow" && "text-warning"
+                      )} />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold mb-1 truncate">
+                      <h4 className="text-sm font-medium text-foreground mb-0.5">
                         {alerta.tipo}
-                        {alerta.setor && ` - ${alerta.setor}`}
-                        {alerta.atendente && ` - ${alerta.atendente}`}
+                        {alerta.setor && ` · ${alerta.setor}`}
+                        {alerta.atendente && ` · ${alerta.atendente}`}
                       </h4>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {alerta.detalhes}
-                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{alerta.detalhes}</p>
                     </div>
                   </div>
                 </Card>
               )) : (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-12 text-sm text-muted-foreground">
                   Nenhum alerta encontrado com os filtros selecionados
                 </div>
               )}
@@ -818,58 +668,26 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "preditiva":
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-[#0A2647]" />
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Análise Preditiva da Thalí
-              </h3>
+            <SectionHeader icon={TrendingUp} title="Análise Preditiva da Thalí" />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <MetricCard label="Horário de Pico Previsto" value={dadosEmpresaGrande.preditiva.horarioPicoPrevisto} accent />
+              <MetricCard label="Volume Esperado Hoje" value={dadosEmpresaGrande.preditiva.volumeEsperadoHoje} />
+              <MetricCard label="Setor Mais Demandado" value={dadosEmpresaGrande.preditiva.setorMaisDemandado} />
             </div>
 
-            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg">Previsões para Hoje</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="min-w-0">
-                  <div className="text-sm text-muted-foreground mb-1 truncate">
-                    Horário de Pico Previsto
-                  </div>
-                  <div className="text-2xl font-bold text-[#0A2647] truncate">
-                    {dadosEmpresaGrande.preditiva.horarioPicoPrevisto}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm text-muted-foreground mb-1 truncate">
-                    Volume Esperado Hoje
-                  </div>
-                  <div className="text-2xl font-bold text-[#0A2647] truncate">
-                    {dadosEmpresaGrande.preditiva.volumeEsperadoHoje}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm text-muted-foreground mb-1 truncate">
-                    Setor Mais Demandado
-                  </div>
-                  <div className="text-2xl font-bold text-[#0A2647] truncate">
-                    {dadosEmpresaGrande.preditiva.setorMaisDemandado}
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-yellow-500" />
+            <Card className="p-5 border-border/60">
+              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-warning" />
                 Recomendações da Thalí
               </h4>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+              <div className="space-y-2.5">
                 {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-lg bg-muted/30 flex items-start gap-3"
-                  >
+                  <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-muted/15 border border-border/30">
                     <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-primary">{idx + 1}</span>
+                      <span className="text-[10px] font-bold text-primary">{idx + 1}</span>
                     </div>
-                    <p className="text-sm flex-1">{rec}</p>
+                    <p className="text-xs text-foreground leading-relaxed flex-1">{rec}</p>
                   </div>
                 ))}
               </div>
@@ -880,48 +698,33 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "feedback":
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-[#0A2647]" />
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Feedback Gerado pela Thalí
-              </h3>
-            </div>
+            <SectionHeader icon={MessageSquare} title="Feedback Gerado pela Thalí" />
 
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
-                <ThumbsUp className="h-5 w-5 text-green-600" />
+            <Card className="p-5 border-border/60">
+              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <ThumbsUp className="h-4 w-4 text-success" />
                 Elogios
               </h4>
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+              <div className="space-y-2.5">
                 {dadosEmpresaGrande.feedbackIA.elogios.map((elogio, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-lg bg-green-50 border border-green-200"
-                  >
-                    <div className="font-semibold text-green-900 mb-1 truncate">
-                      {elogio.atendente}
-                    </div>
-                    <p className="text-sm text-green-800">{elogio.motivo}</p>
+                  <div key={idx} className="p-3.5 rounded-lg bg-success/5 border border-success/15">
+                    <div className="text-sm font-medium text-foreground mb-0.5">{elogio.atendente}</div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{elogio.motivo}</p>
                   </div>
                 ))}
               </div>
             </Card>
 
-            <Card className="p-6 overflow-hidden">
-              <h4 className="font-semibold mb-4 text-lg flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-orange-600" />
+            <Card className="p-5 border-border/60">
+              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-warning" />
                 Oportunidades de Melhoria
               </h4>
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+              <div className="space-y-2.5">
                 {dadosEmpresaGrande.feedbackIA.melhorias.map((melhoria, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-lg bg-orange-50 border border-orange-200"
-                  >
-                    <div className="font-semibold text-orange-900 mb-1 truncate">
-                      {melhoria.atendente}
-                    </div>
-                    <p className="text-sm text-orange-800">{melhoria.motivo}</p>
+                  <div key={idx} className="p-3.5 rounded-lg bg-warning/5 border border-warning/15">
+                    <div className="text-sm font-medium text-foreground mb-0.5">{melhoria.atendente}</div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{melhoria.motivo}</p>
                   </div>
                 ))}
               </div>
@@ -932,28 +735,18 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
       case "indicadores":
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-[#0A2647]">
-                Indicadores Personalizados
-              </h3>
+            <SectionHeader icon={Activity} title="Indicadores Personalizados">
               {(isCoordenacao || isGestor) && (
-                <Button className="bg-[#0A2647] hover:bg-[#144272]">
-                  <Activity className="h-4 w-4 mr-2" />
+                <Button size="sm" className="h-8 text-xs">
+                  <Activity className="h-3.5 w-3.5 mr-1.5" />
                   Criar Indicador
                 </Button>
               )}
-            </div>
+            </SectionHeader>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {dadosEmpresaGrande.indicadores.map((indicador, idx) => (
-                <Card key={idx} className="p-6 overflow-hidden">
-                  <div className="text-sm text-muted-foreground mb-1 truncate">
-                    {indicador.nome}
-                  </div>
-                  <div className="text-4xl font-bold text-[#0A2647] truncate">
-                    {indicador.valor}
-                  </div>
-                </Card>
+                <MetricCard key={idx} label={indicador.nome} value={indicador.valor} accent />
               ))}
             </div>
           </div>
@@ -980,22 +773,22 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden">
         <div className="flex h-full overflow-hidden">
-          {/* Menu Lateral */}
-          <div className="w-64 border-r border-border bg-muted/30 flex flex-col flex-shrink-0">
-            <div className="p-4 border-b border-border flex-shrink-0">
-              <div className="flex items-center gap-2 mb-1">
-                <LayoutGrid className="h-5 w-5 text-[#0A2647]" />
-                <h2 className="text-lg font-bold text-[#0A2647]">
-                  Painel Estratégico
-                </h2>
+          {/* Sidebar */}
+          <div className="w-56 border-r border-border/60 bg-muted/10 flex flex-col flex-shrink-0">
+            <div className="px-5 py-5 border-b border-border/40 flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
+                  <LayoutGrid className="h-3.5 w-3.5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-foreground leading-tight">Painel Estratégico</h2>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Grupo Liruz</p>
+                </div>
               </div>
-              <p className="text-[10px] text-muted-foreground">
-                Grupo Liruz
-              </p>
             </div>
 
             <ScrollArea className="flex-1">
-              <div className="p-2 space-y-1">
+              <div className="p-2.5 space-y-0.5">
                 {menuItems
                   .filter(item => !item.apenasGestor || isGestor || isCoordenacao)
                   .map((item) => (
@@ -1003,34 +796,34 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                     key={item.id}
                     onClick={() => setSecaoAtiva(item.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all",
-                      "hover:bg-primary/10",
+                      "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all duration-150",
+                      "hover:bg-primary/5",
                       secaoAtiva === item.id
-                        ? "bg-[#0A2647] text-white shadow-md"
-                        : "text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="text-sm font-medium truncate">{item.label}</span>
+                    <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="text-xs font-medium truncate">{item.label}</span>
                   </button>
                 ))}
               </div>
             </ScrollArea>
           </div>
 
-          {/* Área Principal */}
+          {/* Main content */}
           <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-            <div className="px-6 py-4 border-b border-border bg-card flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="px-6 py-3.5 border-b border-border/40 bg-background flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 {(() => {
                   const activeItem = menuItems.find((m) => m.id === secaoAtiva);
                   if (activeItem) {
                     const IconComponent = activeItem.icon;
-                    return <IconComponent className="h-5 w-5 text-primary flex-shrink-0" />;
+                    return <IconComponent className="h-4 w-4 text-primary flex-shrink-0" />;
                   }
                   return null;
                 })()}
-                <h3 className="font-semibold text-lg truncate">
+                <h3 className="text-sm font-semibold text-foreground truncate">
                   {menuItems.find((m) => m.id === secaoAtiva)?.label}
                 </h3>
               </div>
@@ -1038,14 +831,14 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                 variant="ghost"
                 size="icon"
                 onClick={() => onOpenChange(false)}
-                className="flex-shrink-0"
+                className="flex-shrink-0 h-8 w-8"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
 
             <ScrollArea className="flex-1">
-              <div className="p-6 pb-8 max-w-full">{renderConteudo()}</div>
+              <div className="p-6 pb-10 max-w-full">{renderConteudo()}</div>
             </ScrollArea>
           </div>
         </div>
