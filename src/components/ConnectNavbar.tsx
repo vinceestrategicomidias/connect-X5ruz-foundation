@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, LayoutDashboard, Sun, Moon, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Sun, Moon, BarChart3 } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
-import { PainelUnificado } from "./PainelUnificado";
-import { SystemMenu } from "./SystemMenu";
+import { GestaoUnificada } from "./GestaoUnificada";
 import { RankingTop3 } from "./RankingTop3";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -14,8 +13,7 @@ import { useTheme } from "next-themes";
 export const ConnectNavbar = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [systemMenuOpen, setSystemMenuOpen] = useState(false);
-  const [painelOpen, setPainelOpen] = useState(false);
+  const [gestaoOpen, setGestaoOpen] = useState(false);
 
   return (
     <nav className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
@@ -42,8 +40,11 @@ export const ConnectNavbar = () => {
           onClick={() => navigate("/dashboard")}
           tooltip="Dashboard de Monitoramento"
         />
-        <ConnectIconButton icon={Menu} onClick={() => setSystemMenuOpen(true)} tooltip="Menu do Sistema" />
-        <ConnectIconButton icon={LayoutDashboard} onClick={() => setPainelOpen(true)} tooltip="Painel Estratégico" />
+        <ConnectIconButton
+          icon={LayoutDashboard}
+          onClick={() => setGestaoOpen(true)}
+          tooltip="Central de Gestão"
+        />
         <NotificationsPanel />
         <ConnectIconButton
           icon={theme === "dark" ? Sun : Moon}
@@ -54,8 +55,7 @@ export const ConnectNavbar = () => {
         <UserProfileMenu />
       </div>
 
-      <SystemMenu open={systemMenuOpen} onOpenChange={setSystemMenuOpen} />
-      <PainelUnificado open={painelOpen} onOpenChange={setPainelOpen} />
+      <GestaoUnificada open={gestaoOpen} onOpenChange={setGestaoOpen} />
     </nav>
   );
 };
