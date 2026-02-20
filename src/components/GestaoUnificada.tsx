@@ -237,7 +237,6 @@ const menuBlocks: MenuBlock[] = [
     items: [
       { id: "alertas_config", label: "Config. Alertas", icon: Bell },
       { id: "preditiva", label: "Thalí Preditiva", icon: Brain },
-      { id: "alertas_ativos", label: "Alertas Ativos", icon: AlertTriangle },
       { id: "auditoria", label: "Auditoria", icon: ClipboardList },
       { id: "ideias", label: "Central de Ideias", icon: Lightbulb },
     ],
@@ -802,30 +801,43 @@ export const GestaoUnificada = ({ open, onOpenChange }: GestaoUnificadaProps) =>
     </div>
   );
 
-  // Preditiva
+  // Preditiva (com Alertas Ativos integrados)
   const renderPreditiva = () => (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <MetricCard label="Pico Previsto" value={dadosEmpresaGrande.preditiva.horarioPicoPrevisto} accent />
-        <MetricCard label="Volume Esperado" value={dadosEmpresaGrande.preditiva.volumeEsperadoHoje} />
-        <MetricCard label="Setor + Demandado" value={dadosEmpresaGrande.preditiva.setorMaisDemandado} />
-      </div>
-      <Card className="p-4 border-border/60">
-        <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
-          <Lightbulb className="h-3.5 w-3.5 text-warning" /> Recomendações da Thalí
-        </h4>
-        <div className="space-y-2">
-          {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, i) => (
-            <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/15 border border-border/30">
-              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-[9px] font-bold text-primary">{i + 1}</span>
-              </div>
-              <p className="text-[10px] text-foreground leading-relaxed">{rec}</p>
+    <Tabs defaultValue="previsao" className="w-full">
+      <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsTrigger value="previsao" className="text-xs">Previsão</TabsTrigger>
+        <TabsTrigger value="alertas" className="text-xs flex items-center gap-1.5">
+          <AlertTriangle className="h-3 w-3" /> Alertas Ativos
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="previsao">
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <MetricCard label="Pico Previsto" value={dadosEmpresaGrande.preditiva.horarioPicoPrevisto} accent />
+            <MetricCard label="Volume Esperado" value={dadosEmpresaGrande.preditiva.volumeEsperadoHoje} />
+            <MetricCard label="Setor + Demandado" value={dadosEmpresaGrande.preditiva.setorMaisDemandado} />
+          </div>
+          <Card className="p-4 border-border/60">
+            <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
+              <Lightbulb className="h-3.5 w-3.5 text-warning" /> Recomendações da Thalí
+            </h4>
+            <div className="space-y-2">
+              {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, i) => (
+                <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/15 border border-border/30">
+                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-[9px] font-bold text-primary">{i + 1}</span>
+                  </div>
+                  <p className="text-[10px] text-foreground leading-relaxed">{rec}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          </Card>
         </div>
-      </Card>
-    </div>
+      </TabsContent>
+      <TabsContent value="alertas">
+        {renderAlertasAtivos()}
+      </TabsContent>
+    </Tabs>
   );
 
   // Alertas Ativos
@@ -944,7 +956,6 @@ export const GestaoUnificada = ({ open, onOpenChange }: GestaoUnificadaProps) =>
       // Controle
       case "alertas_config": return renderAlertasConfig();
       case "preditiva": return renderPreditiva();
-      case "alertas_ativos": return renderAlertasAtivos();
       case "auditoria": return <AuditoriaAcoesPanel />;
       case "ideias": return <CentralIdeiasPanel />;
       // Integrações
