@@ -81,20 +81,62 @@ type MenuSection =
   | "api"
   | "mensagens_rapidas";
 
-const menuItems = [
-  { id: "dashboard" as MenuSection, label: "Dashboard", icon: BarChart3 },
-  { id: "relatorios" as MenuSection, label: "Relatórios", icon: FileText },
-  { id: "empresa" as MenuSection, label: "Empresa", icon: Building2 },
-  { id: "unidades" as MenuSection, label: "Unidades", icon: Building },
-  { id: "setores" as MenuSection, label: "Setores", icon: Map },
-  { id: "usuarios" as MenuSection, label: "Usuários", icon: Users },
-  { id: "perfis" as MenuSection, label: "Perfis de Acesso", icon: ShieldCheck },
-  { id: "validacoes" as MenuSection, label: "Validações de Perfil", icon: UserCheck, requiresCoordenacao: true },
-  { id: "mensagens_rapidas" as MenuSection, label: "Mensagens Rápidas", icon: FileText },
-  { id: "ura" as MenuSection, label: "URA (Telefonia)", icon: Phone },
-  { id: "mensageria" as MenuSection, label: "Thalí e Mensageria", icon: Bot },
-  { id: "alertas" as MenuSection, label: "Alertas", icon: Bell },
-  { id: "api" as MenuSection, label: "API e Webhooks", icon: Code2 },
+interface MenuItemType {
+  id: MenuSection;
+  label: string;
+  icon: any;
+  requiresCoordenacao?: boolean;
+}
+
+interface MenuBlock {
+  title: string;
+  items: MenuItemType[];
+}
+
+const menuBlocks: MenuBlock[] = [
+  {
+    title: "Visão Estratégica",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+      { id: "relatorios", label: "Relatórios", icon: FileText },
+    ],
+  },
+  {
+    title: "Estrutura Organizacional",
+    items: [
+      { id: "empresa", label: "Empresa", icon: Building2 },
+      { id: "unidades", label: "Unidades", icon: Building },
+      { id: "setores", label: "Setores", icon: Map },
+    ],
+  },
+  {
+    title: "Equipe e Permissões",
+    items: [
+      { id: "usuarios", label: "Usuários", icon: Users },
+      { id: "perfis", label: "Perfis de Acesso", icon: ShieldCheck },
+      { id: "validacoes", label: "Validações de Perfil", icon: UserCheck, requiresCoordenacao: true },
+    ],
+  },
+  {
+    title: "Operação",
+    items: [
+      { id: "mensagens_rapidas", label: "Mensagens Rápidas", icon: FileText },
+      { id: "ura", label: "URA (Telefonia)", icon: Phone },
+      { id: "mensageria", label: "Thalí e Mensageria", icon: Bot },
+    ],
+  },
+  {
+    title: "Controle",
+    items: [
+      { id: "alertas", label: "Alertas", icon: Bell },
+    ],
+  },
+  {
+    title: "Integrações",
+    items: [
+      { id: "api", label: "API e Webhooks", icon: Code2 },
+    ],
+  },
 ];
 
 export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
@@ -961,45 +1003,63 @@ export const SystemMenu = ({ open, onOpenChange }: SystemMenuProps) => {
     <>
       <Drawer open={open} onOpenChange={onOpenChange} direction="right">
         <DrawerContent className="h-screen top-0 right-0 left-auto mt-0 w-[900px] rounded-none">
-          <DrawerHeader className="border-b">
-            <DrawerTitle className="text-xl">Sistema de Gestão</DrawerTitle>
+          <DrawerHeader className="border-b border-border/60 py-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
+                <BarChart3 className="h-3.5 w-3.5 text-primary-foreground" />
+              </div>
+              <div>
+                <DrawerTitle className="text-sm font-bold leading-tight">Sistema de Gestão</DrawerTitle>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Grupo Liruz</p>
+              </div>
+            </div>
           </DrawerHeader>
           
           <div className="flex h-full overflow-hidden">
             {/* Sidebar */}
-            <div className="w-64 border-r bg-muted/20">
+            <div className="w-64 border-r border-border/60 bg-muted/10">
               <ScrollArea className="h-full">
-                <div className="p-4 space-y-1">
-                  {menuItems.map((item) => {
-                    const Icon = item.icon;
-                    const requiresCoordenacao = (item as any).requiresCoordenacao;
-                    
-                    // Hide validações menu item if user is not coordenação or gestor
-                    if (requiresCoordenacao && !isCoordenacao && !isGestor) {
-                      return null;
-                    }
-                    
+                <div className="p-3 space-y-4">
+                  {menuBlocks.map((block) => {
+                    const visibleItems = block.items.filter(
+                      (item) => !item.requiresCoordenacao || isCoordenacao || isGestor
+                    );
+                    if (visibleItems.length === 0) return null;
+
                     return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          if (item.id === "dashboard") {
-                            navigate("/dashboard");
-                            onOpenChange(false);
-                          } else {
-                            setSelectedSection(item.id);
-                          }
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                          selectedSection === item.id
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
+                      <div key={block.title}>
+                        <p className="px-3 mb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                          {block.title}
+                        </p>
+                        <div className="space-y-0.5">
+                          {visibleItems.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => {
+                                  if (item.id === "dashboard") {
+                                    navigate("/dashboard");
+                                    onOpenChange(false);
+                                  } else {
+                                    setSelectedSection(item.id);
+                                  }
+                                }}
+                                className={cn(
+                                  "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150",
+                                  "hover:bg-primary/5",
+                                  selectedSection === item.id
+                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                                )}
+                              >
+                                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="truncate">{item.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
