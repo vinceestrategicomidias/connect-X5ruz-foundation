@@ -374,18 +374,26 @@ export const GestaoUnificada = () => {
           </ResponsiveContainer>
         </ChartCard>
       </div>
-      <Card className="p-4 border-border/60">
-        <h4 className="text-xs font-semibold text-foreground mb-3">Horários de Pico</h4>
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
-          {dadosEmpresaGrande.horariosPico.map((item) => (
-            <div key={item.horario} className="flex flex-col items-center p-2.5 rounded-lg bg-muted/20 border border-border/40">
-              <span className="text-xs font-semibold">{item.horario}h</span>
-              <span className="text-[10px] text-muted-foreground">{item.msgs} msgs</span>
-              <span className={cn("mt-1.5 px-2 py-0.5 rounded-full text-[9px] font-semibold border", getNivelStyle(item.nivel))}>{item.nivel}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
+      <ChartCard title="Horários de Pico">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dadosEmpresaGrande.horariosPico}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+              <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [`${value} msgs`, "Mensagens"]} labelFormatter={(label) => `${label}h`} />
+              <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
+                {dadosEmpresaGrande.horariosPico.map((item, i) => (
+                  <Cell key={i} fill={
+                    item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
+                    item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
+                    item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
+                    "hsl(142, 71%, 45%)"
+                  } />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+      </ChartCard>
     </div>
   );
 
