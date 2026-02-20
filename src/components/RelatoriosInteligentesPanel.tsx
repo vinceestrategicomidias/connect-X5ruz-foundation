@@ -486,10 +486,6 @@ export const RelatoriosInteligentesPanel = () => {
             <Star className="h-3 w-3 mr-1" />
             Etiquetas
           </TabsTrigger>
-          <TabsTrigger value="follow_up" className="text-xs">
-            <CalendarClock className="h-3 w-3 mr-1" />
-            Follow-up
-          </TabsTrigger>
           <TabsTrigger value="relatorio_geral_atendente" className="text-xs">
             <Brain className="h-3 w-3 mr-1" />
             Relatório Atendente
@@ -810,50 +806,6 @@ export const RelatoriosInteligentesPanel = () => {
                   </div>
                 </Card>
               </div>
-            </TabsContent>
-
-            {/* Follow-up e Recontato */}
-            <TabsContent value="follow_up" className="mt-0 space-y-4">
-              <FiltrosRelatorio filtros={["Data", "Mês", "Ano", "Atendente"]} />
-
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Pendentes</div>
-                  <div className="text-3xl font-bold text-amber-600">{mockData.followUp.pendentes}</div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Realizados</div>
-                  <div className="text-3xl font-bold text-green-600">{mockData.followUp.realizados.toLocaleString()}</div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Taxa de Retorno</div>
-                  <div className="text-3xl font-bold text-foreground">{mockData.followUp.taxaRetorno}%</div>
-                </Card>
-              </div>
-
-              <Card className="p-4">
-                <h4 className="font-semibold mb-4">Follow-up por Atendente</h4>
-                <div className="space-y-3">
-                  {mockData.followUp.porAtendente.map((a, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-3 border rounded-lg">
-                      <div className="w-24 font-medium text-sm">{a.nome}</div>
-                      <div className="flex-1 grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Pendentes: </span>
-                          <span className="font-medium text-amber-600">{a.pendentes}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Realizados: </span>
-                          <span className="font-medium text-green-600">{a.realizados}</span>
-                        </div>
-                        <div>
-                          <Badge variant={a.taxa >= 65 ? "default" : "secondary"}>{a.taxa}% retorno</Badge>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
             </TabsContent>
 
             {/* Relatório Geral por Atendente */}
