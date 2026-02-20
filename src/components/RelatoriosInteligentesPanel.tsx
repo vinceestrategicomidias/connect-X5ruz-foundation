@@ -682,7 +682,7 @@ export const RelatoriosInteligentesPanel = () => {
                 <div className="mt-4 p-3 bg-muted/30 rounded-lg">
                   <div className="text-sm text-muted-foreground">Taxa de conversão total:</div>
                   <div className="text-2xl font-bold text-[#0A2647]">
-                    {((mockData.funilVendas[4].valor / mockData.funilVendas[0].valor) * 100).toFixed(1)}%
+                    {((mockData.funilVendas[mockData.funilVendas.length - 1].valor / mockData.funilVendas[0].valor) * 100).toFixed(1)}%
                   </div>
                 </div>
               </Card>
