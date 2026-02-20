@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LayoutDashboard, Sun, Moon, BarChart3 } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
-import { GestaoUnificada } from "./GestaoUnificada";
 import { RankingTop3 } from "./RankingTop3";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -13,7 +11,6 @@ import { useTheme } from "next-themes";
 export const ConnectNavbar = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [gestaoOpen, setGestaoOpen] = useState(false);
 
   return (
     <nav className="h-16 border-b border-border bg-card px-6 flex items-center justify-between connect-shadow">
@@ -42,7 +39,7 @@ export const ConnectNavbar = () => {
         />
         <ConnectIconButton
           icon={LayoutDashboard}
-          onClick={() => setGestaoOpen(true)}
+          onClick={() => navigate("/gestao")}
           tooltip="Central de Gestão"
         />
         <NotificationsPanel />
@@ -54,8 +51,6 @@ export const ConnectNavbar = () => {
         />
         <UserProfileMenu />
       </div>
-
-      <GestaoUnificada open={gestaoOpen} onOpenChange={setGestaoOpen} />
     </nav>
   );
 };

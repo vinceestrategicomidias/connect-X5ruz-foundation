@@ -47,7 +47,6 @@ import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
 
 // UI
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -251,12 +250,7 @@ const menuBlocks: MenuBlock[] = [
 ];
 
 // ─── Main Component ───────────────────────────────────────
-interface GestaoUnificadaProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export const GestaoUnificada = ({ open, onOpenChange }: GestaoUnificadaProps) => {
+export const GestaoUnificada = () => {
   const navigate = useNavigate();
   const { isCoordenacao, isGestor } = useAtendenteContext();
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -978,75 +972,73 @@ export const GestaoUnificada = ({ open, onOpenChange }: GestaoUnificadaProps) =>
 
   return (
     <>
-      <Drawer open={open} onOpenChange={onOpenChange} direction="right">
-        <DrawerContent className="h-screen top-0 right-0 left-auto mt-0 w-[960px] max-w-[95vw] rounded-none">
-          {/* Header */}
-          <div className="px-5 py-3.5 border-b border-border/60 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <LayoutGrid className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold text-foreground leading-tight">Central de Gestão</h2>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Grupo Liruz</p>
-              </div>
+      <div className="h-screen flex flex-col bg-background">
+        {/* Header */}
+        <div className="px-5 py-3.5 border-b border-border/60 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <LayoutGrid className="h-4 w-4 text-primary-foreground" />
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onOpenChange(false)}>
-              <X className="h-4 w-4" />
-            </Button>
+            <div>
+              <h2 className="text-sm font-bold text-foreground leading-tight">Central de Gestão</h2>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Grupo Liruz</p>
+            </div>
           </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/chat")}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-          {/* Two-column layout */}
-          <div className="flex flex-1 overflow-hidden h-[calc(100vh-57px)]">
-            {/* Sidebar menu */}
-            <ScrollArea className="w-52 flex-shrink-0 border-r border-border/50 bg-muted/20">
-              <nav className="p-3 space-y-4">
-                {menuBlocks.map((block) => (
-                  <div key={block.title}>
-                    <p className="px-2.5 mb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                      {block.title}
-                    </p>
-                    <div className="space-y-0.5">
-                      {block.items.filter(item => shouldShowItem(item.id)).map((item) => {
-                        const isActive = activeSection === item.id;
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => setActiveSection(item.id)}
-                            className={cn(
-                              "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors text-left",
-                              isActive
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                            )}
-                          >
-                            <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
-                            <span className="truncate">{item.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+        {/* Two-column layout */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar menu */}
+          <ScrollArea className="w-52 flex-shrink-0 border-r border-border/50 bg-muted/20">
+            <nav className="p-3 space-y-4">
+              {menuBlocks.map((block) => (
+                <div key={block.title}>
+                  <p className="px-2.5 mb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                    {block.title}
+                  </p>
+                  <div className="space-y-0.5">
+                    {block.items.filter(item => shouldShowItem(item.id)).map((item) => {
+                      const isActive = activeSection === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveSection(item.id)}
+                          className={cn(
+                            "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors text-left",
+                            isActive
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          )}
+                        >
+                          <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
-              </nav>
-            </ScrollArea>
+                </div>
+              ))}
+            </nav>
+          </ScrollArea>
 
-            {/* Main content */}
-            <ScrollArea className="flex-1">
-              <div className="p-6 pb-10">
-                {/* Section title */}
-                {activeItem && (
-                  <div className="flex items-center gap-2 mb-5">
-                    <activeItem.icon className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-semibold text-foreground">{activeItem.label}</h3>
-                  </div>
-                )}
-                {renderContent()}
-              </div>
-            </ScrollArea>
-          </div>
-        </DrawerContent>
-      </Drawer>
+          {/* Main content */}
+          <ScrollArea className="flex-1">
+            <div className="p-6 pb-10">
+              {/* Section title */}
+              {activeItem && (
+                <div className="flex items-center gap-2 mb-5">
+                  <activeItem.icon className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-foreground">{activeItem.label}</h3>
+                </div>
+              )}
+              {renderContent()}
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
 
       {/* Dialogs */}
       <ValidacoesPerfilPanel open={validacoesOpen} onOpenChange={setValidacoesOpen} />
