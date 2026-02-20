@@ -78,18 +78,43 @@ interface MenuItem {
   apenasGestor?: boolean;
 }
 
-const menuItems: MenuItem[] = [
-  { id: "dashboards", label: "Dashboards", icon: LayoutGrid },
-  { id: "roteiros", label: "Roteiros", icon: FileText },
-  { id: "nps", label: "Net Promoter Score (NPS)", icon: ThumbsUp },
-  { id: "preditiva", label: "Thalí Preditiva", icon: TrendingUp },
-  { id: "feedback", label: "Feedback da Thalí", icon: MessageSquare },
-  { id: "indicadores", label: "Indicadores", icon: Activity },
-  { id: "ideias", label: "Ideias", icon: Lightbulb },
-  { id: "etiquetas", label: "Etiquetas", icon: Award, apenasGestor: true },
-  { id: "relatorios", label: "Relatórios Inteligentes", icon: BarChart3 },
-  { id: "configuracoes", label: "Configurações", icon: Settings, apenasGestor: true },
-  { id: "auditoria", label: "Auditoria", icon: History },
+interface MenuBlock {
+  title: string;
+  items: MenuItem[];
+}
+
+const menuBlocks: MenuBlock[] = [
+  {
+    title: "Visão Estratégica",
+    items: [
+      { id: "dashboards", label: "Dashboards", icon: LayoutGrid },
+      { id: "relatorios", label: "Relatórios Inteligentes", icon: BarChart3 },
+      { id: "nps", label: "Net Promoter Score (NPS)", icon: ThumbsUp },
+    ],
+  },
+  {
+    title: "Thalí IA",
+    items: [
+      { id: "preditiva", label: "Thalí Preditiva", icon: TrendingUp },
+      { id: "feedback", label: "Feedback da Thalí", icon: MessageSquare },
+    ],
+  },
+  {
+    title: "Operação",
+    items: [
+      { id: "roteiros", label: "Roteiros", icon: FileText },
+      { id: "indicadores", label: "Indicadores", icon: Activity },
+      { id: "etiquetas", label: "Etiquetas", icon: Award, apenasGestor: true },
+    ],
+  },
+  {
+    title: "Controle",
+    items: [
+      { id: "auditoria", label: "Auditoria", icon: History },
+      { id: "ideias", label: "Central de Ideias", icon: Lightbulb },
+      { id: "configuracoes", label: "Configurações", icon: Settings, apenasGestor: true },
+    ],
+  },
 ];
 
 // Dados NPS comparativos
@@ -791,25 +816,39 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             </div>
 
             <ScrollArea className="flex-1">
-              <div className="p-2.5 space-y-0.5">
-                {menuItems
-                  .filter(item => !item.apenasGestor || isGestor || isCoordenacao)
-                  .map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setSecaoAtiva(item.id)}
-                    className={cn(
-                      "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all duration-150",
-                      "hover:bg-primary/5",
-                      secaoAtiva === item.id
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium truncate">{item.label}</span>
-                  </button>
-                ))}
+              <div className="p-3 space-y-4">
+                {menuBlocks.map((block) => {
+                  const visibleItems = block.items.filter(
+                    (item) => !item.apenasGestor || isGestor || isCoordenacao
+                  );
+                  if (visibleItems.length === 0) return null;
+
+                  return (
+                    <div key={block.title}>
+                      <p className="px-3 mb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                        {block.title}
+                      </p>
+                      <div className="space-y-0.5">
+                        {visibleItems.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => setSecaoAtiva(item.id)}
+                            className={cn(
+                              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all duration-150",
+                              "hover:bg-primary/5",
+                              secaoAtiva === item.id
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                            <span className="text-xs font-medium truncate">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </ScrollArea>
           </div>
@@ -819,7 +858,8 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
             <div className="px-6 py-3.5 border-b border-border/40 bg-background flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
                 {(() => {
-                  const activeItem = menuItems.find((m) => m.id === secaoAtiva);
+                  const allItems = menuBlocks.flatMap(b => b.items);
+                  const activeItem = allItems.find((m) => m.id === secaoAtiva);
                   if (activeItem) {
                     const IconComponent = activeItem.icon;
                     return <IconComponent className="h-4 w-4 text-primary flex-shrink-0" />;
@@ -827,7 +867,7 @@ export const PainelUnificado = ({ open, onOpenChange }: PainelUnificadoProps) =>
                   return null;
                 })()}
                 <h3 className="text-sm font-semibold text-foreground truncate">
-                  {menuItems.find((m) => m.id === secaoAtiva)?.label}
+                  {menuBlocks.flatMap(b => b.items).find((m) => m.id === secaoAtiva)?.label}
                 </h3>
               </div>
               <Button
