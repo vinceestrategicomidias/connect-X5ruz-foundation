@@ -29,7 +29,11 @@ interface DashboardMetrics {
   atendentesPausa: number;
 }
 
-export default function DashboardMonitoramento() {
+interface DashboardMonitoramentoProps {
+  embedded?: boolean;
+}
+
+export default function DashboardMonitoramento({ embedded = false }: DashboardMonitoramentoProps) {
   const navigate = useNavigate();
   const { atendenteLogado, isCoordenacao, isGestor } = useAtendenteContext();
   const { data: pacientes } = usePacientes();
@@ -203,8 +207,9 @@ export default function DashboardMonitoramento() {
     .sort((a, b) => (b.tempo_na_fila || 0) - (a.tempo_na_fila || 0)) || [];
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className={embedded ? "space-y-4" : "min-h-screen bg-background p-4"}>
       {/* Header com filtros */}
+      {!embedded && (
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/chat")}>
@@ -258,6 +263,7 @@ export default function DashboardMonitoramento() {
           </Button>
         </div>
       </div>
+      )}
 
       {/* Indicadores principais */}
       <div className="grid grid-cols-4 gap-4 mb-6">

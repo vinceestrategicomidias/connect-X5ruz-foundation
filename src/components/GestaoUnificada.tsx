@@ -6,8 +6,9 @@ import {
   LayoutGrid, ThumbsUp, TrendingUp, MessageSquare, Activity, History,
   Lightbulb, X, Award, Settings, Filter, Calendar, Download, ChevronDown,
   Gauge, Star, Zap, BookOpen, Tag, ClipboardList, Brain, AlertTriangle,
-  Workflow, Sparkles, type LucideIcon,
+  Workflow, Sparkles, Settings2, ChevronRight, type LucideIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -45,13 +46,19 @@ import { RelatoriosInteligentesPanel } from "./RelatoriosInteligentesPanel";
 import { CentralIdeiasPanel } from "./CentralIdeiasPanel";
 import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
-
+import DashboardMonitoramento from "@/pages/DashboardMonitoramento";
 // UI
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -297,6 +304,11 @@ export const GestaoUnificada = () => {
     relatorio_critico: { ativo: false, intensidade: "moderado", intervalo: 5 },
   });
   const [apiConfig] = useState({ chave_api: "LIRUZ-API-KEY-001" });
+  const [personalizarOpen, setPersonalizarOpen] = useState(false);
+  const [indicadoresAtivos, setIndicadoresAtivos] = useState<Record<string, boolean>>({
+    total_atendimentos: true, tma: true, tme: true, resolutividade: true,
+    conversao: true, receita: true, nps_medio: true,
+  });
 
   // Handlers
   const handleSalvarEmpresa = () => {
@@ -317,74 +329,7 @@ export const GestaoUnificada = () => {
 
   // Dashboard
   const renderDashboard = () => (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricCard label="Total Atendimentos" value={dadosEmpresaGrande.totalAtendimentos.toLocaleString()} accent />
-        <MetricCard label="TMA" value={dadosEmpresaGrande.tmaSetor} />
-        <MetricCard label="TME" value={dadosEmpresaGrande.tmeSetor} />
-        <MetricCard label="Resolutividade" value={`${dadosEmpresaGrande.taxaConclusao}%`} accent />
-      </div>
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <MetricCard label="NPS Geral" value={dadosEmpresaGrande.npsGeral} accent />
-        <MetricCard label="% Transferência" value={`${dadosEmpresaGrande.porcentagemTransferencia}%`} />
-        <MetricCard label="Taxa Reabertura" value={`${dadosEmpresaGrande.taxaReabertura}%`} />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard title="Atendimentos por Dia">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-              <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-        <ChartCard title="Horários de Pico">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dadosEmpresaGrande.horariosPico}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-              <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
-                {dadosEmpresaGrande.horariosPico.map((item, i) => (
-                  <Cell key={i} fill={
-                    item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
-                    item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
-                    item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
-                    "hsl(142, 71%, 45%)"
-                  } />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-      {/* Alertas rápidos */}
-      <Card className="p-4 border-border/60">
-        <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
-          <AlertTriangle className="h-3.5 w-3.5 text-warning" /> Alertas Recentes
-        </h4>
-        <div className="space-y-2">
-          {dadosEmpresaGrande.alertas.map((a, i) => (
-            <div key={i} className={cn("p-2.5 rounded-lg border border-border/40 flex items-start gap-2",
-              a.cor === "red" && "bg-destructive/5",
-              a.cor === "orange" && "bg-warning/5",
-              a.cor === "yellow" && "bg-warning/5"
-            )}>
-              <Bell className={cn("h-3 w-3 mt-0.5 flex-shrink-0",
-                a.cor === "red" ? "text-destructive" : "text-warning"
-              )} />
-              <div>
-                <h5 className="text-[10px] font-medium">{a.tipo}{a.setor && ` · ${a.setor}`}{a.atendente && ` · ${a.atendente}`}</h5>
-                <p className="text-[10px] text-muted-foreground">{a.detalhes}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
+    <DashboardMonitoramento embedded />
   );
 
   // NPS
@@ -898,21 +843,58 @@ export const GestaoUnificada = () => {
         <TabsTrigger value="distribuicao" className="text-xs">Distribuição</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="visao_geral" className="space-y-5">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard label="Total Atendimentos" value={dadosEmpresaGrande.totalAtendimentos.toLocaleString()} accent />
-          <MetricCard label="TMA" value={dadosEmpresaGrande.tmaSetor} />
-          <MetricCard label="Resolutividade" value={`${dadosEmpresaGrande.taxaConclusao}%`} accent />
-          <MetricCard label="NPS Médio" value={dadosEmpresaGrande.npsGeral} accent />
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          <MetricCard label="TME" value={dadosEmpresaGrande.tmeSetor} />
-          <MetricCard label="Conversão" value={`${dadosEmpresaGrande.taxaConclusao}%`} />
-          <MetricCard label="Receita" value="R$ 892.000" accent />
-        </div>
+      <TabsContent value="visao_geral" className="space-y-3">
+        {/* Menu de relatórios */}
+        {[
+          { id: "total_atendimentos", icon: Users, nome: "Total de Atendimentos", desc: "Volume total de atendimentos no período selecionado", valor: dadosEmpresaGrande.totalAtendimentos.toLocaleString() },
+          { id: "tma", icon: Gauge, nome: "TMA – Tempo Médio de Atendimento", desc: "Tempo médio gasto por atendimento", valor: dadosEmpresaGrande.tmaSetor },
+          { id: "tme", icon: Gauge, nome: "TME – Tempo Médio de Espera", desc: "Tempo médio de espera na fila antes do atendimento", valor: dadosEmpresaGrande.tmeSetor },
+          { id: "resolutividade", icon: Star, nome: "Taxa de Resolutividade", desc: "Percentual de atendimentos resolvidos sem reabertura", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
+          { id: "conversao", icon: TrendingUp, nome: "Conversão", desc: "Taxa de conversão de leads em vendas efetivas", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
+          { id: "receita", icon: Zap, nome: "Receita", desc: "Receita total gerada pelos atendimentos no período", valor: "R$ 892.000" },
+          { id: "nps_medio", icon: Award, nome: "NPS Médio", desc: "Índice de satisfação dos clientes", valor: String(dadosEmpresaGrande.npsGeral) },
+        ].map((item) => (
+          <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
+            <div className="p-2 rounded-md bg-primary/10">
+              <item.icon className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-xs font-semibold text-foreground">{item.nome}</h4>
+              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+            </div>
+            <div className="text-right flex items-center gap-2">
+              <span className="text-sm font-bold text-primary">{item.valor}</span>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+          </div>
+        ))}
       </TabsContent>
 
       <TabsContent value="atendimento" className="space-y-5">
+        {/* Header com Personalizar e Exportar */}
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+            <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="h-7 text-[10px]">
+                <Download className="h-3 w-3 mr-1" /> Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => toast.success("Exportando relatório em Excel...")}>
+                <FileText className="h-3 w-3 mr-2" /> Excel (.xlsx)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Exportando relatório em Word...")}>
+                <FileText className="h-3 w-3 mr-2" /> Word (.docx)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Exportando relatório em PDF...")}>
+                <FileText className="h-3 w-3 mr-2" /> PDF (.pdf)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <ChartCard title="Atendimentos por Dia">
             <ResponsiveContainer width="100%" height="100%">
@@ -958,11 +940,34 @@ export const GestaoUnificada = () => {
         </ChartCard>
       </TabsContent>
 
-      <TabsContent value="comercial">
-        <RelatoriosInteligentesPanel />
+      <TabsContent value="comercial" className="space-y-5">
+        <div className="flex items-center justify-end gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </TabsContent>
 
       <TabsContent value="produtividade" className="space-y-5">
+        <div className="flex items-center justify-end gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {dadosEmpresaGrande.indicadores.map((ind, i) => (
             <MetricCard key={i} label={ind.nome} value={ind.valor} accent />
@@ -1183,6 +1188,38 @@ export const GestaoUnificada = () => {
       <EditarUsuarioDialog open={editarUsuarioOpen} onOpenChange={setEditarUsuarioOpen} usuario={usuarioParaEditar} />
       <CriarPerfilAcessoDialog open={criarPerfilOpen} onOpenChange={setCriarPerfilOpen} />
       <EditarPerfilAcessoDialog open={editarPerfilOpen} onOpenChange={setEditarPerfilOpen} perfil={perfilParaEditar} />
+
+      {/* Dialog Personalizar Indicadores */}
+      <Dialog open={personalizarOpen} onOpenChange={setPersonalizarOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Personalizar Indicadores</DialogTitle>
+          </DialogHeader>
+          <p className="text-[10px] text-muted-foreground mb-3">Ative ou desative os indicadores que deseja visualizar nos relatórios.</p>
+          <div className="space-y-3">
+            {[
+              { id: "total_atendimentos", nome: "Total de Atendimentos" },
+              { id: "tma", nome: "TMA – Tempo Médio de Atendimento" },
+              { id: "tme", nome: "TME – Tempo Médio de Espera" },
+              { id: "resolutividade", nome: "Taxa de Resolutividade" },
+              { id: "conversao", nome: "Conversão" },
+              { id: "receita", nome: "Receita" },
+              { id: "nps_medio", nome: "NPS Médio" },
+            ].map((ind) => (
+              <div key={ind.id} className="flex items-center justify-between p-2.5 rounded-lg border border-border/50">
+                <span className="text-xs font-medium">{ind.nome}</span>
+                <Switch
+                  checked={indicadoresAtivos[ind.id] ?? true}
+                  onCheckedChange={(c) => setIndicadoresAtivos({ ...indicadoresAtivos, [ind.id]: c })}
+                />
+              </div>
+            ))}
+          </div>
+          <Button size="sm" className="w-full mt-4 h-8 text-xs" onClick={() => { setPersonalizarOpen(false); toast.success("Indicadores atualizados!"); }}>
+            <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Preferências
+          </Button>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
