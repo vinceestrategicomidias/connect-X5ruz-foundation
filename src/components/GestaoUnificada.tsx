@@ -6,7 +6,7 @@ import {
   LayoutGrid, ThumbsUp, TrendingUp, MessageSquare, Activity, History,
   Lightbulb, X, Award, Settings, Filter, Calendar, Download, ChevronDown,
   Gauge, Star, Zap, BookOpen, Tag, ClipboardList, Brain, AlertTriangle,
-  Workflow, type LucideIcon,
+  Workflow, Sparkles, type LucideIcon,
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis,
@@ -199,9 +199,8 @@ const menuBlocks: MenuBlock[] = [
     title: "Visão Estratégica",
     items: [
       { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-      { id: "relatorios", label: "Relatórios Inteligentes", icon: FileText },
-      { id: "nps", label: "NPS", icon: Star },
-      { id: "indicadores", label: "Indicadores", icon: Gauge },
+      { id: "relatorios", label: "Relatórios", icon: FileText },
+      { id: "preditiva_estrategica", label: "Thalí Preditiva", icon: Brain },
       { id: "feedback", label: "Feedback Thalí", icon: ThumbsUp },
     ],
   },
@@ -235,9 +234,8 @@ const menuBlocks: MenuBlock[] = [
     title: "Controle",
     items: [
       { id: "alertas_config", label: "Config. Alertas", icon: Bell },
-      { id: "preditiva", label: "Thalí Preditiva", icon: Brain },
       { id: "auditoria", label: "Auditoria", icon: ClipboardList },
-      { id: "ideias", label: "Central de Ideias", icon: Lightbulb },
+      { id: "ideias", label: "Ideias das Estrelas", icon: Sparkles },
     ],
   },
   {
@@ -326,6 +324,11 @@ export const GestaoUnificada = () => {
         <MetricCard label="TME" value={dadosEmpresaGrande.tmeSetor} />
         <MetricCard label="Resolutividade" value={`${dadosEmpresaGrande.taxaConclusao}%`} accent />
       </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <MetricCard label="NPS Geral" value={dadosEmpresaGrande.npsGeral} accent />
+        <MetricCard label="% Transferência" value={`${dadosEmpresaGrande.porcentagemTransferencia}%`} />
+        <MetricCard label="Taxa Reabertura" value={`${dadosEmpresaGrande.taxaReabertura}%`} />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartCard title="Atendimentos por Dia">
           <ResponsiveContainer width="100%" height="100%">
@@ -337,50 +340,13 @@ export const GestaoUnificada = () => {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="TMA e TME Diário (min)">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-              <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
-              <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
-              <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-        <ChartCard title="Distribuição por Atendente">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-              <XAxis type="number" tick={{ fontSize: 10 }} />
-              <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-        <ChartCard title="Status de Atendimentos">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
-                label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
-                dataKey="value" strokeWidth={0}>
-                {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-      <ChartCard title="Horários de Pico">
+        <ChartCard title="Horários de Pico">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={dadosEmpresaGrande.horariosPico}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
               <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
               <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [`${value} msgs`, "Mensagens"]} labelFormatter={(label) => `${label}h`} />
+              <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
                 {dadosEmpresaGrande.horariosPico.map((item, i) => (
                   <Cell key={i} fill={
@@ -393,7 +359,31 @@ export const GestaoUnificada = () => {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-      </ChartCard>
+        </ChartCard>
+      </div>
+      {/* Alertas rápidos */}
+      <Card className="p-4 border-border/60">
+        <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
+          <AlertTriangle className="h-3.5 w-3.5 text-warning" /> Alertas Recentes
+        </h4>
+        <div className="space-y-2">
+          {dadosEmpresaGrande.alertas.map((a, i) => (
+            <div key={i} className={cn("p-2.5 rounded-lg border border-border/40 flex items-start gap-2",
+              a.cor === "red" && "bg-destructive/5",
+              a.cor === "orange" && "bg-warning/5",
+              a.cor === "yellow" && "bg-warning/5"
+            )}>
+              <Bell className={cn("h-3 w-3 mt-0.5 flex-shrink-0",
+                a.cor === "red" ? "text-destructive" : "text-warning"
+              )} />
+              <div>
+                <h5 className="text-[10px] font-medium">{a.tipo}{a.setor && ` · ${a.setor}`}{a.atendente && ` · ${a.atendente}`}</h5>
+                <p className="text-[10px] text-muted-foreground">{a.detalhes}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 
@@ -803,44 +793,7 @@ export const GestaoUnificada = () => {
     </div>
   );
 
-  // Preditiva (com Alertas Ativos integrados)
-  const renderPreditiva = () => (
-    <Tabs defaultValue="previsao" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
-        <TabsTrigger value="previsao" className="text-xs">Previsão</TabsTrigger>
-        <TabsTrigger value="alertas" className="text-xs flex items-center gap-1.5">
-          <AlertTriangle className="h-3 w-3" /> Alertas Ativos
-        </TabsTrigger>
-      </TabsList>
-      <TabsContent value="previsao">
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <MetricCard label="Pico Previsto" value={dadosEmpresaGrande.preditiva.horarioPicoPrevisto} accent />
-            <MetricCard label="Volume Esperado" value={dadosEmpresaGrande.preditiva.volumeEsperadoHoje} />
-            <MetricCard label="Setor + Demandado" value={dadosEmpresaGrande.preditiva.setorMaisDemandado} />
-          </div>
-          <Card className="p-4 border-border/60">
-            <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
-              <Lightbulb className="h-3.5 w-3.5 text-warning" /> Recomendações da Thalí
-            </h4>
-            <div className="space-y-2">
-              {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, i) => (
-                <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/15 border border-border/30">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[9px] font-bold text-primary">{i + 1}</span>
-                  </div>
-                  <p className="text-[10px] text-foreground leading-relaxed">{rec}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </TabsContent>
-      <TabsContent value="alertas">
-        {renderAlertasAtivos()}
-      </TabsContent>
-    </Tabs>
-  );
+  // (renderPreditiva removed - now integrated into renderPreditivaEstrategica)
 
   // Alertas Ativos
   const renderAlertasAtivos = () => {
@@ -933,13 +886,189 @@ export const GestaoUnificada = () => {
   );
 
   // ─── Content renderer per menu item ─────
+  // Unified Relatórios module
+  const renderRelatorios = () => (
+    <Tabs defaultValue="visao_geral" className="w-full">
+      <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/50 p-1 mb-4">
+        <TabsTrigger value="visao_geral" className="text-xs">Visão Geral</TabsTrigger>
+        <TabsTrigger value="atendimento" className="text-xs">Atendimento</TabsTrigger>
+        <TabsTrigger value="comercial" className="text-xs">Comercial</TabsTrigger>
+        <TabsTrigger value="produtividade" className="text-xs">Produtividade</TabsTrigger>
+        <TabsTrigger value="nps_rel" className="text-xs">NPS</TabsTrigger>
+        <TabsTrigger value="distribuicao" className="text-xs">Distribuição</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="visao_geral" className="space-y-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <MetricCard label="Total Atendimentos" value={dadosEmpresaGrande.totalAtendimentos.toLocaleString()} accent />
+          <MetricCard label="TMA" value={dadosEmpresaGrande.tmaSetor} />
+          <MetricCard label="Resolutividade" value={`${dadosEmpresaGrande.taxaConclusao}%`} accent />
+          <MetricCard label="NPS Médio" value={dadosEmpresaGrande.npsGeral} accent />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <MetricCard label="TME" value={dadosEmpresaGrande.tmeSetor} />
+          <MetricCard label="Conversão" value={`${dadosEmpresaGrande.taxaConclusao}%`} />
+          <MetricCard label="Receita" value="R$ 892.000" accent />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="atendimento" className="space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartCard title="Atendimentos por Dia">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+          <ChartCard title="TMA e TME Diário (min)">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
+                <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+        <ChartCard title="Horários de Pico">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dadosEmpresaGrande.horariosPico}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+              <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
+                {dadosEmpresaGrande.horariosPico.map((item, i) => (
+                  <Cell key={i} fill={
+                    item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
+                    item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
+                    item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
+                    "hsl(142, 71%, 45%)"
+                  } />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </TabsContent>
+
+      <TabsContent value="comercial">
+        <RelatoriosInteligentesPanel />
+      </TabsContent>
+
+      <TabsContent value="produtividade" className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {dadosEmpresaGrande.indicadores.map((ind, i) => (
+            <MetricCard key={i} label={ind.nome} value={ind.valor} accent />
+          ))}
+        </div>
+        <ChartCard title="Distribuição por Atendente">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+              <XAxis type="number" tick={{ fontSize: 10 }} />
+              <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </TabsContent>
+
+      <TabsContent value="nps_rel" className="space-y-5">
+        {renderNps()}
+      </TabsContent>
+
+      <TabsContent value="distribuicao" className="space-y-5">
+        <ChartCard title="Status de Atendimentos">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
+                label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
+                dataKey="value" strokeWidth={0}>
+                {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={tooltipStyle} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </TabsContent>
+    </Tabs>
+  );
+
+  // Thalí Preditiva (Visão Estratégica)
+  const renderPreditivaEstrategica = () => (
+    <div className="space-y-5">
+      <Card className="p-4 border-border/60 bg-primary/5">
+        <div className="flex items-start gap-3">
+          <Brain className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <h4 className="text-xs font-semibold mb-1">Thalí Preditiva</h4>
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              A Thalí Preditiva analisa dados históricos e comportamentais para gerar insights estratégicos para a gestão.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <Tabs defaultValue="previsao" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="previsao" className="text-xs">Previsão</TabsTrigger>
+          <TabsTrigger value="alertas" className="text-xs flex items-center gap-1.5">
+            <AlertTriangle className="h-3 w-3" /> Alertas Ativos
+          </TabsTrigger>
+          <TabsTrigger value="feedback_thali" className="text-xs flex items-center gap-1.5">
+            <ThumbsUp className="h-3 w-3" /> Feedback Thalí
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="previsao">
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <MetricCard label="Pico Previsto" value={dadosEmpresaGrande.preditiva.horarioPicoPrevisto} accent />
+              <MetricCard label="Volume Esperado" value={dadosEmpresaGrande.preditiva.volumeEsperadoHoje} />
+              <MetricCard label="Setor + Demandado" value={dadosEmpresaGrande.preditiva.setorMaisDemandado} />
+            </div>
+            <Card className="p-4 border-border/60">
+              <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
+                <Lightbulb className="h-3.5 w-3.5 text-warning" /> Recomendações da Thalí
+              </h4>
+              <div className="space-y-2">
+                {dadosEmpresaGrande.preditiva.recomendacoes.map((rec, i) => (
+                  <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/15 border border-border/30">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-[9px] font-bold text-primary">{i + 1}</span>
+                    </div>
+                    <p className="text-[10px] text-foreground leading-relaxed">{rec}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </TabsContent>
+        <TabsContent value="alertas">
+          {renderAlertasAtivos()}
+        </TabsContent>
+        <TabsContent value="feedback_thali">
+          {renderFeedback()}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
-      // Visão
+      // Visão Estratégica
       case "dashboard": return renderDashboard();
-      case "relatorios": return <RelatoriosInteligentesPanel />;
-      case "nps": return renderNps();
-      case "indicadores": return renderIndicadores();
+      case "relatorios": return renderRelatorios();
+      case "preditiva_estrategica": return renderPreditivaEstrategica();
       case "feedback": return renderFeedback();
       // Estrutura
       case "empresa": return renderEmpresa();
@@ -957,7 +1086,6 @@ export const GestaoUnificada = () => {
       case "etiquetas": return <EtiquetasManagementPanel />;
       // Controle
       case "alertas_config": return renderAlertasConfig();
-      case "preditiva": return renderPreditiva();
       case "auditoria": return <AuditoriaAcoesPanel />;
       case "ideias": return <CentralIdeiasPanel />;
       // Integrações
@@ -985,11 +1113,11 @@ export const GestaoUnificada = () => {
         <div className="px-5 py-3.5 border-b border-border/60 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <LayoutGrid className="h-4 w-4 text-primary-foreground" />
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground leading-tight">Central de Gestão</h2>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Grupo Liruz</p>
+              <h2 className="text-sm font-bold text-foreground leading-tight">CONNECT LIRUZ</h2>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Central de Gestão</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/chat")}>
