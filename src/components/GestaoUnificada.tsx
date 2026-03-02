@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Building2, Building, Users, ShieldCheck, Phone, Bot, FileText, BarChart3,
@@ -10,8 +10,9 @@ import {
   CalendarDays, ChevronLeft, BarChart2, Target, Clock, HeartHandshake,
   ShoppingCart, MapPin, Smile, AlertCircle, Timer, RotateCcw, UserX,
   DollarSign, Package, TrendingDown, Pause, Medal, Globe, Home, FileDown,
+  Loader2, Trophy, CreditCard, Briefcase, ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
-import { format, subDays, startOfMonth, endOfMonth, subMonths, startOfYear } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, subMonths, startOfYear, parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
@@ -20,7 +21,7 @@ import {
 import { toast } from "sonner";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer, FunnelChart, Funnel, LabelList,
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
@@ -160,6 +161,78 @@ const npsComparativo = {
   ],
 };
 
+// Simulated commercial data
+const dadosComerciais = {
+  vendasPorDia: [
+    { dia: "Seg", vendas: 8, receita: 24000 }, { dia: "Ter", vendas: 12, receita: 36000 },
+    { dia: "Qua", vendas: 6, receita: 18000 }, { dia: "Qui", vendas: 15, receita: 52000 },
+    { dia: "Sex", vendas: 18, receita: 61000 }, { dia: "Sáb", vendas: 4, receita: 12000 },
+    { dia: "Dom", vendas: 2, receita: 5000 },
+  ],
+  receitaPorProduto: [
+    { produto: "Cirurgia Plástica", receita: 89000 }, { produto: "Harmonização", receita: 67000 },
+    { produto: "Botox", receita: 42000 }, { produto: "Preenchimento", receita: 38000 },
+    { produto: "Consulta", receita: 12000 },
+  ],
+  motivosPerda: [
+    { motivo: "Preço alto", quantidade: 23 }, { motivo: "Concorrência", quantidade: 15 },
+    { motivo: "Desistência", quantidade: 12 }, { motivo: "Sem retorno", quantidade: 9 },
+    { motivo: "Prazo", quantidade: 6 },
+  ],
+  conversaoPorAtendente: [
+    { nome: "Geovana", leads: 45, vendas: 18, conversao: 40, receita: 72000, ticket: 4000, ciclo: 5 },
+    { nome: "Paloma", leads: 38, vendas: 14, conversao: 37, receita: 56000, ticket: 4000, ciclo: 6 },
+    { nome: "Emilly", leads: 42, vendas: 12, conversao: 29, receita: 48000, ticket: 4000, ciclo: 7 },
+    { nome: "Marcos", leads: 35, vendas: 9, conversao: 26, receita: 31500, ticket: 3500, ciclo: 8 },
+    { nome: "Bianca", leads: 30, vendas: 7, conversao: 23, receita: 24500, ticket: 3500, ciclo: 9 },
+  ],
+  funil: [
+    { name: "Em negociação", value: 142, fill: "hsl(214, 85%, 51%)" },
+    { name: "Vendido", value: 65, fill: "hsl(142, 71%, 45%)" },
+    { name: "Perdido", value: 48, fill: "hsl(0, 84%, 60%)" },
+  ],
+};
+
+const dadosProdutividade = {
+  ranking: [
+    { nome: "Geovana", atendimentos: 314, online: "7h42", pausa: "48min", resolutividade: 94 },
+    { nome: "Paloma", atendimentos: 287, online: "7h18", pausa: "52min", resolutividade: 91 },
+    { nome: "Emilly", atendimentos: 274, online: "7h05", pausa: "55min", resolutividade: 89 },
+    { nome: "Marcos", atendimentos: 251, online: "6h50", pausa: "1h10", resolutividade: 82 },
+    { nome: "Bianca", atendimentos: 229, online: "6h35", pausa: "1h05", resolutividade: 85 },
+  ],
+};
+
+const dadosDistribuicao = {
+  estados: [
+    { estado: "ES", clientes: 412 }, { estado: "SP", clientes: 287 },
+    { estado: "RJ", clientes: 198 }, { estado: "MG", clientes: 156 },
+    { estado: "BA", clientes: 89 }, { estado: "PR", clientes: 67 },
+    { estado: "SC", clientes: 45 }, { estado: "RS", clientes: 38 },
+    { estado: "GO", clientes: 29 }, { estado: "DF", clientes: 22 },
+  ],
+  origens: [
+    { name: "WhatsApp", value: 45 }, { name: "Instagram", value: 28 },
+    { name: "Site", value: 15 }, { name: "Indicação", value: 12 },
+  ],
+};
+
+const dadosNpsQualidade = {
+  sentimento: [
+    { periodo: "Sem 1", positivo: 78, neutro: 15, negativo: 7 },
+    { periodo: "Sem 2", positivo: 82, neutro: 12, negativo: 6 },
+    { periodo: "Sem 3", positivo: 75, neutro: 18, negativo: 7 },
+    { periodo: "Sem 4", positivo: 85, neutro: 10, negativo: 5 },
+  ],
+  tabelaAtendentes: [
+    { nome: "Geovana", nps: 95, sentimento: "Positivo", tma: "3m12s", alertas: 0 },
+    { nome: "Paloma", nps: 93, sentimento: "Positivo", tma: "3m28s", alertas: 1 },
+    { nome: "Emilly", nps: 92, sentimento: "Positivo", tma: "3m05s", alertas: 0 },
+    { nome: "Marcos", nps: 74, sentimento: "Neutro", tma: "4m52s", alertas: 3 },
+    { nome: "Bianca", nps: 88, sentimento: "Positivo", tma: "3m45s", alertas: 1 },
+  ],
+};
+
 const COLORS = ["hsl(214, 85%, 51%)", "hsl(214, 85%, 41%)", "hsl(142, 71%, 45%)", "hsl(210, 14%, 72%)"];
 
 const alertasMeta = [
@@ -182,10 +255,18 @@ const getNivelStyle = (nivel: string) => {
 };
 
 // ─── Helpers ──────────────────────────────────────────────
-const MetricCard = ({ label, value, accent = false }: { label: string; value: string | number; accent?: boolean }) => (
+const MetricCard = ({ label, value, accent = false, trend, trendUp }: { label: string; value: string | number; accent?: boolean; trend?: string; trendUp?: boolean }) => (
   <Card className="p-4 border-border/60">
     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">{label}</p>
-    <p className={cn("text-xl font-bold", accent ? "text-primary" : "text-foreground")}>{value}</p>
+    <div className="flex items-end justify-between">
+      <p className={cn("text-xl font-bold", accent ? "text-primary" : "text-foreground")}>{value}</p>
+      {trend && (
+        <span className={cn("text-[10px] font-medium flex items-center gap-0.5", trendUp ? "text-emerald-600" : "text-destructive")}>
+          {trendUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+          {trend}
+        </span>
+      )}
+    </div>
   </Card>
 );
 
@@ -197,6 +278,10 @@ const ChartCard = ({ title, children, className }: { title: string; children: Re
 );
 
 const tooltipStyle = { borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" };
+
+const setoresComerciais = [
+  "Pré venda", "Venda", "Pós venda", "Comercial CRM", "Comercial Connect", "Comercial Medical Host"
+];
 
 // ─── Menu definition ──────────────────────────────────────
 interface MenuItem {
@@ -312,16 +397,31 @@ export const GestaoUnificada = () => {
     relatorio_critico: { ativo: false, intensidade: "moderado", intervalo: 5 },
   });
   const [apiConfig] = useState({ chave_api: "LIRUZ-API-KEY-001" });
+
+  // ─── Report states ─────
   const [personalizarOpen, setPersonalizarOpen] = useState(false);
   const [indicadoresAtivos, setIndicadoresAtivos] = useState<Record<string, boolean>>({});
   const [relatorioDetalhe, setRelatorioDetalhe] = useState<string | null>(null);
   const [filtrosAplicados, setFiltrosAplicados] = useState(false);
+  const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
   const [periodoInicio, setPeriodoInicio] = useState<Date | undefined>(undefined);
   const [periodoFim, setPeriodoFim] = useState<Date | undefined>(undefined);
   const [periodoOpen, setPeriodoOpen] = useState(false);
+  const [periodoInputText, setPeriodoInputText] = useState("");
+  const [periodoInputError, setPeriodoInputError] = useState(false);
   const [filtroSetor, setFiltroSetor] = useState("todos");
   const [filtroUnidade, setFiltroUnidade] = useState("todos");
   const [filtroAtendente, setFiltroAtendente] = useState("todos");
+  const [filtroProduto, setFiltroProduto] = useState("todos");
+  const [filtroEtapaFunil, setFiltroEtapaFunil] = useState("todos");
+
+  // Sync period text with dates
+  useEffect(() => {
+    if (periodoInicio && periodoFim) {
+      setPeriodoInputText(`${format(periodoInicio, "dd/MM/yyyy")} - ${format(periodoFim, "dd/MM/yyyy")}`);
+      setPeriodoInputError(false);
+    }
+  }, [periodoInicio, periodoFim]);
 
   // Handlers
   const handleSalvarEmpresa = () => {
@@ -338,6 +438,27 @@ export const GestaoUnificada = () => {
     if (mensageriaConfig?.[0]) atualizarMensageria.mutate({ id: mensageriaConfig[0].id, dados: iaForm });
   };
 
+  const handlePeriodoInputChange = (text: string) => {
+    setPeriodoInputText(text);
+    // Try parsing DD/MM/AAAA - DD/MM/AAAA
+    const parts = text.split(" - ");
+    if (parts.length === 2) {
+      const d1 = parse(parts[0].trim(), "dd/MM/yyyy", new Date());
+      const d2 = parse(parts[1].trim(), "dd/MM/yyyy", new Date());
+      if (isValid(d1) && isValid(d2)) {
+        setPeriodoInicio(d1);
+        setPeriodoFim(d2);
+        setPeriodoInputError(false);
+      } else if (parts[0].trim().length === 10 || parts[1].trim().length === 10) {
+        setPeriodoInputError(true);
+      }
+    } else if (text.length > 10) {
+      setPeriodoInputError(true);
+    } else {
+      setPeriodoInputError(false);
+    }
+  };
+
   // ─── Individual render functions ─────
 
   // Dashboard
@@ -350,7 +471,7 @@ export const GestaoUnificada = () => {
     <div className="space-y-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard label="Total Respondido" value={dadosEmpresaGrande.nps.totalRespondido} />
-        <MetricCard label="NPS Médio" value={dadosEmpresaGrande.nps.npsMedio} accent />
+        <MetricCard label="NPS" value={dadosEmpresaGrande.nps.npsMedio} accent />
         <MetricCard label="Promotores" value={dadosEmpresaGrande.nps.promotores} />
         <MetricCard label="Detratores" value={dadosEmpresaGrande.nps.detratores} />
       </div>
@@ -724,21 +845,21 @@ export const GestaoUnificada = () => {
                   <>
                     <div className="space-y-1">
                       <Label className="text-[10px] text-muted-foreground">Intensidade</Label>
-                      <div className="flex gap-1.5">
-                        {(["leve", "moderado", "intenso"] as const).map((n) => (
-                          <button key={n} onClick={() => setAlertasConfig({ ...alertasConfig, [alerta.id]: { ...config, intensidade: n } })}
-                            className={cn("px-2.5 py-1 rounded text-[10px] font-medium border transition-colors",
-                              config.intensidade === n ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-muted-foreground hover:bg-muted"
-                            )}>{n.charAt(0).toUpperCase() + n.slice(1)}</button>
-                        ))}
-                      </div>
+                      <Select value={config.intensidade} onValueChange={(v) => setAlertasConfig({ ...alertasConfig, [alerta.id]: { ...config, intensidade: v } })}>
+                        <SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="leve">Leve</SelectItem>
+                          <SelectItem value="moderado">Moderado</SelectItem>
+                          <SelectItem value="intenso">Intenso</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Label className="text-[10px] text-muted-foreground">A cada</Label>
-                      <Input type="number" min={1} value={config.intervalo}
-                        onChange={(e) => setAlertasConfig({ ...alertasConfig, [alerta.id]: { ...config, intervalo: Math.max(1, parseInt(e.target.value) || 1) } })}
-                        className="w-16 h-7 text-xs" />
-                      <span className="text-[10px] text-muted-foreground">min</span>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Intervalo de verificação</Label>
+                      <div className="flex items-center gap-2">
+                        <Input type="number" value={config.intervalo} onChange={(e) => setAlertasConfig({ ...alertasConfig, [alerta.id]: { ...config, intervalo: Number(e.target.value) } })} className="h-7 w-20 text-[10px]" />
+                        <span className="text-[10px] text-muted-foreground">minutos</span>
+                      </div>
                     </div>
                   </>
                 )}
@@ -750,8 +871,6 @@ export const GestaoUnificada = () => {
       <Button size="sm" className="w-full h-8 text-xs"><Save className="h-3.5 w-3.5 mr-1.5" /> Salvar Configurações</Button>
     </div>
   );
-
-  // (renderPreditiva removed - now integrated into renderPreditivaEstrategica)
 
   // Alertas Ativos
   const renderAlertasAtivos = () => {
@@ -843,8 +962,6 @@ export const GestaoUnificada = () => {
     </Tabs>
   );
 
-  // ─── Content renderer per menu item ─────
-  // Unified Relatórios module
   // ─── Relatórios: Categories & Indicators ─────
   const relatorioCategories = [
     {
@@ -860,16 +977,16 @@ export const GestaoUnificada = () => {
       ],
     },
     {
-      id: "comercial", icon: TrendingUp, nome: "Comercial", desc: "Leads, conversão, receita e funil de vendas",
+      id: "comercial", icon: Briefcase, nome: "Comercial", desc: "Leads, conversão, receita e funil de vendas",
       indicadores: [
         { id: "leads_recebidos", nome: "Leads recebidos", icon: Users },
         { id: "orcamentos_enviados", nome: "Orçamentos enviados", icon: FileText },
+        { id: "vendas_fechadas", nome: "Vendas fechadas", icon: ShoppingCart },
         { id: "taxa_conversao", nome: "Taxa de conversão", icon: Target },
         { id: "ticket_medio", nome: "Ticket médio", icon: DollarSign },
         { id: "receita_total", nome: "Receita total", icon: Zap },
         { id: "ciclo_venda", nome: "Ciclo médio de venda", icon: Clock },
-        { id: "motivos_perda", nome: "Motivos de perda", icon: TrendingDown },
-        { id: "produto_mais_vendido", nome: "Produto mais vendido", icon: Package },
+        { id: "motivos_perda", nome: "Motivo principal de perda", icon: TrendingDown },
       ],
     },
     {
@@ -884,7 +1001,7 @@ export const GestaoUnificada = () => {
       ],
     },
     {
-      id: "qualidade", icon: HeartHandshake, nome: "Qualidade", desc: "NPS, sentimento e alertas críticos",
+      id: "qualidade", icon: HeartHandshake, nome: "Qualidade / NPS", desc: "NPS, sentimento e alertas críticos",
       indicadores: [
         { id: "nps_geral", nome: "NPS geral", icon: Award },
         { id: "nps_atendente", nome: "NPS por atendente", icon: Users },
@@ -904,8 +1021,6 @@ export const GestaoUnificada = () => {
     },
   ];
 
-  const allIndicadores = relatorioCategories.flatMap(c => c.indicadores.map(i => ({ ...i, catId: c.id })));
-
   const handlePresetPeriodo = (preset: string) => {
     const hoje = new Date();
     switch (preset) {
@@ -923,85 +1038,19 @@ export const GestaoUnificada = () => {
       toast.error("Selecione o período para gerar o relatório.");
       return;
     }
-    setFiltrosAplicados(true);
+    setGerandoRelatorio(true);
     setPeriodoOpen(false);
-    toast.success("Filtros aplicados! Relatório gerado.");
+    setTimeout(() => {
+      setGerandoRelatorio(false);
+      setFiltrosAplicados(true);
+      toast.success("Relatório gerado com sucesso!");
+    }, 1000);
   };
-
-  const periodoLabel = periodoInicio && periodoFim
-    ? `${format(periodoInicio, "dd/MM/yyyy")} – ${format(periodoFim, "dd/MM/yyyy")}`
-    : "Selecionar período";
-
-  const filtrosBar = (
-    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
-      <Filter className="h-3 w-3 text-muted-foreground" />
-      <Popover open={periodoOpen} onOpenChange={setPeriodoOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className={cn("h-7 text-[10px] gap-1", !periodoInicio && "text-muted-foreground")}>
-            <CalendarDays className="h-3 w-3" />
-            {periodoLabel}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-3 space-y-3">
-            <div className="flex flex-wrap gap-1">
-              {[
-                { label: "Hoje", value: "hoje" },
-                { label: "7 dias", value: "7dias" },
-                { label: "30 dias", value: "30dias" },
-                { label: "Este mês", value: "este_mes" },
-                { label: "Mês anterior", value: "mes_anterior" },
-                { label: "Ano atual", value: "ano_atual" },
-              ].map(p => (
-                <Button key={p.value} variant="outline" size="sm" className="h-6 text-[10px] px-2"
-                  onClick={() => handlePresetPeriodo(p.value)}>{p.label}</Button>
-              ))}
-            </div>
-            <Separator />
-            <div className="flex gap-4">
-              <div>
-                <p className="text-[10px] font-medium mb-1 text-muted-foreground">Data Inicial</p>
-                <CalendarComponent mode="single" selected={periodoInicio} onSelect={setPeriodoInicio}
-                  className="p-2 pointer-events-auto" locale={ptBR} />
-              </div>
-              <div>
-                <p className="text-[10px] font-medium mb-1 text-muted-foreground">Data Final</p>
-                <CalendarComponent mode="single" selected={periodoFim} onSelect={setPeriodoFim}
-                  className="p-2 pointer-events-auto" locale={ptBR} />
-              </div>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-      <Select value={filtroSetor} onValueChange={setFiltroSetor}>
-        <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todos">Todos os setores</SelectItem>
-          {setores?.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
-        </SelectContent>
-      </Select>
-      <Select value={filtroUnidade} onValueChange={setFiltroUnidade}>
-        <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todos">Todas as unidades</SelectItem>
-          {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
-        </SelectContent>
-      </Select>
-      <Select value={filtroAtendente} onValueChange={setFiltroAtendente}>
-        <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todos">Todos os atendentes</SelectItem>
-          {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
-        </SelectContent>
-      </Select>
-      <Button size="sm" className="h-7 text-[10px]" onClick={handleAplicarFiltros}>Aplicar</Button>
-    </div>
-  );
 
   const exportButtons = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+        <Button size="sm" className="h-7 text-[10px]" disabled={!filtrosAplicados}><Download className="h-3 w-3 mr-1" /> Exportar</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
@@ -1011,149 +1060,689 @@ export const GestaoUnificada = () => {
     </DropdownMenu>
   );
 
+  // ─── Shared Period Picker Component ─────
+  const PeriodPicker = () => (
+    <Popover open={periodoOpen} onOpenChange={setPeriodoOpen}>
+      <PopoverTrigger asChild>
+        <div className="relative">
+          <Input
+            value={periodoInputText}
+            onChange={(e) => handlePeriodoInputChange(e.target.value)}
+            placeholder="DD/MM/AAAA - DD/MM/AAAA"
+            className={cn("h-7 text-[10px] w-52 pl-7", periodoInputError && "border-destructive focus-visible:ring-destructive")}
+            title={periodoInputError ? "Data inválida" : undefined}
+          />
+          <CalendarDays className="h-3 w-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <div className="p-3 space-y-3">
+          <div className="flex flex-wrap gap-1">
+            {[
+              { label: "Hoje", value: "hoje" },
+              { label: "7 dias", value: "7dias" },
+              { label: "30 dias", value: "30dias" },
+              { label: "Este mês", value: "este_mes" },
+              { label: "Mês anterior", value: "mes_anterior" },
+              { label: "Ano atual", value: "ano_atual" },
+            ].map(p => (
+              <Button key={p.value} variant="outline" size="sm" className="h-6 text-[10px] px-2"
+                onClick={() => handlePresetPeriodo(p.value)}>{p.label}</Button>
+            ))}
+          </div>
+          <Separator />
+          <div className="flex gap-4">
+            <div>
+              <p className="text-[10px] font-medium mb-1 text-muted-foreground">Data Inicial</p>
+              <CalendarComponent mode="single" selected={periodoInicio} onSelect={setPeriodoInicio}
+                className="p-2 pointer-events-auto" locale={ptBR} />
+            </div>
+            <div>
+              <p className="text-[10px] font-medium mb-1 text-muted-foreground">Data Final</p>
+              <CalendarComponent mode="single" selected={periodoFim} onSelect={setPeriodoFim}
+                className="p-2 pointer-events-auto" locale={ptBR} />
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+
+  // ─── Per-report filter bars ─────
+  const renderFiltrosAtendimento = () => (
+    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+      <Filter className="h-3 w-3 text-muted-foreground" />
+      <PeriodPicker />
+      <Select value={filtroSetor} onValueChange={setFiltroSetor}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos os setores</SelectItem>
+          {setores?.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroUnidade} onValueChange={setFiltroUnidade}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todas</SelectItem>
+          {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroAtendente} onValueChange={setFiltroAtendente}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+        <Settings2 className="h-3 w-3 mr-1" /> Personalizar
+      </Button>
+      <Button size="sm" className="h-7 text-[10px]" onClick={handleAplicarFiltros}>Aplicar</Button>
+    </div>
+  );
+
+  const renderFiltrosComercial = () => (
+    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+      <Filter className="h-3 w-3 text-muted-foreground" />
+      <PeriodPicker />
+      <Select value={filtroUnidade} onValueChange={setFiltroUnidade}>
+        <SelectTrigger className="w-28 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todas</SelectItem>
+          {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroSetor} onValueChange={setFiltroSetor}>
+        <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {setoresComerciais.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroAtendente} onValueChange={setFiltroAtendente}>
+        <SelectTrigger className="w-28 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroProduto} onValueChange={setFiltroProduto}>
+        <SelectTrigger className="w-28 h-7 text-[10px]"><SelectValue placeholder="Produto" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {dadosComerciais.receitaPorProduto.map(p => <SelectItem key={p.produto} value={p.produto}>{p.produto}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroEtapaFunil} onValueChange={setFiltroEtapaFunil}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Etapa funil" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todas</SelectItem>
+          <SelectItem value="negociacao">Em negociação</SelectItem>
+          <SelectItem value="vendido">Vendido</SelectItem>
+          <SelectItem value="perdido">Perdido</SelectItem>
+        </SelectContent>
+      </Select>
+      <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+        <Settings2 className="h-3 w-3 mr-1" /> Personalizar
+      </Button>
+      <Button size="sm" className="h-7 text-[10px]" onClick={handleAplicarFiltros}>Aplicar</Button>
+    </div>
+  );
+
+  const renderFiltrosProdutividade = () => (
+    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+      <Filter className="h-3 w-3 text-muted-foreground" />
+      <PeriodPicker />
+      <Select value={filtroSetor} onValueChange={setFiltroSetor}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {setores?.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroAtendente} onValueChange={setFiltroAtendente}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+        <Settings2 className="h-3 w-3 mr-1" /> Personalizar
+      </Button>
+      <Button size="sm" className="h-7 text-[10px]" onClick={handleAplicarFiltros}>Aplicar</Button>
+    </div>
+  );
+
+  const renderFiltrosQualidade = () => (
+    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+      <Filter className="h-3 w-3 text-muted-foreground" />
+      <PeriodPicker />
+      <Select value={filtroSetor} onValueChange={setFiltroSetor}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {setores?.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroUnidade} onValueChange={setFiltroUnidade}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todas</SelectItem>
+          {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroAtendente} onValueChange={setFiltroAtendente}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+        <Settings2 className="h-3 w-3 mr-1" /> Personalizar
+      </Button>
+      <Button size="sm" className="h-7 text-[10px]" onClick={handleAplicarFiltros}>Aplicar</Button>
+    </div>
+  );
+
+  const renderFiltrosDistribuicao = () => (
+    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+      <Filter className="h-3 w-3 text-muted-foreground" />
+      <PeriodPicker />
+      <Select value={filtroUnidade} onValueChange={setFiltroUnidade}>
+        <SelectTrigger className="w-32 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todas</SelectItem>
+          {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+        <Settings2 className="h-3 w-3 mr-1" /> Personalizar
+      </Button>
+      <Button size="sm" className="h-7 text-[10px]" onClick={handleAplicarFiltros}>Aplicar</Button>
+    </div>
+  );
+
+  const getFiltrosForReport = (id: string) => {
+    switch (id) {
+      case "atendimento": return renderFiltrosAtendimento();
+      case "comercial": return renderFiltrosComercial();
+      case "produtividade": return renderFiltrosProdutividade();
+      case "qualidade": return renderFiltrosQualidade();
+      case "distribuicao": return renderFiltrosDistribuicao();
+      default: return renderFiltrosAtendimento();
+    }
+  };
+
+  // ─── Report detail rendering ─────
   const renderRelatorioDetalhe = (id: string) => {
     const cat = relatorioCategories.find(c => c.id === id);
     if (!cat) return null;
 
-    const activeInds = cat.indicadores.filter(i => indicadoresAtivos[i.id] !== false);
-
-    const renderCharts = () => {
+    const renderReportContent = () => {
       switch (id) {
         case "atendimento":
           return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <ChartCard title="Atendimentos por Dia">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-              <ChartCard title="TMA e TME Diário (min)">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
-                    <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
-                    <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartCard>
-              <ChartCard title="Horários de Pico">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dadosEmpresaGrande.horariosPico}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                    <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
-                    <YAxis tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
-                      {dadosEmpresaGrande.horariosPico.map((item, i) => (
-                        <Cell key={i} fill={
-                          item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
-                          item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
-                          item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
-                          "hsl(142, 71%, 45%)"
-                        } />
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+                <MetricCard label="Total de conversas" value="2.847" accent trend="+12%" trendUp />
+                <MetricCard label="TMA" value="3m 42s" trend="-8%" trendUp />
+                <MetricCard label="TME" value="5m 11s" trend="+3%" trendUp={false} />
+                <MetricCard label="SLA atendido" value="87%" accent />
+                <MetricCard label="Reabertas" value="231" />
+                <MetricCard label="Abandono" value="4,2%" trend="-1,5%" trendUp />
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <ChartCard title="Atendimentos por dia">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="Status de Atendimentos">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
+                        dataKey="value" strokeWidth={0}>
+                        {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
+                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="TMA x TME (min)">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
+                      <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
+                      <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="Atendimentos por hora">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosEmpresaGrande.horariosPico}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
+                        {dadosEmpresaGrande.horariosPico.map((item, i) => (
+                          <Cell key={i} fill={
+                            item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
+                            item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
+                            item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
+                            "hsl(142, 71%, 45%)"
+                          } />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+              {/* Tabela detalhada */}
+              <Card className="p-4 border-border/60">
+                <h4 className="text-xs font-semibold mb-3">Detalhamento por Atendente</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[10px]">
+                    <thead>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left py-2 px-2 font-semibold text-muted-foreground">Atendente</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Conversas</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">TMA</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">TME</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">SLA</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Reaberturas</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Finalizados</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { nome: "Geovana", conversas: 314, tma: "3m12s", tme: "4m30s", sla: "92%", reaberturas: 8, finalizados: 298 },
+                        { nome: "Paloma", conversas: 287, tma: "3m28s", tme: "5m02s", sla: "89%", reaberturas: 12, finalizados: 271 },
+                        { nome: "Emilly", conversas: 274, tma: "3m05s", tme: "4m18s", sla: "94%", reaberturas: 6, finalizados: 262 },
+                        { nome: "Marcos", conversas: 251, tma: "4m52s", tme: "6m30s", sla: "78%", reaberturas: 18, finalizados: 230 },
+                        { nome: "Bianca", conversas: 229, tma: "3m45s", tme: "5m15s", sla: "85%", reaberturas: 10, finalizados: 215 },
+                      ].map((row, i) => (
+                        <tr key={i} className="border-b border-border/30 hover:bg-muted/20">
+                          <td className="py-2 px-2 font-medium">{row.nome}</td>
+                          <td className="text-center py-2 px-2">{row.conversas}</td>
+                          <td className="text-center py-2 px-2">{row.tma}</td>
+                          <td className="text-center py-2 px-2">{row.tme}</td>
+                          <td className="text-center py-2 px-2">{row.sla}</td>
+                          <td className="text-center py-2 px-2">{row.reaberturas}</td>
+                          <td className="text-center py-2 px-2">{row.finalizados}</td>
+                        </tr>
                       ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-              <ChartCard title="Status de Atendimentos">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
-                      dataKey="value" strokeWidth={0}>
-                      {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartCard>
-            </div>
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </>
           );
+
         case "comercial":
           return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <ChartCard title="Volume por Dia">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="atendimentos" fill="hsl(142, 71%, 45%)" radius={[5, 5, 0, 0]} name="Vendas" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-              <ChartCard title="Distribuição por Atendente">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                    <XAxis type="number" tick={{ fontSize: 10 }} />
-                    <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-            </div>
+            <>
+              {/* KPIs Comerciais */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MetricCard label="Leads recebidos" value="190" accent trend="+18%" trendUp />
+                <MetricCard label="Orçamentos enviados" value="142" trend="+10%" trendUp />
+                <MetricCard label="Vendas fechadas" value="65" accent trend="+22%" trendUp />
+                <MetricCard label="Taxa de conversão" value="34,2%" accent trend="+5%" trendUp />
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MetricCard label="Ticket médio" value="R$ 3.569" trend="+3%" trendUp />
+                <MetricCard label="Receita no período" value="R$ 231.985" accent trend="+15%" trendUp />
+                <MetricCard label="Ciclo médio de venda" value="6,4 dias" trend="-0,8d" trendUp />
+                <MetricCard label="Motivo principal de perda" value="Preço alto" />
+              </div>
+
+              {/* Projeção + Top 3 */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <Card className="p-4 border-border/60 bg-primary/5 col-span-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <h4 className="text-xs font-semibold">Projeção do Período</h4>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-muted-foreground">Receita estimada</span>
+                      <span className="text-sm font-bold text-primary">R$ 298.500</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-muted-foreground">Meta</span>
+                      <span className="text-sm font-bold">R$ 320.000</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2 mt-2">
+                      <div className="bg-primary rounded-full h-2" style={{ width: "93%" }} />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground text-center">93% da meta atingida</p>
+                  </div>
+                </Card>
+                <Card className="p-4 border-border/60 col-span-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Trophy className="h-4 w-4 text-amber-500" />
+                    <h4 className="text-xs font-semibold">Top 3 Atendentes do Período</h4>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {dadosComerciais.conversaoPorAtendente.slice(0, 3).map((a, i) => {
+                      const medals = ["🥇", "🥈", "🥉"];
+                      const bgColors = ["bg-amber-50 border-amber-200", "bg-slate-50 border-slate-200", "bg-orange-50 border-orange-200"];
+                      return (
+                        <div key={i} className={cn("p-3 rounded-lg border text-center", bgColors[i])}>
+                          <span className="text-lg">{medals[i]}</span>
+                          <p className="text-xs font-semibold mt-1">{a.nome}</p>
+                          <p className="text-[10px] text-muted-foreground">{a.vendas} vendas</p>
+                          <p className="text-xs font-bold text-primary mt-1">R$ {(a.receita / 1000).toFixed(0)}k</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              </div>
+
+              {/* Funil */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card className="p-4 border-border/60">
+                  <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
+                    <Briefcase className="h-3.5 w-3.5 text-primary" /> Funil de Vendas
+                  </h4>
+                  <div className="space-y-3">
+                    {dadosComerciais.funil.map((stage, i) => {
+                      const total = dadosComerciais.funil.reduce((a, b) => a + b.value, 0);
+                      const pct = ((stage.value / total) * 100).toFixed(1);
+                      return (
+                        <div key={i}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] font-medium">{stage.name}</span>
+                            <span className="text-[10px] font-bold">{stage.value} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-3">
+                            <div className="rounded-full h-3 transition-all" style={{ width: `${pct}%`, backgroundColor: stage.fill }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+                <ChartCard title="Vendas por dia">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={dadosComerciais.vendasPorDia}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Line type="monotone" dataKey="vendas" stroke="hsl(142, 71%, 45%)" strokeWidth={2} dot={{ r: 3 }} name="Vendas" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="Receita por produto">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosComerciais.receitaPorProduto} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} />
+                      <YAxis dataKey="produto" type="category" width={90} tick={{ fontSize: 9 }} />
+                      <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => `R$ ${v.toLocaleString()}`} />
+                      <Bar dataKey="receita" fill="hsl(214, 85%, 51%)" radius={[0, 5, 5, 0]} name="Receita" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="Motivos de perda">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosComerciais.motivosPerda} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} />
+                      <YAxis dataKey="motivo" type="category" width={80} tick={{ fontSize: 9 }} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="quantidade" fill="hsl(0, 84%, 60%)" radius={[0, 5, 5, 0]} name="Leads perdidos" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+
+              {/* Tabela comercial */}
+              <Card className="p-4 border-border/60">
+                <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
+                  <BarChart2 className="h-3.5 w-3.5 text-primary" /> Ranking de Conversão por Atendente
+                </h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[10px]">
+                    <thead>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left py-2 px-2 font-semibold text-muted-foreground">Atendente</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Leads</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Orçamentos</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Vendas</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Conversão</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Ticket Médio</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Receita</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Ciclo Médio</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dadosComerciais.conversaoPorAtendente.map((row, i) => (
+                        <tr key={i} className="border-b border-border/30 hover:bg-muted/20">
+                          <td className="py-2 px-2 font-medium">{row.nome}</td>
+                          <td className="text-center py-2 px-2">{row.leads}</td>
+                          <td className="text-center py-2 px-2">{Math.round(row.leads * 0.75)}</td>
+                          <td className="text-center py-2 px-2 font-semibold text-primary">{row.vendas}</td>
+                          <td className="text-center py-2 px-2">{row.conversao}%</td>
+                          <td className="text-center py-2 px-2">R$ {row.ticket.toLocaleString()}</td>
+                          <td className="text-center py-2 px-2 font-semibold">R$ {row.receita.toLocaleString()}</td>
+                          <td className="text-center py-2 px-2">{row.ciclo}d</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </>
           );
+
         case "produtividade":
           return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <ChartCard title="Distribuição por Atendente">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                    <XAxis type="number" tick={{ fontSize: 10 }} />
-                    <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[0, 5, 5, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-              <ChartCard title="TMA por Dia (min)">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartCard>
-            </div>
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MetricCard label="Atendimentos / atendente" value="271" accent />
+                <MetricCard label="Tempo online médio" value="7h10" />
+                <MetricCard label="Tempo em pausa" value="54min" />
+                <MetricCard label="Resolutividade" value="88%" accent trend="+2%" trendUp />
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <ChartCard title="Ranking de Produtividade">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosProdutividade.ranking} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} />
+                      <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[0, 5, 5, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="Distribuição de Carga por Atendente">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={dadosEmpresaGrande.distribuicaoPorAtendente} cx="50%" cy="50%" labelLine={false}
+                        label={({ nome, atendimentos }) => `${nome}: ${atendimentos}`} outerRadius={75} innerRadius={35}
+                        dataKey="atendimentos" nameKey="nome" strokeWidth={0}>
+                        {dadosEmpresaGrande.distribuicaoPorAtendente.map((_, i) => (
+                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+              <Card className="p-4 border-border/60">
+                <h4 className="text-xs font-semibold mb-3">Detalhamento por Atendente</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[10px]">
+                    <thead>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left py-2 px-2 font-semibold text-muted-foreground">Atendente</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Atendimentos</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Online</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Pausa</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Resolutividade</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dadosProdutividade.ranking.map((row, i) => (
+                        <tr key={i} className="border-b border-border/30 hover:bg-muted/20">
+                          <td className="py-2 px-2 font-medium">{row.nome}</td>
+                          <td className="text-center py-2 px-2">{row.atendimentos}</td>
+                          <td className="text-center py-2 px-2">{row.online}</td>
+                          <td className="text-center py-2 px-2">{row.pausa}</td>
+                          <td className="text-center py-2 px-2">{row.resolutividade}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </>
           );
+
         case "qualidade":
           return (
-            <div className="space-y-4">
-              {renderNps()}
-            </div>
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MetricCard label="NPS Geral" value="92" accent />
+                <MetricCard label="Promotores" value="168" />
+                <MetricCard label="Neutros" value="22" />
+                <MetricCard label="Detratores" value="18" />
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <ChartCard title="Evolução do NPS">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={npsComparativo.evolucaoMensal}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis dataKey="mes" tick={{ fontSize: 10 }} /><YAxis domain={[70, 100]} tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Line type="monotone" dataKey="nps" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="Promotores / Neutros / Detratores">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={npsComparativo.distribuicao} cx="50%" cy="50%" labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
+                        dataKey="value" strokeWidth={0}>
+                        {npsComparativo.distribuicao.map((entry, i) => (
+                          <Cell key={i} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <ChartCard title="Sentimento no período" className="lg:col-span-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dadosNpsQualidade.sentimento}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis dataKey="periodo" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
+                      <Bar dataKey="positivo" fill="hsl(142, 71%, 45%)" stackId="a" name="Positivo" />
+                      <Bar dataKey="neutro" fill="hsl(48, 89%, 48%)" stackId="a" name="Neutro" />
+                      <Bar dataKey="negativo" fill="hsl(0, 84%, 60%)" stackId="a" name="Negativo" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+              <Card className="p-4 border-border/60">
+                <h4 className="text-xs font-semibold mb-3">NPS por Atendente</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[10px]">
+                    <thead>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left py-2 px-2 font-semibold text-muted-foreground">Atendente</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">NPS</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Sentimento</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">TMA</th>
+                        <th className="text-center py-2 px-2 font-semibold text-muted-foreground">Alertas críticos</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dadosNpsQualidade.tabelaAtendentes.map((row, i) => (
+                        <tr key={i} className="border-b border-border/30 hover:bg-muted/20">
+                          <td className="py-2 px-2 font-medium">{row.nome}</td>
+                          <td className="text-center py-2 px-2 font-bold text-primary">{row.nps}</td>
+                          <td className="text-center py-2 px-2">
+                            <Badge variant={row.sentimento === "Positivo" ? "default" : "secondary"} className="text-[9px]">{row.sentimento}</Badge>
+                          </td>
+                          <td className="text-center py-2 px-2">{row.tma}</td>
+                          <td className="text-center py-2 px-2">{row.alertas}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </>
           );
+
         case "distribuicao":
           return (
-            <ChartCard title="Status de Atendimentos por Região">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
-                    dataKey="value" strokeWidth={0}>
-                    {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={tooltipStyle} />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartCard>
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MetricCard label="Clientes com endereço" value="1.343" accent />
+                <MetricCard label="Sem endereço" value="204" />
+                <MetricCard label="Top estado" value="ES" />
+                <MetricCard label="Top cidade" value="Vitória" />
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card className="p-4 border-border/60">
+                  <h4 className="text-xs font-semibold mb-3 flex items-center gap-1.5">
+                    <Globe className="h-3.5 w-3.5 text-primary" /> Clientes por Estado
+                  </h4>
+                  <div className="space-y-2">
+                    {dadosDistribuicao.estados.map((e, i) => {
+                      const max = dadosDistribuicao.estados[0].clientes;
+                      return (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold w-6">{e.estado}</span>
+                          <div className="flex-1 bg-muted rounded-full h-4 relative">
+                            <div className="bg-primary/80 rounded-full h-4 flex items-center justify-end pr-2 transition-all"
+                              style={{ width: `${(e.clientes / max) * 100}%` }}>
+                              <span className="text-[9px] font-bold text-primary-foreground">{e.clientes}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+                <ChartCard title="Origem do Lead">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={dadosDistribuicao.origens} cx="50%" cy="50%" labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}%`} outerRadius={75} innerRadius={35}
+                        dataKey="value" strokeWidth={0}>
+                        {dadosDistribuicao.origens.map((_, i) => (
+                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+            </>
           );
+
         default: return null;
       }
     };
@@ -1161,15 +1750,12 @@ export const GestaoUnificada = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => { setRelatorioDetalhe(null); setFiltrosAplicados(false); }}>
+          <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => { setRelatorioDetalhe(null); setFiltrosAplicados(false); setGerandoRelatorio(false); }}>
             <ChevronLeft className="h-3 w-3 mr-1" /> Voltar
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
-              <Settings2 className="h-3 w-3 mr-1" /> Personalizar
-            </Button>
             {exportButtons}
-            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => toast.success("Modelo salvo!")}>
+            <Button variant="outline" size="sm" className="h-7 text-[10px]" disabled={!filtrosAplicados} onClick={() => toast.success("Modelo salvo!")}>
               <FileDown className="h-3 w-3 mr-1" /> Salvar Modelo
             </Button>
           </div>
@@ -1180,28 +1766,22 @@ export const GestaoUnificada = () => {
           <h3 className="text-sm font-semibold">{cat.nome}</h3>
         </div>
 
-        {filtrosBar}
+        {getFiltrosForReport(id)}
 
-        {!filtrosAplicados ? (
+        {gerandoRelatorio ? (
+          <Card className="p-12 border-border/60 flex flex-col items-center justify-center text-center">
+            <Loader2 className="h-6 w-6 text-primary animate-spin mb-3" />
+            <p className="text-xs text-muted-foreground">Gerando relatório...</p>
+          </Card>
+        ) : !filtrosAplicados ? (
           <Card className="p-8 border-border/60 flex flex-col items-center justify-center text-center">
             <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-3" />
             <p className="text-xs text-muted-foreground">Selecione o período e filtros para gerar o relatório.</p>
           </Card>
         ) : (
-          <>
-            {/* Indicadores como lista */}
-            <div className="space-y-1.5">
-              {activeInds.map((ind) => (
-                <div key={ind.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 bg-muted/10">
-                  <ind.icon className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-xs font-medium flex-1">{ind.nome}</span>
-                  <span className="text-xs font-bold text-primary">—</span>
-                </div>
-              ))}
-            </div>
-            {/* Gráficos */}
-            {renderCharts()}
-          </>
+          <div className="space-y-4">
+            {renderReportContent()}
+          </div>
         )}
       </div>
     );
@@ -1214,15 +1794,9 @@ export const GestaoUnificada = () => {
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-end gap-2 mb-2">
-          <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
-            <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
-          </Button>
-        </div>
-
         <div className="space-y-2">
           {relatorioCategories.map((cat) => (
-            <div key={cat.id} onClick={() => setRelatorioDetalhe(cat.id)}
+            <div key={cat.id} onClick={() => { setRelatorioDetalhe(cat.id); setFiltrosAplicados(false); setGerandoRelatorio(false); }}
               className="flex items-center gap-3 p-4 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer group">
               <div className="p-2.5 rounded-md bg-primary/10">
                 <cat.icon className="h-4.5 w-4.5 text-primary" />
@@ -1348,6 +1922,10 @@ export const GestaoUnificada = () => {
     return true;
   };
 
+  // Get current report category for contextual personalizar
+  const currentReportCat = relatorioDetalhe ? relatorioCategories.find(c => c.id === relatorioDetalhe) : null;
+  const personalizarCats = currentReportCat ? [currentReportCat] : relatorioCategories;
+
   return (
     <>
       <div className="h-screen flex flex-col bg-background">
@@ -1425,17 +2003,26 @@ export const GestaoUnificada = () => {
       <CriarPerfilAcessoDialog open={criarPerfilOpen} onOpenChange={setCriarPerfilOpen} />
       <EditarPerfilAcessoDialog open={editarPerfilOpen} onOpenChange={setEditarPerfilOpen} perfil={perfilParaEditar} />
 
-      {/* Dialog Personalizar Indicadores */}
+      {/* Dialog Personalizar Indicadores - Contextual */}
       <Dialog open={personalizarOpen} onOpenChange={setPersonalizarOpen}>
         <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-sm">Personalizar Indicadores</DialogTitle>
+            <DialogTitle className="text-sm">
+              Personalizar {currentReportCat ? `— ${currentReportCat.nome}` : "Indicadores"}
+            </DialogTitle>
           </DialogHeader>
-          <p className="text-[10px] text-muted-foreground mb-3">Ative ou desative os indicadores que deseja visualizar nos relatórios.</p>
+          <p className="text-[10px] text-muted-foreground mb-3">
+            {currentReportCat
+              ? `Ative ou desative os indicadores do relatório de ${currentReportCat.nome}.`
+              : "Ative ou desative os indicadores que deseja visualizar nos relatórios."
+            }
+          </p>
           <div className="space-y-4">
-            {relatorioCategories.map((cat) => (
+            {personalizarCats.map((cat) => (
               <div key={cat.id}>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{cat.nome}</p>
+                {!currentReportCat && (
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{cat.nome}</p>
+                )}
                 <div className="space-y-1.5">
                   {cat.indicadores.map((ind) => (
                     <div key={ind.id} className="flex items-center justify-between p-2 rounded-lg border border-border/50">
