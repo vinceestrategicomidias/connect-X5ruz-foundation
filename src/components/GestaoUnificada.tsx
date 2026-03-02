@@ -7,7 +7,16 @@ import {
   Lightbulb, X, Award, Settings, Filter, Calendar, Download, ChevronDown,
   Gauge, Star, Zap, BookOpen, Tag, ClipboardList, Brain, AlertTriangle,
   Workflow, Sparkles, Settings2, ChevronRight, type LucideIcon,
+  CalendarDays, ChevronLeft, BarChart2, Target, Clock, HeartHandshake,
+  ShoppingCart, MapPin, Smile, AlertCircle, Timer, RotateCcw, UserX,
+  DollarSign, Package, TrendingDown, Pause, Medal, Globe, Home, FileDown,
 } from "lucide-react";
+import { format, subDays, startOfMonth, endOfMonth, subMonths, startOfYear } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis,
@@ -304,11 +313,15 @@ export const GestaoUnificada = () => {
   });
   const [apiConfig] = useState({ chave_api: "LIRUZ-API-KEY-001" });
   const [personalizarOpen, setPersonalizarOpen] = useState(false);
-  const [indicadoresAtivos, setIndicadoresAtivos] = useState<Record<string, boolean>>({
-    total_atendimentos: true, tma: true, tme: true, resolutividade: true,
-    conversao: true, receita: true, nps: true,
-  });
+  const [indicadoresAtivos, setIndicadoresAtivos] = useState<Record<string, boolean>>({});
   const [relatorioDetalhe, setRelatorioDetalhe] = useState<string | null>(null);
+  const [filtrosAplicados, setFiltrosAplicados] = useState(false);
+  const [periodoInicio, setPeriodoInicio] = useState<Date | undefined>(undefined);
+  const [periodoFim, setPeriodoFim] = useState<Date | undefined>(undefined);
+  const [periodoOpen, setPeriodoOpen] = useState(false);
+  const [filtroSetor, setFiltroSetor] = useState("todos");
+  const [filtroUnidade, setFiltroUnidade] = useState("todos");
+  const [filtroAtendente, setFiltroAtendente] = useState("todos");
 
   // Handlers
   const handleSalvarEmpresa = () => {
@@ -832,94 +845,181 @@ export const GestaoUnificada = () => {
 
   // ─── Content renderer per menu item ─────
   // Unified Relatórios module
-  const relatorioItems = [
-    { id: "total_atendimentos", icon: Users, nome: "Total de Atendimentos", desc: "Volume total de atendimentos no período selecionado", valor: dadosEmpresaGrande.totalAtendimentos.toLocaleString() },
-    { id: "tma", icon: Gauge, nome: "TMA – Tempo Médio de Atendimento", desc: "Tempo médio gasto por atendimento", valor: dadosEmpresaGrande.tmaSetor },
-    { id: "tme", icon: Gauge, nome: "TME – Tempo Médio de Espera", desc: "Tempo médio de espera na fila antes do atendimento", valor: dadosEmpresaGrande.tmeSetor },
-    { id: "resolutividade", icon: Star, nome: "Taxa de Resolutividade", desc: "Percentual de atendimentos resolvidos sem reabertura", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
-    { id: "conversao", icon: TrendingUp, nome: "Conversão", desc: "Taxa de conversão de leads em vendas efetivas", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
-    { id: "receita", icon: Zap, nome: "Receita", desc: "Receita total gerada pelos atendimentos no período", valor: "R$ 892.000" },
-    { id: "nps", icon: Award, nome: "NPS", desc: "Índice de satisfação dos clientes (Net Promoter Score)", valor: String(dadosEmpresaGrande.npsGeral) },
+  // ─── Relatórios: Categories & Indicators ─────
+  const relatorioCategories = [
+    {
+      id: "atendimento", icon: MessageSquare, nome: "Atendimento", desc: "Métricas de conversas, tempos e SLA",
+      indicadores: [
+        { id: "conversas_iniciadas", nome: "Total de conversas iniciadas", icon: MessageSquare },
+        { id: "tempo_resposta", nome: "Tempo médio de resposta", icon: Timer },
+        { id: "tempo_espera", nome: "Tempo médio de espera", icon: Clock },
+        { id: "tempo_atendimento", nome: "Tempo médio de atendimento", icon: Gauge },
+        { id: "sla_primeira_resp", nome: "Taxa de primeira resposta em SLA", icon: Target },
+        { id: "conversas_reabertas", nome: "Conversas reabertas", icon: RotateCcw },
+        { id: "taxa_abandono", nome: "Taxa de abandono", icon: UserX },
+      ],
+    },
+    {
+      id: "comercial", icon: TrendingUp, nome: "Comercial", desc: "Leads, conversão, receita e funil de vendas",
+      indicadores: [
+        { id: "leads_recebidos", nome: "Leads recebidos", icon: Users },
+        { id: "orcamentos_enviados", nome: "Orçamentos enviados", icon: FileText },
+        { id: "taxa_conversao", nome: "Taxa de conversão", icon: Target },
+        { id: "ticket_medio", nome: "Ticket médio", icon: DollarSign },
+        { id: "receita_total", nome: "Receita total", icon: Zap },
+        { id: "ciclo_venda", nome: "Ciclo médio de venda", icon: Clock },
+        { id: "motivos_perda", nome: "Motivos de perda", icon: TrendingDown },
+        { id: "produto_mais_vendido", nome: "Produto mais vendido", icon: Package },
+      ],
+    },
+    {
+      id: "produtividade", icon: Activity, nome: "Produtividade", desc: "Desempenho individual e coletivo da equipe",
+      indicadores: [
+        { id: "atendimentos_por_atendente", nome: "Atendimentos por atendente", icon: Users },
+        { id: "tempo_online", nome: "Tempo online", icon: Clock },
+        { id: "tempo_pausa", nome: "Tempo em pausa", icon: Pause },
+        { id: "resolutividade", nome: "Taxa de resolutividade", icon: Star },
+        { id: "ranking_conversao", nome: "Ranking por conversão", icon: Medal },
+        { id: "ranking_nps", nome: "Ranking por NPS", icon: Award },
+      ],
+    },
+    {
+      id: "qualidade", icon: HeartHandshake, nome: "Qualidade", desc: "NPS, sentimento e alertas críticos",
+      indicadores: [
+        { id: "nps_geral", nome: "NPS geral", icon: Award },
+        { id: "nps_atendente", nome: "NPS por atendente", icon: Users },
+        { id: "sentimento", nome: "Análise de sentimento", icon: Smile },
+        { id: "alertas_criticos", nome: "Atendimentos com alerta crítico", icon: AlertCircle },
+        { id: "msgs_negativas", nome: "Percentual de mensagens negativas", icon: TrendingDown },
+      ],
+    },
+    {
+      id: "distribuicao", icon: MapPin, nome: "Distribuição", desc: "Origem geográfica e canais dos clientes",
+      indicadores: [
+        { id: "clientes_estado", nome: "Clientes por estado", icon: Globe },
+        { id: "clientes_cidade", nome: "Clientes por cidade", icon: MapPin },
+        { id: "origem_lead", nome: "Origem do lead", icon: Target },
+        { id: "unidade_maior_volume", nome: "Unidade com maior volume", icon: Home },
+      ],
+    },
   ];
 
-  const renderRelatorioDetalhe = (id: string) => {
-    const item = relatorioItems.find(r => r.id === id);
-    if (!item) return null;
+  const allIndicadores = relatorioCategories.flatMap(c => c.indicadores.map(i => ({ ...i, catId: c.id })));
 
-    const filtrosComuns = (
-      <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
-        <Filter className="h-3 w-3 text-muted-foreground" />
-        <Select defaultValue="todos">
-          <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os setores</SelectItem>
-            {setores?.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select defaultValue="todos">
-          <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todas as unidades</SelectItem>
-            {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select defaultValue="todos">
-          <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os atendentes</SelectItem>
-            {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select defaultValue="mes">
-          <SelectTrigger className="w-28 h-7 text-[10px]"><SelectValue placeholder="Período" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="semana">Semana</SelectItem>
-            <SelectItem value="mes">Mês</SelectItem>
-            <SelectItem value="trimestre">Trimestre</SelectItem>
-            <SelectItem value="ano">Ano</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    );
-
-    const exportButton = (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-
-    // NPS detail — consolidated
-    if (id === "nps") {
-      return (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => setRelatorioDetalhe(null)}>
-              <ChevronRight className="h-3 w-3 mr-1 rotate-180" /> Voltar
-            </Button>
-            {exportButton}
-          </div>
-          <div className="flex items-center gap-2 mb-1">
-            <item.icon className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold">{item.nome}</h3>
-            <Badge variant="outline" className="text-[10px]">{item.valor}</Badge>
-          </div>
-          {filtrosComuns}
-          {renderNps()}
-        </div>
-      );
+  const handlePresetPeriodo = (preset: string) => {
+    const hoje = new Date();
+    switch (preset) {
+      case "hoje": setPeriodoInicio(hoje); setPeriodoFim(hoje); break;
+      case "7dias": setPeriodoInicio(subDays(hoje, 7)); setPeriodoFim(hoje); break;
+      case "30dias": setPeriodoInicio(subDays(hoje, 30)); setPeriodoFim(hoje); break;
+      case "este_mes": setPeriodoInicio(startOfMonth(hoje)); setPeriodoFim(hoje); break;
+      case "mes_anterior": { const m = subMonths(hoje, 1); setPeriodoInicio(startOfMonth(m)); setPeriodoFim(endOfMonth(m)); break; }
+      case "ano_atual": setPeriodoInicio(startOfYear(hoje)); setPeriodoFim(hoje); break;
     }
+  };
 
-    // Generic detail views
-    const getCharts = () => {
+  const handleAplicarFiltros = () => {
+    if (!periodoInicio || !periodoFim) {
+      toast.error("Selecione o período para gerar o relatório.");
+      return;
+    }
+    setFiltrosAplicados(true);
+    setPeriodoOpen(false);
+    toast.success("Filtros aplicados! Relatório gerado.");
+  };
+
+  const periodoLabel = periodoInicio && periodoFim
+    ? `${format(periodoInicio, "dd/MM/yyyy")} – ${format(periodoFim, "dd/MM/yyyy")}`
+    : "Selecionar período";
+
+  const filtrosBar = (
+    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+      <Filter className="h-3 w-3 text-muted-foreground" />
+      <Popover open={periodoOpen} onOpenChange={setPeriodoOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className={cn("h-7 text-[10px] gap-1", !periodoInicio && "text-muted-foreground")}>
+            <CalendarDays className="h-3 w-3" />
+            {periodoLabel}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-3 space-y-3">
+            <div className="flex flex-wrap gap-1">
+              {[
+                { label: "Hoje", value: "hoje" },
+                { label: "7 dias", value: "7dias" },
+                { label: "30 dias", value: "30dias" },
+                { label: "Este mês", value: "este_mes" },
+                { label: "Mês anterior", value: "mes_anterior" },
+                { label: "Ano atual", value: "ano_atual" },
+              ].map(p => (
+                <Button key={p.value} variant="outline" size="sm" className="h-6 text-[10px] px-2"
+                  onClick={() => handlePresetPeriodo(p.value)}>{p.label}</Button>
+              ))}
+            </div>
+            <Separator />
+            <div className="flex gap-4">
+              <div>
+                <p className="text-[10px] font-medium mb-1 text-muted-foreground">Data Inicial</p>
+                <CalendarComponent mode="single" selected={periodoInicio} onSelect={setPeriodoInicio}
+                  className="p-2 pointer-events-auto" locale={ptBR} />
+              </div>
+              <div>
+                <p className="text-[10px] font-medium mb-1 text-muted-foreground">Data Final</p>
+                <CalendarComponent mode="single" selected={periodoFim} onSelect={setPeriodoFim}
+                  className="p-2 pointer-events-auto" locale={ptBR} />
+              </div>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <Select value={filtroSetor} onValueChange={setFiltroSetor}>
+        <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos os setores</SelectItem>
+          {setores?.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroUnidade} onValueChange={setFiltroUnidade}>
+        <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todas as unidades</SelectItem>
+          {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={filtroAtendente} onValueChange={setFiltroAtendente}>
+        <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos os atendentes</SelectItem>
+          {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Button size="sm" className="h-7 text-[10px]" onClick={handleAplicarFiltros}>Aplicar</Button>
+    </div>
+  );
+
+  const exportButtons = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  const renderRelatorioDetalhe = (id: string) => {
+    const cat = relatorioCategories.find(c => c.id === id);
+    if (!cat) return null;
+
+    const activeInds = cat.indicadores.filter(i => indicadoresAtivos[i.id] !== false);
+
+    const renderCharts = () => {
       switch (id) {
-        case "total_atendimentos":
+        case "atendimento":
           return (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <ChartCard title="Atendimentos por Dia">
@@ -932,40 +1032,17 @@ export const GestaoUnificada = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </ChartCard>
-              <ChartCard title="Status de Atendimentos">
+              <ChartCard title="TMA e TME Diário (min)">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
-                      dataKey="value" strokeWidth={0}>
-                      {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
-                  </PieChart>
+                  <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
+                    <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
+                  </LineChart>
                 </ResponsiveContainer>
               </ChartCard>
-            </div>
-          );
-        case "tma":
-        case "tme":
-          return (
-            <ChartCard title="TMA e TME Diário (min)">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
-                  <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          );
-        case "resolutividade":
-          return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <ChartCard title="Horários de Pico">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={dadosEmpresaGrande.horariosPico}>
@@ -986,224 +1063,187 @@ export const GestaoUnificada = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </ChartCard>
-              <MetricCard label="Taxa de Resolutividade" value={`${dadosEmpresaGrande.taxaConclusao}%`} accent />
+              <ChartCard title="Status de Atendimentos">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
+                      dataKey="value" strokeWidth={0}>
+                      {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartCard>
             </div>
           );
-        case "conversao":
+        case "comercial":
           return (
-            <ChartCard title="Distribuição por Atendente">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <ChartCard title="Volume por Dia">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="atendimentos" fill="hsl(142, 71%, 45%)" radius={[5, 5, 0, 0]} name="Vendas" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+              <ChartCard title="Distribuição por Atendente">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+            </div>
+          );
+        case "produtividade":
+          return (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <ChartCard title="Distribuição por Atendente">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[0, 5, 5, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+              <ChartCard title="TMA por Dia (min)">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartCard>
+            </div>
+          );
+        case "qualidade":
+          return (
+            <div className="space-y-4">
+              {renderNps()}
+            </div>
+          );
+        case "distribuicao":
+          return (
+            <ChartCard title="Status de Atendimentos por Região">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                  <XAxis type="number" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
+                <PieChart>
+                  <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
+                    dataKey="value" strokeWidth={0}>
+                    {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
-                </BarChart>
+                </PieChart>
               </ResponsiveContainer>
             </ChartCard>
           );
-        case "receita":
-          return (
-            <ChartCard title="Atendimentos por Dia (Volume)">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="atendimentos" fill="hsl(142, 71%, 45%)" radius={[5, 5, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          );
-        default:
-          return null;
+        default: return null;
       }
     };
 
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => setRelatorioDetalhe(null)}>
-            <ChevronRight className="h-3 w-3 mr-1 rotate-180" /> Voltar
+          <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => { setRelatorioDetalhe(null); setFiltrosAplicados(false); }}>
+            <ChevronLeft className="h-3 w-3 mr-1" /> Voltar
           </Button>
-          {exportButton}
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+              <Settings2 className="h-3 w-3 mr-1" /> Personalizar
+            </Button>
+            {exportButtons}
+            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => toast.success("Modelo salvo!")}>
+              <FileDown className="h-3 w-3 mr-1" /> Salvar Modelo
+            </Button>
+          </div>
         </div>
+
         <div className="flex items-center gap-2 mb-1">
-          <item.icon className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold">{item.nome}</h3>
-          <Badge variant="outline" className="text-[10px]">{item.valor}</Badge>
+          <cat.icon className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">{cat.nome}</h3>
         </div>
-        {filtrosComuns}
-        {getCharts()}
+
+        {filtrosBar}
+
+        {!filtrosAplicados ? (
+          <Card className="p-8 border-border/60 flex flex-col items-center justify-center text-center">
+            <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-3" />
+            <p className="text-xs text-muted-foreground">Selecione o período e filtros para gerar o relatório.</p>
+          </Card>
+        ) : (
+          <>
+            {/* Indicadores como lista */}
+            <div className="space-y-1.5">
+              {activeInds.map((ind) => (
+                <div key={ind.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 bg-muted/10">
+                  <ind.icon className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-medium flex-1">{ind.nome}</span>
+                  <span className="text-xs font-bold text-primary">—</span>
+                </div>
+              ))}
+            </div>
+            {/* Gráficos */}
+            {renderCharts()}
+          </>
+        )}
       </div>
     );
   };
 
   const renderRelatorios = () => {
-    // If a detail report is open, show it
     if (relatorioDetalhe) {
       return renderRelatorioDetalhe(relatorioDetalhe);
     }
 
     return (
-      <Tabs defaultValue="visao_geral" className="w-full">
-        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/50 p-1 mb-4">
-          <TabsTrigger value="visao_geral" className="text-xs">Visão Geral</TabsTrigger>
-          <TabsTrigger value="atendimento" className="text-xs">Atendimento</TabsTrigger>
-          <TabsTrigger value="comercial" className="text-xs">Comercial</TabsTrigger>
-          <TabsTrigger value="produtividade" className="text-xs">Produtividade</TabsTrigger>
-          <TabsTrigger value="distribuicao" className="text-xs">Distribuição</TabsTrigger>
-        </TabsList>
+      <div className="space-y-4">
+        <div className="flex items-center justify-end gap-2 mb-2">
+          <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+            <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
+          </Button>
+        </div>
 
-        <TabsContent value="visao_geral" className="space-y-3">
-          <div className="flex items-center justify-end gap-2 mb-2">
-            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
-              <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
-            </Button>
-          </div>
-          {relatorioItems.filter(item => indicadoresAtivos[item.id] !== false).map((item) => (
-            <div key={item.id} onClick={() => setRelatorioDetalhe(item.id)}
-              className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
-              <div className="p-2 rounded-md bg-primary/10">
-                <item.icon className="h-4 w-4 text-primary" />
+        <div className="space-y-2">
+          {relatorioCategories.map((cat) => (
+            <div key={cat.id} onClick={() => setRelatorioDetalhe(cat.id)}
+              className="flex items-center gap-3 p-4 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer group">
+              <div className="p-2.5 rounded-md bg-primary/10">
+                <cat.icon className="h-4.5 w-4.5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-semibold text-foreground">{item.nome}</h4>
-                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                <h4 className="text-xs font-semibold text-foreground">{cat.nome}</h4>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{cat.desc}</p>
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {cat.indicadores.slice(0, 4).map(ind => (
+                    <Badge key={ind.id} variant="outline" className="text-[9px] py-0 font-normal">{ind.nome}</Badge>
+                  ))}
+                  {cat.indicadores.length > 4 && (
+                    <Badge variant="outline" className="text-[9px] py-0 font-normal">+{cat.indicadores.length - 4}</Badge>
+                  )}
+                </div>
               </div>
-              <div className="text-right flex items-center gap-2">
-                <span className="text-sm font-bold text-primary">{item.valor}</span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
             </div>
           ))}
-        </TabsContent>
-
-        <TabsContent value="atendimento" className="space-y-5">
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
-              <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Atendimentos por Dia">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-            <ChartCard title="TMA e TME Diário (min)">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
-                  <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          </div>
-          <ChartCard title="Horários de Pico">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dadosEmpresaGrande.horariosPico}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
-                  {dadosEmpresaGrande.horariosPico.map((item, i) => (
-                    <Cell key={i} fill={
-                      item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
-                      item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
-                      item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
-                      "hsl(142, 71%, 45%)"
-                    } />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        </TabsContent>
-
-        <TabsContent value="comercial" className="space-y-5">
-          <div className="flex items-center justify-end gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="produtividade" className="space-y-5">
-          <div className="flex items-center justify-end gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {dadosEmpresaGrande.indicadores.map((ind, i) => (
-              <MetricCard key={i} label={ind.nome} value={ind.valor} accent />
-            ))}
-          </div>
-          <ChartCard title="Distribuição por Atendente">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                <XAxis type="number" tick={{ fontSize: 10 }} />
-                <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        </TabsContent>
-
-        <TabsContent value="distribuicao" className="space-y-5">
-          <ChartCard title="Status de Atendimentos">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
-                  dataKey="value" strokeWidth={0}>
-                  {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     );
   };
 
@@ -1318,8 +1358,7 @@ export const GestaoUnificada = () => {
               <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground leading-tight">CONNECT LIRUZ</h2>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Central de Gestão</p>
+              <h2 className="text-sm font-bold text-foreground leading-tight">CONNECT</h2>
             </div>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/chat")}>
@@ -1388,27 +1427,26 @@ export const GestaoUnificada = () => {
 
       {/* Dialog Personalizar Indicadores */}
       <Dialog open={personalizarOpen} onOpenChange={setPersonalizarOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm">Personalizar Indicadores</DialogTitle>
           </DialogHeader>
           <p className="text-[10px] text-muted-foreground mb-3">Ative ou desative os indicadores que deseja visualizar nos relatórios.</p>
-          <div className="space-y-3">
-            {[
-              { id: "total_atendimentos", nome: "Total de Atendimentos" },
-              { id: "tma", nome: "TMA – Tempo Médio de Atendimento" },
-              { id: "tme", nome: "TME – Tempo Médio de Espera" },
-              { id: "resolutividade", nome: "Taxa de Resolutividade" },
-              { id: "conversao", nome: "Conversão" },
-              { id: "receita", nome: "Receita" },
-              { id: "nps", nome: "NPS" },
-            ].map((ind) => (
-              <div key={ind.id} className="flex items-center justify-between p-2.5 rounded-lg border border-border/50">
-                <span className="text-xs font-medium">{ind.nome}</span>
-                <Switch
-                  checked={indicadoresAtivos[ind.id] ?? true}
-                  onCheckedChange={(c) => setIndicadoresAtivos({ ...indicadoresAtivos, [ind.id]: c })}
-                />
+          <div className="space-y-4">
+            {relatorioCategories.map((cat) => (
+              <div key={cat.id}>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{cat.nome}</p>
+                <div className="space-y-1.5">
+                  {cat.indicadores.map((ind) => (
+                    <div key={ind.id} className="flex items-center justify-between p-2 rounded-lg border border-border/50">
+                      <span className="text-xs font-medium">{ind.nome}</span>
+                      <Switch
+                        checked={indicadoresAtivos[ind.id] !== false}
+                        onCheckedChange={(c) => setIndicadoresAtivos({ ...indicadoresAtivos, [ind.id]: c })}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
