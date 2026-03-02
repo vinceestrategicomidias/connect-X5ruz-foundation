@@ -307,8 +307,9 @@ export const GestaoUnificada = () => {
   const [personalizarOpen, setPersonalizarOpen] = useState(false);
   const [indicadoresAtivos, setIndicadoresAtivos] = useState<Record<string, boolean>>({
     total_atendimentos: true, tma: true, tme: true, resolutividade: true,
-    conversao: true, receita: true, nps_medio: true,
+    conversao: true, receita: true, nps: true,
   });
+  const [relatorioDetalhe, setRelatorioDetalhe] = useState<string | null>(null);
 
   // Handlers
   const handleSalvarEmpresa = () => {
@@ -832,182 +833,380 @@ export const GestaoUnificada = () => {
 
   // ─── Content renderer per menu item ─────
   // Unified Relatórios module
-  const renderRelatorios = () => (
-    <Tabs defaultValue="visao_geral" className="w-full">
-      <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/50 p-1 mb-4">
-        <TabsTrigger value="visao_geral" className="text-xs">Visão Geral</TabsTrigger>
-        <TabsTrigger value="atendimento" className="text-xs">Atendimento</TabsTrigger>
-        <TabsTrigger value="comercial" className="text-xs">Comercial</TabsTrigger>
-        <TabsTrigger value="produtividade" className="text-xs">Produtividade</TabsTrigger>
-        <TabsTrigger value="nps_rel" className="text-xs">NPS</TabsTrigger>
-        <TabsTrigger value="distribuicao" className="text-xs">Distribuição</TabsTrigger>
-      </TabsList>
+  const relatorioItems = [
+    { id: "total_atendimentos", icon: Users, nome: "Total de Atendimentos", desc: "Volume total de atendimentos no período selecionado", valor: dadosEmpresaGrande.totalAtendimentos.toLocaleString() },
+    { id: "tma", icon: Gauge, nome: "TMA – Tempo Médio de Atendimento", desc: "Tempo médio gasto por atendimento", valor: dadosEmpresaGrande.tmaSetor },
+    { id: "tme", icon: Gauge, nome: "TME – Tempo Médio de Espera", desc: "Tempo médio de espera na fila antes do atendimento", valor: dadosEmpresaGrande.tmeSetor },
+    { id: "resolutividade", icon: Star, nome: "Taxa de Resolutividade", desc: "Percentual de atendimentos resolvidos sem reabertura", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
+    { id: "conversao", icon: TrendingUp, nome: "Conversão", desc: "Taxa de conversão de leads em vendas efetivas", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
+    { id: "receita", icon: Zap, nome: "Receita", desc: "Receita total gerada pelos atendimentos no período", valor: "R$ 892.000" },
+    { id: "nps", icon: Award, nome: "NPS", desc: "Índice de satisfação dos clientes (Net Promoter Score)", valor: String(dadosEmpresaGrande.npsGeral) },
+  ];
 
-      <TabsContent value="visao_geral" className="space-y-3">
-        {/* Menu de relatórios */}
-        {[
-          { id: "total_atendimentos", icon: Users, nome: "Total de Atendimentos", desc: "Volume total de atendimentos no período selecionado", valor: dadosEmpresaGrande.totalAtendimentos.toLocaleString() },
-          { id: "tma", icon: Gauge, nome: "TMA – Tempo Médio de Atendimento", desc: "Tempo médio gasto por atendimento", valor: dadosEmpresaGrande.tmaSetor },
-          { id: "tme", icon: Gauge, nome: "TME – Tempo Médio de Espera", desc: "Tempo médio de espera na fila antes do atendimento", valor: dadosEmpresaGrande.tmeSetor },
-          { id: "resolutividade", icon: Star, nome: "Taxa de Resolutividade", desc: "Percentual de atendimentos resolvidos sem reabertura", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
-          { id: "conversao", icon: TrendingUp, nome: "Conversão", desc: "Taxa de conversão de leads em vendas efetivas", valor: `${dadosEmpresaGrande.taxaConclusao}%` },
-          { id: "receita", icon: Zap, nome: "Receita", desc: "Receita total gerada pelos atendimentos no período", valor: "R$ 892.000" },
-          { id: "nps_medio", icon: Award, nome: "NPS Médio", desc: "Índice de satisfação dos clientes", valor: String(dadosEmpresaGrande.npsGeral) },
-        ].map((item) => (
-          <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
-            <div className="p-2 rounded-md bg-primary/10">
-              <item.icon className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-xs font-semibold text-foreground">{item.nome}</h4>
-              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-            </div>
-            <div className="text-right flex items-center gap-2">
-              <span className="text-sm font-bold text-primary">{item.valor}</span>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            </div>
+  const renderRelatorioDetalhe = (id: string) => {
+    const item = relatorioItems.find(r => r.id === id);
+    if (!item) return null;
+
+    const filtrosComuns = (
+      <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+        <Filter className="h-3 w-3 text-muted-foreground" />
+        <Select defaultValue="todos">
+          <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os setores</SelectItem>
+            {setores?.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select defaultValue="todos">
+          <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Unidade" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todas as unidades</SelectItem>
+            {unidades?.map(u => <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select defaultValue="todos">
+          <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os atendentes</SelectItem>
+            {atendentes?.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select defaultValue="mes">
+          <SelectTrigger className="w-28 h-7 text-[10px]"><SelectValue placeholder="Período" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="semana">Semana</SelectItem>
+            <SelectItem value="mes">Mês</SelectItem>
+            <SelectItem value="trimestre">Trimestre</SelectItem>
+            <SelectItem value="ano">Ano</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    );
+
+    const exportButton = (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+
+    // NPS detail — consolidated
+    if (id === "nps") {
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => setRelatorioDetalhe(null)}>
+              <ChevronRight className="h-3 w-3 mr-1 rotate-180" /> Voltar
+            </Button>
+            {exportButton}
           </div>
-        ))}
-      </TabsContent>
-
-      <TabsContent value="atendimento" className="space-y-5">
-        {/* Header com Personalizar e Exportar */}
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
-            <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" className="h-7 text-[10px]">
-                <Download className="h-3 w-3 mr-1" /> Exportar
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => toast.success("Exportando relatório em Excel...")}>
-                <FileText className="h-3 w-3 mr-2" /> Excel (.xlsx)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success("Exportando relatório em Word...")}>
-                <FileText className="h-3 w-3 mr-2" /> Word (.docx)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success("Exportando relatório em PDF...")}>
-                <FileText className="h-3 w-3 mr-2" /> PDF (.pdf)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2 mb-1">
+            <item.icon className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">{item.nome}</h3>
+            <Badge variant="outline" className="text-[10px]">{item.valor}</Badge>
+          </div>
+          {filtrosComuns}
+          {renderNps()}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="Atendimentos por Dia">
+      );
+    }
+
+    // Generic detail views
+    const getCharts = () => {
+      switch (id) {
+        case "total_atendimentos":
+          return (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <ChartCard title="Atendimentos por Dia">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+              <ChartCard title="Status de Atendimentos">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
+                      dataKey="value" strokeWidth={0}>
+                      {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartCard>
+            </div>
+          );
+        case "tma":
+        case "tme":
+          return (
+            <ChartCard title="TMA e TME Diário (min)">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          );
+        case "resolutividade":
+          return (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <ChartCard title="Horários de Pico">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dadosEmpresaGrande.horariosPico}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                    <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
+                      {dadosEmpresaGrande.horariosPico.map((item, i) => (
+                        <Cell key={i} fill={
+                          item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
+                          item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
+                          item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
+                          "hsl(142, 71%, 45%)"
+                        } />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+              <MetricCard label="Taxa de Resolutividade" value={`${dadosEmpresaGrande.taxaConclusao}%`} accent />
+            </div>
+          );
+        case "conversao":
+          return (
+            <ChartCard title="Distribuição por Atendente">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                  <XAxis type="number" tick={{ fontSize: 10 }} />
+                  <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          );
+        case "receita":
+          return (
+            <ChartCard title="Atendimentos por Dia (Volume)">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="atendimentos" fill="hsl(142, 71%, 45%)" radius={[5, 5, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          );
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => setRelatorioDetalhe(null)}>
+            <ChevronRight className="h-3 w-3 mr-1 rotate-180" /> Voltar
+          </Button>
+          {exportButton}
+        </div>
+        <div className="flex items-center gap-2 mb-1">
+          <item.icon className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">{item.nome}</h3>
+          <Badge variant="outline" className="text-[10px]">{item.valor}</Badge>
+        </div>
+        {filtrosComuns}
+        {getCharts()}
+      </div>
+    );
+  };
+
+  const renderRelatorios = () => {
+    // If a detail report is open, show it
+    if (relatorioDetalhe) {
+      return renderRelatorioDetalhe(relatorioDetalhe);
+    }
+
+    return (
+      <Tabs defaultValue="visao_geral" className="w-full">
+        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/50 p-1 mb-4">
+          <TabsTrigger value="visao_geral" className="text-xs">Visão Geral</TabsTrigger>
+          <TabsTrigger value="atendimento" className="text-xs">Atendimento</TabsTrigger>
+          <TabsTrigger value="comercial" className="text-xs">Comercial</TabsTrigger>
+          <TabsTrigger value="produtividade" className="text-xs">Produtividade</TabsTrigger>
+          <TabsTrigger value="distribuicao" className="text-xs">Distribuição</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="visao_geral" className="space-y-3">
+          <div className="flex items-center justify-end gap-2 mb-2">
+            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+              <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
+            </Button>
+          </div>
+          {relatorioItems.filter(item => indicadoresAtivos[item.id] !== false).map((item) => (
+            <div key={item.id} onClick={() => setRelatorioDetalhe(item.id)}
+              className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
+              <div className="p-2 rounded-md bg-primary/10">
+                <item.icon className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-semibold text-foreground">{item.nome}</h4>
+                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+              </div>
+              <div className="text-right flex items-center gap-2">
+                <span className="text-sm font-bold text-primary">{item.valor}</span>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+            </div>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="atendimento" className="space-y-5">
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setPersonalizarOpen(true)}>
+              <Settings2 className="h-3 w-3 mr-1" /> Personalizar Indicadores
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard title="Atendimentos por Dia">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+            <ChartCard title="TMA e TME Diário (min)">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+          <ChartCard title="Horários de Pico">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dadosEmpresaGrande.atendimentosPorDia}>
+              <BarChart data={dadosEmpresaGrande.horariosPico}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
+                <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
+                <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="atendimentos" fill="hsl(214, 85%, 51%)" radius={[5, 5, 0, 0]} />
+                <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
+                  {dadosEmpresaGrande.horariosPico.map((item, i) => (
+                    <Cell key={i} fill={
+                      item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
+                      item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
+                      item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
+                      "hsl(142, 71%, 45%)"
+                    } />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
-          <ChartCard title="TMA e TME Diário (min)">
+        </TabsContent>
+
+        <TabsContent value="comercial" className="space-y-5">
+          <div className="flex items-center justify-end gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="produtividade" className="space-y-5">
+          <div className="flex items-center justify-end gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {dadosEmpresaGrande.indicadores.map((ind, i) => (
+              <MetricCard key={i} label={ind.nome} value={ind.valor} accent />
+            ))}
+          </div>
+          <ChartCard title="Distribuição por Atendente">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dadosEmpresaGrande.tmaTmePorDia}>
+              <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                <XAxis dataKey="dia" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} />
-                <Tooltip contentStyle={tooltipStyle} /><Legend wrapperStyle={{ fontSize: 10 }} />
-                <Line type="monotone" dataKey="TMA" stroke="hsl(214, 85%, 51%)" strokeWidth={2} dot={{ r: 2 }} />
-                <Line type="monotone" dataKey="TME" stroke="hsl(214, 85%, 41%)" strokeWidth={2} dot={{ r: 2 }} strokeDasharray="4 4" />
-              </LineChart>
+                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </ChartCard>
-        </div>
-        <ChartCard title="Horários de Pico">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dadosEmpresaGrande.horariosPico}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-              <XAxis dataKey="horario" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="msgs" name="Mensagens" radius={[5, 5, 0, 0]}>
-                {dadosEmpresaGrande.horariosPico.map((item, i) => (
-                  <Cell key={i} fill={
-                    item.nivel === "Muito Alto" ? "hsl(0, 84%, 60%)" :
-                    item.nivel === "Alto" ? "hsl(38, 92%, 50%)" :
-                    item.nivel === "Médio" ? "hsl(214, 85%, 51%)" :
-                    "hsl(142, 71%, 45%)"
-                  } />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="comercial" className="space-y-5">
-        <div className="flex items-center justify-end gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </TabsContent>
-
-      <TabsContent value="produtividade" className="space-y-5">
-        <div className="flex items-center justify-end gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" className="h-7 text-[10px]"><Download className="h-3 w-3 mr-1" /> Exportar</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => toast.success("Exportando em Excel...")}>Excel (.xlsx)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success("Exportando em Word...")}>Word (.docx)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success("Exportando em PDF...")}>PDF (.pdf)</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {dadosEmpresaGrande.indicadores.map((ind, i) => (
-            <MetricCard key={i} label={ind.nome} value={ind.valor} accent />
-          ))}
-        </div>
-        <ChartCard title="Distribuição por Atendente">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dadosEmpresaGrande.distribuicaoPorAtendente} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-              <XAxis type="number" tick={{ fontSize: 10 }} />
-              <YAxis dataKey="nome" type="category" width={60} tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="atendimentos" fill="hsl(214, 85%, 41%)" radius={[0, 5, 5, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </TabsContent>
-
-      <TabsContent value="nps_rel" className="space-y-5">
-        {renderNps()}
-      </TabsContent>
-
-      <TabsContent value="distribuicao" className="space-y-5">
-        <ChartCard title="Status de Atendimentos">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
-                label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
-                dataKey="value" strokeWidth={0}>
-                {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </TabsContent>
-    </Tabs>
-  );
+        <TabsContent value="distribuicao" className="space-y-5">
+          <ChartCard title="Status de Atendimentos">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={dadosEmpresaGrande.statusAtendimentos} cx="50%" cy="50%" labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`} outerRadius={75} innerRadius={35}
+                  dataKey="value" strokeWidth={0}>
+                  {dadosEmpresaGrande.statusAtendimentos.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={tooltipStyle} />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </TabsContent>
+      </Tabs>
+    );
+  };
 
   // Thalí Preditiva (Visão Estratégica)
   const renderPreditivaEstrategica = () => (
@@ -1204,7 +1403,7 @@ export const GestaoUnificada = () => {
               { id: "resolutividade", nome: "Taxa de Resolutividade" },
               { id: "conversao", nome: "Conversão" },
               { id: "receita", nome: "Receita" },
-              { id: "nps_medio", nome: "NPS Médio" },
+              { id: "nps", nome: "NPS" },
             ].map((ind) => (
               <div key={ind.id} className="flex items-center justify-between p-2.5 rounded-lg border border-border/50">
                 <span className="text-xs font-medium">{ind.nome}</span>
