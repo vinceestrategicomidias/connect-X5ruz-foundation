@@ -208,7 +208,6 @@ const menuBlocks: MenuBlock[] = [
       { id: "dashboard", label: "Dashboard", icon: BarChart3 },
       { id: "relatorios", label: "Relatórios", icon: FileText },
       { id: "preditiva_estrategica", label: "Thalí Preditiva", icon: Brain },
-      { id: "feedback", label: "Feedback Thalí", icon: ThumbsUp },
     ],
   },
   {
@@ -1273,7 +1272,6 @@ export const GestaoUnificada = () => {
       case "dashboard": return renderDashboard();
       case "relatorios": return renderRelatorios();
       case "preditiva_estrategica": return renderPreditivaEstrategica();
-      case "feedback": return renderFeedback();
       // Estrutura
       case "empresa": return renderEmpresa();
       case "unidades": return renderUnidades();
