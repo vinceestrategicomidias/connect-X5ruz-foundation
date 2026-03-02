@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { LayoutDashboard, Sun, Moon, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Sun, Moon, BarChart3, Sparkles } from "lucide-react";
 import { ConnectIconButton } from "./ConnectIconButton";
 import { SetoresManagement } from "./SetoresManagement";
 import { ManualDialer } from "./ManualDialer";
@@ -17,12 +17,9 @@ export const ConnectNavbar = () => {
       {/* Logo / Brand */}
       <div className="flex items-center gap-3">
         <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-          <span className="text-primary-foreground font-bold text-xs">GL</span>
+          <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
-        <div className="flex flex-col leading-none">
-          <h1 className="text-[26px] font-semibold text-foreground uppercase tracking-tight">CONNECT</h1>
-          <p className="text-[11px] font-normal text-muted-foreground uppercase tracking-wide mt-0.5">GRUPO LIRUZ</p>
-        </div>
+        <h1 className="text-[26px] font-semibold text-foreground uppercase tracking-tight">CONNECT</h1>
       </div>
 
       {/* Ranking Top 3 */}
