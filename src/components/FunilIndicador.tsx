@@ -3,12 +3,13 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLeadAtivoPaciente, useAtualizarEtapaLead, useReabrirLead } from "@/hooks/useLeadsFunil";
+import { useOrcamentosPaciente, useAtualizarOrcamento } from "@/hooks/useOrcamentos";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { FunilVendidoModal } from "./FunilVendidoModal";
 import { FunilPerdidoModal } from "./FunilPerdidoModal";
 import { FunilReabrirModal } from "./FunilReabrirModal";
 import { toast } from "sonner";
-import { TrendingUp, RotateCcw, User, ShoppingCart, CalendarClock, XCircle, History } from "lucide-react";
+import { TrendingUp, RotateCcw, User, ShoppingCart, CalendarClock, XCircle, History, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 interface FunilIndicadorProps {
@@ -23,8 +24,10 @@ const ETAPAS = [
 
 export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
   const { data: lead } = useLeadAtivoPaciente(pacienteId);
+  const { data: orcamentos = [] } = useOrcamentosPaciente(pacienteId);
   const { atendenteLogado } = useAtendenteContext();
   const atualizarEtapa = useAtualizarEtapaLead();
+  const atualizarOrcamento = useAtualizarOrcamento();
   const reabrirLead = useReabrirLead();
   const [vendidoOpen, setVendidoOpen] = useState(false);
   const [perdidoOpen, setPerdidoOpen] = useState(false);
@@ -36,7 +39,14 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
 
   const handleClickEtapa = (etapa: string) => {
     if (etapa === lead.etapa) return;
-    if (etapa === "vendido") setVendidoOpen(true);
+    if (etapa === "vendido") {
+      // Validate: need at least one orcamento to mark as sold
+      if (orcamentos.length === 0) {
+        toast.warning("Não é possível marcar como vendido sem orçamento registrado.");
+        return;
+      }
+      setVendidoOpen(true);
+    }
     if (etapa === "perdido") setPerdidoOpen(true);
     if (etapa === "em_negociacao" && lead.etapa !== "em_negociacao") {
       setReabrirOpen(true);
@@ -58,7 +68,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
     );
   };
 
-  const handleVendido = (dados: { valor_final: number; forma_pagamento: string; produto_servico?: string }) => {
+  const handleVendido = (dados: { valor_final: number; forma_pagamento: string; produto_servico?: string; orcamento_id?: string }) => {
     atualizarEtapa.mutate(
       {
         leadId: lead.id,
@@ -68,7 +78,20 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
         forma_pagamento: dados.forma_pagamento,
         fechado_por_id: atendenteLogado?.id,
       },
-      { onSuccess: () => { toast.success("Venda confirmada! 🎉"); setVendidoOpen(false); } }
+      {
+        onSuccess: () => {
+          // Mark the selected orcamento as "fechado"
+          if (dados.orcamento_id && pacienteId) {
+            atualizarOrcamento.mutate({
+              orcamentoId: dados.orcamento_id,
+              pacienteId,
+              updates: { status_orcamento: "fechado" },
+            });
+          }
+          toast.success("Venda confirmada! 🎉");
+          setVendidoOpen(false);
+        },
+      }
     );
   };
 
@@ -191,14 +214,42 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
                   <PopoverTrigger asChild>
                     <button className={btnClass}>{etapa.label}</button>
                   </PopoverTrigger>
-                  <PopoverContent side="bottom" className="w-64 p-3">
+                  <PopoverContent side="bottom" className="w-72 p-3">
                     <div className="space-y-2 text-xs">
                       <p className="font-semibold text-sm">{lead.produto_servico}</p>
 
-                      {/* Orçamento */}
+                      {/* Orçamentos list */}
+                      {orcamentos.length > 0 && (
+                        <div className="border-t border-border/50 pt-2 mt-1 space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <FileText className="h-3 w-3 shrink-0" />
+                            <span className="font-medium">Orçamentos ({orcamentos.length})</span>
+                          </div>
+                          {orcamentos.map((orc) => (
+                            <div key={orc.id} className="pl-4 border-l-2 border-muted flex items-center justify-between gap-2">
+                              <div>
+                                <p className="font-medium">
+                                  #{String(orc.numero_sequencial).padStart(3, "0")} — {orc.produto_nome}
+                                </p>
+                                <p className="text-muted-foreground">
+                                  {formatCurrency(orc.valor_com_desconto ?? orc.valor_total)} • {formatDate(orc.created_at)}
+                                </p>
+                              </div>
+                              <span className={cn(
+                                "text-[9px] px-1.5 py-0.5 rounded-full font-medium",
+                                orc.status_orcamento === "fechado" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                              )}>
+                                {orc.status_orcamento === "fechado" ? "Fechado" : "Enviado"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Orçamento value from lead */}
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <ShoppingCart className="h-3 w-3 shrink-0" />
-                        <span>Orçamento: {formatCurrency(lead.valor_orcamento)}</span>
+                        <span>Valor lead: {formatCurrency(lead.valor_orcamento)}</span>
                       </div>
 
                       {/* Vendedor que enviou */}
@@ -349,6 +400,7 @@ export const FunilIndicador = ({ pacienteId }: FunilIndicadorProps) => {
         onConfirmar={handleVendido}
         valorOrcamento={lead.valor_orcamento}
         produtoServico={lead.produto_servico}
+        orcamentos={orcamentos}
       />
 
       <FunilPerdidoModal

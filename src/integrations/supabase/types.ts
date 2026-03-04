@@ -1332,6 +1332,99 @@ export type Database = {
           },
         ]
       }
+      orcamentos: {
+        Row: {
+          atendente_id: string | null
+          conversa_id: string | null
+          created_at: string
+          despesas_adicionais: number
+          id: string
+          lead_id: string | null
+          numero_sequencial: number
+          observacoes: string | null
+          paciente_id: string
+          produto_nome: string
+          setor_id: string | null
+          status_orcamento: string
+          updated_at: string
+          valor_com_desconto: number | null
+          valor_produto: number
+          valor_total: number
+        }
+        Insert: {
+          atendente_id?: string | null
+          conversa_id?: string | null
+          created_at?: string
+          despesas_adicionais?: number
+          id?: string
+          lead_id?: string | null
+          numero_sequencial?: number
+          observacoes?: string | null
+          paciente_id: string
+          produto_nome: string
+          setor_id?: string | null
+          status_orcamento?: string
+          updated_at?: string
+          valor_com_desconto?: number | null
+          valor_produto?: number
+          valor_total?: number
+        }
+        Update: {
+          atendente_id?: string | null
+          conversa_id?: string | null
+          created_at?: string
+          despesas_adicionais?: number
+          id?: string
+          lead_id?: string | null
+          numero_sequencial?: number
+          observacoes?: string | null
+          paciente_id?: string
+          produto_nome?: string
+          setor_id?: string | null
+          status_orcamento?: string
+          updated_at?: string
+          valor_com_desconto?: number | null
+          valor_produto?: number
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_funil"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pacientes: {
         Row: {
           atendente_responsavel: string | null
