@@ -218,12 +218,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
       enviarOrcamentoDireto();
       return;
     }
-    // If lead already exists, just send
-    if (leadAtivo) {
-      enviarOrcamentoDireto();
-      return;
-    }
-    // First budget → open classification modal
+    // Always open classification modal to link budget to funnel
     setPendingEnvioOrcamento(true);
     setClassificacaoModalOpen(true);
   };
