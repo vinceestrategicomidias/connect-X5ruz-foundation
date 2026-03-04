@@ -115,7 +115,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const criarLead = useCriarLead();
   const enviarMensagem = useEnviarMensagem();
   const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
-  const [pendingOrcamentoCallback, setPendingOrcamentoCallback] = useState<(() => void) | null>(null);
+  const [pendingEnvioOrcamento, setPendingEnvioOrcamento] = useState(false);
   const [orcamento, setOrcamento] = useState<OrcamentoData>({
     descricao: "Consulta especializada",
     valorProduto: "350.00",
@@ -202,7 +202,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
       return;
     }
     // First budget → open classification modal
-    setPendingOrcamentoCallback(() => enviarOrcamentoDireto);
+    setPendingEnvioOrcamento(true);
     setClassificacaoModalOpen(true);
   };
 
@@ -225,9 +225,9 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
       });
     }
     setClassificacaoModalOpen(false);
-    if (pendingOrcamentoCallback) {
-      pendingOrcamentoCallback();
-      setPendingOrcamentoCallback(null);
+    if (pendingEnvioOrcamento) {
+      enviarOrcamentoDireto();
+      setPendingEnvioOrcamento(false);
     }
   };
 
@@ -440,7 +440,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
         onOpenChange={(open) => {
           setClassificacaoModalOpen(open);
           if (!open) {
-            setPendingOrcamentoCallback(null);
+            setPendingEnvioOrcamento(false);
           }
         }}
         onClassificar={handleClassificacao}
