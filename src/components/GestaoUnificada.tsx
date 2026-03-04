@@ -1937,6 +1937,7 @@ export const GestaoUnificada = () => {
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground leading-tight">CONNECT</h2>
+              <p className="text-[10px] text-muted-foreground leading-tight">Sistema de Gestão</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/chat")}>
