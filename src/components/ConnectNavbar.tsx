@@ -19,7 +19,10 @@ export const ConnectNavbar = () => {
         <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
           <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
-        <h1 className="text-[26px] font-semibold text-foreground uppercase tracking-tight">CONNECT</h1>
+        <div>
+          <h1 className="text-lg font-bold text-foreground uppercase tracking-tight leading-tight">CONNECT</h1>
+          <p className="text-[10px] text-muted-foreground leading-tight">Grupo Liruz</p>
+        </div>
       </div>
 
       {/* Ranking Top 3 */}
