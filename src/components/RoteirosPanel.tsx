@@ -11,6 +11,7 @@ import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente } from "@/hooks/useConversas";
 import { useLeadAtivoPaciente, useCriarLead } from "@/hooks/useLeadsFunil";
 import { useEnviarMensagem } from "@/hooks/useMutations";
+import { useCriarOrcamento } from "@/hooks/useOrcamentos";
 import { FunilClassificacaoModal } from "./FunilClassificacaoModal";
 
 interface RoteirosNode {
@@ -113,6 +114,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const { data: conversa } = useConversaByPaciente(pacienteSelecionado?.id || null);
   const { data: leadAtivo } = useLeadAtivoPaciente(pacienteSelecionado?.id || null);
   const criarLead = useCriarLead();
+  const criarOrcamento = useCriarOrcamento();
   const enviarMensagem = useEnviarMensagem();
   const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
   const [pendingEnvioOrcamento, setPendingEnvioOrcamento] = useState(false);
@@ -170,8 +172,28 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
     return mensagem;
   };
 
-  const enviarOrcamentoDireto = () => {
+  const salvarOrcamentoNoBanco = (leadId?: string) => {
+    if (!pacienteSelecionado) return;
+    const total = calcularTotal();
+    const desconto = parseFloat(orcamento.valorDesconto) || 0;
+    criarOrcamento.mutate({
+      paciente_id: pacienteSelecionado.id,
+      conversa_id: conversa?.id,
+      atendente_id: atendenteLogado?.id,
+      setor_id: atendenteLogado?.setor_id || undefined,
+      lead_id: leadId,
+      produto_nome: orcamento.descricao || "Orçamento",
+      valor_produto: parseFloat(orcamento.valorProduto) || 0,
+      despesas_adicionais: parseFloat(orcamento.despesasAdicionais) || 0,
+      valor_total: total,
+      valor_com_desconto: desconto > 0 ? desconto : undefined,
+    });
+  };
+
+  const enviarOrcamentoDireto = (leadId?: string) => {
     const mensagem = gerarMensagemOrcamento();
+    // Save budget to DB
+    salvarOrcamentoNoBanco(leadId);
     if (conversa?.id) {
       enviarMensagem.mutate({
         conversaId: conversa.id,
@@ -222,10 +244,20 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
         valor_orcamento: dados.valor_orcamento,
         origem_lead: dados.origem_lead,
         observacoes: dados.observacoes,
+      }, {
+        onSuccess: (lead) => {
+          setClassificacaoModalOpen(false);
+          if (pendingEnvioOrcamento) {
+            enviarOrcamentoDireto(lead?.id);
+            setPendingEnvioOrcamento(false);
+          }
+        },
       });
+      return;
     }
     setClassificacaoModalOpen(false);
     if (pendingEnvioOrcamento) {
+      // "Apenas contato" — save orcamento without lead
       enviarOrcamentoDireto();
       setPendingEnvioOrcamento(false);
     }
