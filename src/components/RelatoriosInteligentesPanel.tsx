@@ -214,7 +214,7 @@ const relatorioGeralAtendente: Record<string, any> = {
     }
   },
   marcos: {
-    nome: "Marcos Souza", dataCadastro: "05/01/2024", setor: "Pré-venda",
+    nome: "Marcos Souza", dataCadastro: "05/01/2024", setor: "Suporte",
     tempoEmpresa: "1 ano", nps: 74, resolutividade: 78, tma: "5m 12s", tme: "2m 05s",
     totalAtendimentos: 2876, orcamentosEnviados: 142, vendasRealizadas: 71, leadsRecebidos: 245,
     ticketMedio: 1320, cicloMedioVenda: 6.8,
@@ -243,7 +243,7 @@ const relatorioGeralAtendente: Record<string, any> = {
     }
   },
   bianca: {
-    nome: "Bianca Lima", dataCadastro: "18/04/2024", setor: "Pré-venda",
+    nome: "Bianca Lima", dataCadastro: "18/04/2024", setor: "Pós-venda",
     tempoEmpresa: "9 meses", nps: 88, resolutividade: 85, tma: "4m 32s", tme: "1m 45s",
     totalAtendimentos: 2234, orcamentosEnviados: 134, vendasRealizadas: 70, leadsRecebidos: 258,
     ticketMedio: 1410, cicloMedioVenda: 5.5,
@@ -271,6 +271,21 @@ const relatorioGeralAtendente: Record<string, any> = {
     }
   },
 };
+
+// Sector-attendant mapping
+const SETOR_ATENDENTES: Record<string, string[]> = {
+  "pre-venda": ["geovana", "paloma", "emilly"],
+  "suporte": ["marcos"],
+  "pos-venda": ["bianca"],
+};
+
+const TODOS_ATENDENTES = [
+  { key: "geovana", nome: "Geovana Silva" },
+  { key: "paloma", nome: "Paloma Santos" },
+  { key: "emilly", nome: "Emilly Oliveira" },
+  { key: "marcos", nome: "Marcos Souza" },
+  { key: "bianca", nome: "Bianca Lima" },
+];
 
 const COLORS = ["#0A2647", "#144272", "#205295", "#2C74B3", "#3B82F6"];
 
@@ -393,7 +408,15 @@ export const RelatoriosInteligentesPanel = () => {
   const [filtroProduto, setFiltroProduto] = useState("todos");
   const [filtroAtendente, setFiltroAtendente] = useState("todos");
   const [filtroSetor, setFiltroSetor] = useState("todos");
+  const [filtroSetorAtendente, setFiltroSetorAtendente] = useState("todos");
   const [filtrosAplicados, setFiltrosAplicados] = useState(false);
+
+  // Filter attendants by sector
+  const atendentesFiltrados = useMemo(() => {
+    if (filtroSetorAtendente === "todos") return TODOS_ATENDENTES;
+    const keys = SETOR_ATENDENTES[filtroSetorAtendente] || [];
+    return TODOS_ATENDENTES.filter(a => keys.includes(a.key));
+  }, [filtroSetorAtendente]);
 
   const handleAplicar = () => {
     setFiltrosAplicados(true);
@@ -881,17 +904,34 @@ export const RelatoriosInteligentesPanel = () => {
             <TabsContent value="relatorio_geral_atendente" className="mt-0 space-y-4">
               <div className="flex flex-wrap items-end gap-3 p-4 bg-muted/30 rounded-lg border mb-4">
                 <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+                <Select value={filtroSetorAtendente} onValueChange={(v) => {
+                  setFiltroSetorAtendente(v);
+                  // Reset attendant if not in new sector
+                  const keys = v === "todos" ? TODOS_ATENDENTES.map(a => a.key) : (SETOR_ATENDENTES[v] || []);
+                  if (!keys.includes(atendenteRelatorio)) {
+                    setAtendenteRelatorio(keys[0] || "geovana");
+                  }
+                }}>
+                  <SelectTrigger className="w-36">
+                    <Building2 className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="Setor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os setores</SelectItem>
+                    <SelectItem value="pre-venda">Pré-venda</SelectItem>
+                    <SelectItem value="suporte">Suporte</SelectItem>
+                    <SelectItem value="pos-venda">Pós-venda</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select value={atendenteRelatorio} onValueChange={setAtendenteRelatorio}>
                   <SelectTrigger className="w-44">
                     <Users className="h-3 w-3 mr-1" />
                     <SelectValue placeholder="Atendente" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="geovana">Geovana Silva</SelectItem>
-                    <SelectItem value="paloma">Paloma Santos</SelectItem>
-                    <SelectItem value="emilly">Emilly Oliveira</SelectItem>
-                    <SelectItem value="marcos">Marcos Souza</SelectItem>
-                    <SelectItem value="bianca">Bianca Lima</SelectItem>
+                    {atendentesFiltrados.map(a => (
+                      <SelectItem key={a.key} value={a.key}>{a.nome}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <DateRangeFilter
@@ -903,6 +943,7 @@ export const RelatoriosInteligentesPanel = () => {
 
               {!filtrosAplicados ? <EmptyFilterState /> : dadosAtendente && (
                 <>
+                  {/* Profile */}
                   <Card className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
@@ -910,16 +951,18 @@ export const RelatoriosInteligentesPanel = () => {
                       </div>
                       <div className="flex-1">
                         <h4 className="text-xl font-bold text-foreground">{dadosAtendente.nome}</h4>
+                        <p className="text-sm text-muted-foreground">{dadosAtendente.setor} • Desde {dadosAtendente.dataCadastro} • {dadosAtendente.tempoEmpresa}</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
-                          <div><div className="text-xs text-muted-foreground">Data de Cadastro</div><div className="text-sm font-medium">{dadosAtendente.dataCadastro}</div></div>
+                          <div><div className="text-xs text-muted-foreground">Total Atendimentos</div><div className="text-sm font-medium">{dadosAtendente.totalAtendimentos.toLocaleString()}</div></div>
                           <div><div className="text-xs text-muted-foreground">Setor</div><div className="text-sm font-medium">{dadosAtendente.setor}</div></div>
                           <div><div className="text-xs text-muted-foreground">Tempo de Empresa</div><div className="text-sm font-medium">{dadosAtendente.tempoEmpresa}</div></div>
-                          <div><div className="text-xs text-muted-foreground">Total Atendimentos</div><div className="text-sm font-medium">{dadosAtendente.totalAtendimentos.toLocaleString()}</div></div>
+                          <div><div className="text-xs text-muted-foreground">Data de Cadastro</div><div className="text-sm font-medium">{dadosAtendente.dataCadastro}</div></div>
                         </div>
                       </div>
                     </div>
                   </Card>
 
+                  {/* KPI Cards: NPS, Resolutividade, TMA, TME */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card className="p-4">
                       <div className="flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-yellow-500" /><span className="text-sm text-muted-foreground">NPS</span></div>
@@ -934,14 +977,78 @@ export const RelatoriosInteligentesPanel = () => {
                       <div className="text-3xl font-bold text-foreground">{dadosAtendente.tma}</div>
                     </Card>
                     <Card className="p-4">
-                      <div className="flex items-center gap-2 mb-1"><Lightbulb className="h-4 w-4 text-yellow-500" /><span className="text-sm text-muted-foreground">Ideias Aprovadas</span></div>
-                      <div className="text-3xl font-bold text-foreground">{dadosAtendente.ideias.aprovadas}/{dadosAtendente.ideias.adicionadas}</div>
+                      <div className="flex items-center gap-2 mb-1"><CalendarClock className="h-4 w-4 text-primary" /><span className="text-sm text-muted-foreground">TME</span></div>
+                      <div className="text-3xl font-bold text-foreground">{dadosAtendente.tme}</div>
                     </Card>
                   </div>
 
+                  {/* Ciclo de Venda + Conversão Comercial */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <Card className="p-4">
-                      <h4 className="font-semibold mb-4">Métricas vs Média da Equipe</h4>
+                      <h4 className="font-semibold mb-3 text-sm">Ciclo de Venda</h4>
+                      <div className="text-center p-4 bg-muted/30 rounded-lg">
+                        <div className="text-3xl font-bold text-foreground">{dadosAtendente.cicloMedioVenda} dias</div>
+                        <div className="text-xs text-muted-foreground mt-1">Ciclo médio de venda</div>
+                      </div>
+                    </Card>
+                    <Card className="p-4">
+                      <h4 className="font-semibold mb-3 text-sm">Conversão Comercial</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-blue-600">{dadosAtendente.orcamentosEnviados}</div>
+                          <div className="text-[10px] text-muted-foreground">Orçamentos</div>
+                        </div>
+                        <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-green-600">{dadosAtendente.vendasRealizadas}</div>
+                          <div className="text-[10px] text-muted-foreground">Vendas</div>
+                        </div>
+                        <div className="p-3 bg-muted/30 rounded-lg text-center">
+                          <div className="text-2xl font-bold">{dadosAtendente.leadsRecebidos}</div>
+                          <div className="text-[10px] text-muted-foreground">Leads</div>
+                        </div>
+                        <div className="p-3 bg-muted/30 rounded-lg text-center">
+                          <div className="text-2xl font-bold">{formatCurrency(dadosAtendente.ticketMedio)}</div>
+                          <div className="text-[10px] text-muted-foreground">Ticket médio</div>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+
+                  {/* Histórico de Atendimentos */}
+                  <Card className="p-4">
+                    <h4 className="font-semibold mb-3 text-sm">Histórico de Atendimentos</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2 px-3 font-medium">Data</th>
+                            <th className="text-left py-2 px-3 font-medium">Paciente</th>
+                            <th className="text-left py-2 px-3 font-medium">Tipo</th>
+                            <th className="text-left py-2 px-3 font-medium">Resultado</th>
+                            <th className="text-right py-2 px-3 font-medium">Valor</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(dadosAtendente.historicoAtendimentos || []).map((h: any, idx: number) => (
+                            <tr key={idx} className="border-b last:border-0">
+                              <td className="py-2 px-3 text-muted-foreground">{h.data}</td>
+                              <td className="py-2 px-3 font-medium">{h.paciente}</td>
+                              <td className="py-2 px-3"><Badge variant="outline" className="text-[10px]">{h.tipo}</Badge></td>
+                              <td className="py-2 px-3">
+                                <Badge variant={h.resultado === "Vendido" ? "default" : h.resultado === "Perdido" ? "destructive" : "secondary"} className="text-[10px]">{h.resultado}</Badge>
+                              </td>
+                              <td className="py-2 px-3 text-right text-muted-foreground">{h.valor}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Card>
+
+                  {/* Radar + Ideias */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Card className="p-4">
+                      <h4 className="font-semibold mb-4">Ranking Radar vs Equipe</h4>
                       <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <RadarChart data={dadosAtendente.radarData}>
@@ -954,11 +1061,11 @@ export const RelatoriosInteligentesPanel = () => {
                       </div>
                     </Card>
                     <Card className="p-4">
-                      <h4 className="font-semibold mb-4 flex items-center gap-2"><Lightbulb className="h-4 w-4 text-yellow-500" />Central de Ideias</h4>
+                      <h4 className="font-semibold mb-4 flex items-center gap-2"><Lightbulb className="h-4 w-4 text-yellow-500" />Ideias das Estrelas</h4>
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="p-3 bg-muted/50 rounded-lg text-center">
                           <div className="text-2xl font-bold">{dadosAtendente.ideias.adicionadas}</div>
-                          <div className="text-xs text-muted-foreground">Ideias Enviadas</div>
+                          <div className="text-xs text-muted-foreground">Enviadas</div>
                         </div>
                         <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg text-center">
                           <div className="text-2xl font-bold text-green-600">{dadosAtendente.ideias.aprovadas}</div>
@@ -976,12 +1083,12 @@ export const RelatoriosInteligentesPanel = () => {
                     </Card>
                   </div>
 
-                  {/* Análise da Thalí */}
+                  {/* Visão da Thalí */}
                   <Card className="p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <ThaliAvatar size="sm" expression="pensativa" />
                       <div>
-                        <h4 className="font-semibold">Análise da Thalí</h4>
+                        <h4 className="font-semibold">Visão da Thalí</h4>
                         <p className="text-xs text-muted-foreground">Baseada em TMA, Análise de Sentimento, NPS e Resolutividade</p>
                       </div>
                     </div>
@@ -1016,17 +1123,33 @@ export const RelatoriosInteligentesPanel = () => {
             <TabsContent value="relatorio_completo_atendente" className="mt-0 space-y-4">
               <div className="flex flex-wrap items-end gap-3 p-4 bg-muted/30 rounded-lg border mb-4">
                 <Filter className="h-4 w-4 text-muted-foreground mt-2" />
+                <Select value={filtroSetorAtendente} onValueChange={(v) => {
+                  setFiltroSetorAtendente(v);
+                  const keys = v === "todos" ? TODOS_ATENDENTES.map(a => a.key) : (SETOR_ATENDENTES[v] || []);
+                  if (!keys.includes(atendenteRelatorio)) {
+                    setAtendenteRelatorio(keys[0] || "geovana");
+                  }
+                }}>
+                  <SelectTrigger className="w-36">
+                    <Building2 className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="Setor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os setores</SelectItem>
+                    <SelectItem value="pre-venda">Pré-venda</SelectItem>
+                    <SelectItem value="suporte">Suporte</SelectItem>
+                    <SelectItem value="pos-venda">Pós-venda</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select value={atendenteRelatorio} onValueChange={setAtendenteRelatorio}>
                   <SelectTrigger className="w-44">
                     <Users className="h-3 w-3 mr-1" />
                     <SelectValue placeholder="Atendente *" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="geovana">Geovana Silva</SelectItem>
-                    <SelectItem value="paloma">Paloma Santos</SelectItem>
-                    <SelectItem value="emilly">Emilly Oliveira</SelectItem>
-                    <SelectItem value="marcos">Marcos Souza</SelectItem>
-                    <SelectItem value="bianca">Bianca Lima</SelectItem>
+                    {atendentesFiltrados.map(a => (
+                      <SelectItem key={a.key} value={a.key}>{a.nome}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select defaultValue="todos">
@@ -1038,17 +1161,6 @@ export const RelatoriosInteligentesPanel = () => {
                     <SelectItem value="todos">Todas</SelectItem>
                     <SelectItem value="unidade-1">Unidade 1</SelectItem>
                     <SelectItem value="unidade-2">Unidade 2</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select defaultValue="todos">
-                  <SelectTrigger className="w-36">
-                    <Building2 className="h-3 w-3 mr-1" />
-                    <SelectValue placeholder="Setor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="pre-venda">Pré-venda</SelectItem>
-                    <SelectItem value="pos-venda">Pós-venda</SelectItem>
                   </SelectContent>
                 </Select>
                 <DateRangeFilter

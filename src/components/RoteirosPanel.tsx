@@ -529,8 +529,10 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
       <FunilClassificacaoModal
         open={classificacaoModalOpen}
         onOpenChange={(open) => {
-          setClassificacaoModalOpen(open);
           if (!open) {
+            // Only allow closing via explicit actions (X, Cancel, Confirm buttons)
+            // The modal prevents outside clicks via onInteractOutside
+            setClassificacaoModalOpen(false);
             setPendingEnvioOrcamento(false);
           }
         }}
