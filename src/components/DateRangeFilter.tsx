@@ -85,9 +85,9 @@ export const DateRangeFilter = ({ startDate, endDate, onChangeStart, onChangeEnd
               onChange={(e) => handleInputChange(e.target.value)}
               onClick={() => setOpen(true)}
               className={cn(
-                "flex h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "flex h-8 w-full rounded-md border border-input bg-background pl-7 pr-2 py-1 text-[11px] ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 error && "border-destructive",
-                "min-w-[220px]"
+                "min-w-[185px]"
               )}
             />
           </div>
