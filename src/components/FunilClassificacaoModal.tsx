@@ -12,13 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ShoppingCart, MessageSquare, Info } from "lucide-react";
 import type { LeadFunil } from "@/hooks/useLeadsFunil";
 
@@ -56,21 +49,14 @@ export const FunilClassificacaoModal = ({
   const [valor, setValor] = useState(valorOrcamento?.toString() || "");
   const [origemLead, setOrigemLead] = useState("");
   const [observacoes, setObservacoes] = useState("");
-  const [etapaLead, setEtapaLead] = useState<"em_negociacao" | "vendido" | "perdido">("em_negociacao");
 
   useEffect(() => {
     if (open) {
       setProdutoServico(produtoServicoInicial || "");
       setValor(valorOrcamento?.toString() || "");
-      if (leadAtivo) {
-        setTipo("venda");
-        setEtapaLead(leadAtivo.etapa as "em_negociacao" | "vendido" | "perdido");
-      } else {
-        setTipo("venda");
-        setEtapaLead("em_negociacao");
-      }
+      setTipo("venda");
     }
-  }, [open, produtoServicoInicial, valorOrcamento, leadAtivo]);
+  }, [open, produtoServicoInicial, valorOrcamento]);
 
   const handleConfirmar = () => {
     if (tipo === "apenas_contato") {
@@ -81,16 +67,13 @@ export const FunilClassificacaoModal = ({
         valor_orcamento: parseFloat(valor) || 0,
         origem_lead: origemLead || undefined,
         observacoes: observacoes || undefined,
-        etapa_lead: etapaLead,
       });
     }
-    // Reset
     setProdutoServico("");
     setValor("");
     setOrigemLead("");
     setObservacoes("");
     setTipo("venda");
-    setEtapaLead("em_negociacao");
   };
 
   const hasLeadAtivo = !!leadAtivo;
@@ -110,8 +93,38 @@ export const FunilClassificacaoModal = ({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Banner lead ativo */}
-          {hasLeadAtivo && (
+          {/* Tipo selection — always show */}
+          <RadioGroup value={tipo} onValueChange={(v) => setTipo(v as any)}>
+            <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
+              onClick={() => setTipo("venda")}>
+              <RadioGroupItem value="venda" id="venda" className="mt-0.5" />
+              <div className="flex-1">
+                <Label htmlFor="venda" className="flex items-center gap-2 cursor-pointer font-medium">
+                  <ShoppingCart className="h-4 w-4 text-primary" />
+                  Venda
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {hasLeadAtivo ? "Vincular ao lead ativo no funil" : "Incluir no funil de vendas como lead ativo"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
+              onClick={() => setTipo("apenas_contato")}>
+              <RadioGroupItem value="apenas_contato" id="apenas_contato" className="mt-0.5" />
+              <div className="flex-1">
+                <Label htmlFor="apenas_contato" className="flex items-center gap-2 cursor-pointer font-medium">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  Apenas contato
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enviar orçamento sem incluir no funil
+                </p>
+              </div>
+            </div>
+          </RadioGroup>
+
+          {/* Banner lead ativo — show inside venda when lead exists */}
+          {hasLeadAtivo && tipo === "venda" && (
             <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
               <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <div className="text-xs">
@@ -123,58 +136,9 @@ export const FunilClassificacaoModal = ({
             </div>
           )}
 
-          {/* Tipo selection — only show when no leadAtivo */}
-          {!hasLeadAtivo && (
-            <RadioGroup value={tipo} onValueChange={(v) => setTipo(v as any)}>
-              <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
-                onClick={() => setTipo("venda")}>
-                <RadioGroupItem value="venda" id="venda" className="mt-0.5" />
-                <div className="flex-1">
-                  <Label htmlFor="venda" className="flex items-center gap-2 cursor-pointer font-medium">
-                    <ShoppingCart className="h-4 w-4 text-primary" />
-                    Venda
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Incluir no funil de vendas como lead ativo
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
-                onClick={() => setTipo("apenas_contato")}>
-                <RadioGroupItem value="apenas_contato" id="apenas_contato" className="mt-0.5" />
-                <div className="flex-1">
-                  <Label htmlFor="apenas_contato" className="flex items-center gap-2 cursor-pointer font-medium">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    Apenas contato
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Enviar orçamento sem incluir no funil
-                  </p>
-                </div>
-              </div>
-            </RadioGroup>
-          )}
-
-          {/* Venda fields — show when tipo=venda OR leadAtivo exists */}
-          {(tipo === "venda" || hasLeadAtivo) && (
+          {/* Venda fields */}
+          {tipo === "venda" && (
             <div className="space-y-3 border-t pt-3">
-              {/* Stage selector when lead already exists */}
-              {hasLeadAtivo && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Etapa da negociação</Label>
-                  <Select value={etapaLead} onValueChange={(v) => setEtapaLead(v as any)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="em_negociacao">Em negociação</SelectItem>
-                      <SelectItem value="vendido">Vendido</SelectItem>
-                      <SelectItem value="perdido">Perdido</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
               <div className="space-y-1.5">
                 <Label className="text-xs">Produto/Serviço *</Label>
                 <Input
@@ -196,19 +160,19 @@ export const FunilClassificacaoModal = ({
               {!hasLeadAtivo && (
                 <div className="space-y-1.5">
                   <Label className="text-xs">Origem do lead</Label>
-                  <Select value={origemLead} onValueChange={setOrigemLead}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione (opcional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="telefone">Telefone</SelectItem>
-                      <SelectItem value="site">Site</SelectItem>
-                      <SelectItem value="indicacao">Indicação</SelectItem>
-                      <SelectItem value="redes_sociais">Redes sociais</SelectItem>
-                      <SelectItem value="outro">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={origemLead}
+                    onChange={(e) => setOrigemLead(e.target.value)}
+                  >
+                    <option value="">Selecione (opcional)</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="telefone">Telefone</option>
+                    <option value="site">Site</option>
+                    <option value="indicacao">Indicação</option>
+                    <option value="redes_sociais">Redes sociais</option>
+                    <option value="outro">Outro</option>
+                  </select>
                 </div>
               )}
               <div className="space-y-1.5">
@@ -230,7 +194,7 @@ export const FunilClassificacaoModal = ({
           </Button>
           <Button
             onClick={handleConfirmar}
-            disabled={(tipo === "venda" || hasLeadAtivo) && (!produtoServico.trim() || !valor)}
+            disabled={tipo === "venda" && (!produtoServico.trim() || !valor)}
           >
             Confirmar e enviar
           </Button>
