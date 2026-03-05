@@ -1,59 +1,37 @@
 
 
-## Plano de Atualização: Dashboard e Relatórios da Central de Gestão
+## Plan: Fix Budget Sending, Date Filter, and Productivity Report
 
-### Resumo
+### Issues Identified
 
-Três mudanças principais solicitadas:
+1. **Budget sending flow**: The `FunilClassificacaoModal` calls `onClassificar` on "Confirmar e enviar" which for "apenas_contato" immediately closes the modal AND sends the budget. The issue is that when "apenas_contato" is selected, `handleClassificacao` closes the modal and sends immediately -- but the user expects the modal to stay open until they explicitly click "Confirmar e Enviar", "Cancelar", or "X". Currently, the modal's `handleConfirmar` always fires `onClassificar` which always closes the modal via `setClassificacaoModalOpen(false)`. The real problem is the flow: clicking "Confirmar e enviar" in the classification modal should trigger the actual budget send to the chat. This seems to be working correctly based on the code. Let me re-read the user's complaint.
 
-1. **Dashboard na Central de Gestão deve ser o mesmo Dashboard de Monitoramento** (tela `/dashboard`) -- ou seja, replicar o conteúdo real-time com métricas ao vivo, fila em tempo real, ranking top 3, gráficos por hora e mapa do Brasil.
+   The user says: "o orçamento, o template do orçamento deve ser enviado" -- the budget template must be sent. And for "apenas contato", the modal should only close on X, Cancelar, or Confirmar e Enviar. Looking at the code, when "apenas_contato" is selected, clicking "Confirmar e enviar" calls `onClassificar("apenas_contato")` which calls `handleClassificacao` -> closes modal -> calls `enviarOrcamentoDireto(undefined, true)`. This seems correct. The issue might be that the Dialog's `onOpenChange` also triggers close and resets `pendingEnvioOrcamento`, so clicking outside the modal cancels the send.
 
-2. **Relatórios - Visão Geral reorganizada** -- ao invés de valores brutos em cards, apresentar como um menu de relatórios listados (formato de lista/menu navegável com nome do relatório e descrição).
+2. **DateRangeFilter**: The input field has `min-w-[220px]` but needs to be smaller and more compact within its container.
 
-3. **Relatórios - Atendimento** -- não apenas gráficos, adicionar opção de "Personalizar Indicadores" e botões de **Exportar Relatório** (Word, Excel, PDF).
+3. **Productivity report with sector-based attendant filtering**: The "Relatório Atendente" and "Completo Atendente" tabs have hardcoded attendant lists. Need to add sector filter that dynamically filters attendants. Also need to add sections for: Atendimentos, TMA, TME, NPS, Ciclo de Venda, Conversão Comercial, Histórico, Ideias das Estrelas, Ranking Radar, Visão da Thalí -- most of these already exist in the "Completo Atendente" tab but need to be present in the regular "Relatório Atendente" tab too.
 
----
+### Changes
 
-### Detalhamento Técnico
+#### 1. `src/components/FunilClassificacaoModal.tsx`
+- Ensure the modal only closes via explicit user actions (X, Cancelar, Confirmar e Enviar)
+- Prevent closing by clicking outside (add `onInteractOutside` prevention on DialogContent)
 
-#### 1. Dashboard = Dashboard de Monitoramento
+#### 2. `src/components/RoteirosPanel.tsx`  
+- Fix the `onOpenChange` handler to not auto-close and reset when the dialog is dismissed by overlay click. The budget should only send when "Confirmar e Enviar" is clicked.
 
-**Arquivo:** `src/components/GestaoUnificada.tsx`
+#### 3. `src/components/DateRangeFilter.tsx`
+- Reduce `min-w-[220px]` to `min-w-[190px]`, reduce height to `h-8`, and tighten padding for a more compact appearance inside the filter bar.
 
-- Substituir a função `renderDashboard()` (linhas 319-388) para importar e renderizar o componente `DashboardMonitoramento` diretamente, ou replicar sua lógica dentro da Central de Gestão.
-- Como o `DashboardMonitoramento` é uma página completa com header e navegação própria, a abordagem mais limpa será **extrair o conteúdo interno** do dashboard (métricas, fila, ranking, gráficos, mapa) em um componente reutilizável, ou renderizar o conteúdo inline.
-- Na prática: copiar a lógica de métricas em tempo real (useEffect com auto-refresh de 5s, cálculo de métricas via pacientes/chamadas/atendentes), os MetricCards com ícones, a fila em tempo real, ranking top 3, gráficos por hora (atendimentos, TMA/TME, vendas), mapa do Brasil e painel de monitoramento.
-- Importar os hooks necessários (`usePacientes`, `useChamadas`) e componentes (`StatusAtendentesBlock`, `ConnectAvatar`, `MapaBrasilClientes`, `MonitoramentoAtendentesPanel`) no GestaoUnificada.
+#### 4. `src/components/RelatoriosInteligentesPanel.tsx`
+- **Sector-based attendant filtering**: Add a sector filter to the "Relatório Atendente" and "Completo Atendente" tabs. Map each mock attendant to a sector. When a specific sector is selected, only show attendants from that sector in the dropdown.
+- **Productivity sections**: The "Relatório Atendente" tab already has NPS, TMA, Resolutividade, Ideias, Radar, and Thalí. Add the missing sections: TME, Ciclo de Venda, Conversão Comercial (orçamentos/vendas/leads/ticket médio), and Histórico de Atendimentos table -- mirroring what's in the "Completo Atendente" tab.
+- Add example attendants mapped to different sectors (e.g., Geovana/Paloma/Emilly -> Pré-venda, Marcos -> Suporte, Bianca -> Pós-venda) to demonstrate the filtering logic.
 
-#### 2. Relatórios - Visão Geral como Menu
+### Technical Details
 
-**Arquivo:** `src/components/GestaoUnificada.tsx`
+- `FunilClassificacaoModal`: Add `onInteractOutside={(e) => e.preventDefault()}` to `DialogContent` to prevent closing on outside click.
+- Sector-attendant mapping: Create a simple map object `{ "pre-venda": ["geovana", "paloma", "emilly"], "suporte": ["marcos"], "pos-venda": ["bianca"] }` and use it to filter the attendant Select options.
+- DateRangeFilter: Adjust classes to `h-8 text-[11px] min-w-[185px] pl-7 pr-2 py-1`.
 
-- Substituir os MetricCards da aba "Visão Geral" (linhas 901-913) por uma lista de relatórios em formato de menu:
-  - Cada item será uma linha clicável com: nome do relatório, descrição curta e valor resumido ao lado.
-  - Relatórios listados: Total de Atendimentos, TMA, TME, Taxa de Resolutividade, Conversão, Receita, NPS Médio.
-  - Estilo: cards de lista com hover, ícone discreto, valor à direita.
-
-#### 3. Relatórios - Personalizar e Exportar
-
-**Arquivo:** `src/components/GestaoUnificada.tsx`
-
-- Na aba "Atendimento" dos Relatórios (linhas 915-958), adicionar:
-  - **Botão "Personalizar Indicadores"** no topo direito -- abre um Dialog/modal com toggles para ativar/desativar indicadores e opção de reordenar.
-  - **Botões de Exportar** (Word, Excel, PDF) -- grupo de botões com ícone `Download` e dropdown ou botões individuais para cada formato.
-  - Os botões de exportar serão visuais (simulados) nesta fase, com toast de confirmação ao clicar.
-- Aplicar os mesmos botões de exportar nas demais abas de relatórios para consistência.
-
----
-
-### Arquivos Modificados
-
-| Arquivo | Alteração |
-|---|---|
-| `src/components/GestaoUnificada.tsx` | Refatorar `renderDashboard()` com conteúdo do monitoramento real-time; refatorar `renderRelatorios()` Visão Geral como menu; adicionar Personalizar + Exportar em Atendimento |
-
-### Resultado Esperado
-
-- Dashboard na Central de Gestão mostra as mesmas métricas em tempo real da tela `/dashboard`
-- Relatórios Visão Geral apresenta indicadores em formato de lista/menu organizado
-- Aba Atendimento tem botão de personalizar e exportar (Word, Excel, PDF)
