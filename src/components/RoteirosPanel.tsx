@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Copy, RotateCcw, Send, Trash2, ArrowLeft } from "lucide-react";
+import { X, Copy, RotateCcw, Send, Trash2, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -118,6 +118,8 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const enviarMensagem = useEnviarMensagem();
   const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
   const [pendingEnvioOrcamento, setPendingEnvioOrcamento] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [envioErro, setEnvioErro] = useState<string | null>(null);
   const [orcamento, setOrcamento] = useState<OrcamentoData>({
     descricao: "Consulta especializada",
     valorProduto: "350.00",
@@ -140,6 +142,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
 
   const handleReset = () => {
     setFluxo(["no_inicial"]);
+    setEnvioErro(null);
   };
 
   const formatCurrency = (value: string): string => {
@@ -190,25 +193,49 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
     });
   };
 
-  const enviarOrcamentoDireto = (leadId?: string) => {
+  const enviarOrcamentoDireto = (leadId?: string, isApenasContato?: boolean) => {
     const mensagem = gerarMensagemOrcamento();
+    setEnviando(true);
+    setEnvioErro(null);
+
     // Save budget to DB
     salvarOrcamentoNoBanco(leadId);
+
     if (conversa?.id) {
-      enviarMensagem.mutate({
-        conversaId: conversa.id,
-        texto: mensagem,
-        autor: "atendente",
-      });
-      toast({
-        title: "Orçamento enviado!",
-        description: "O orçamento foi enviado na conversa",
-      });
+      enviarMensagem.mutate(
+        {
+          conversaId: conversa.id,
+          texto: mensagem,
+          autor: "atendente",
+        },
+        {
+          onSuccess: () => {
+            setEnviando(false);
+            toast({
+              title: "Orçamento enviado com sucesso ✅",
+              description: isApenasContato
+                ? "Orçamento enviado (não caracterizado como venda)"
+                : "O orçamento foi enviado na conversa e registrado no histórico",
+            });
+          },
+          onError: (error) => {
+            setEnviando(false);
+            const msg = error instanceof Error ? error.message : "Erro desconhecido";
+            setEnvioErro(msg);
+            toast({
+              title: "Falha ao enviar orçamento ❌",
+              description: msg,
+              variant: "destructive",
+            });
+          },
+        }
+      );
     } else {
       navigator.clipboard.writeText(mensagem);
+      setEnviando(false);
       toast({
         title: "Orçamento copiado!",
-        description: "O orçamento foi copiado para a área de transferência",
+        description: "O orçamento foi copiado para a área de transferência (sem conversa ativa)",
       });
     }
   };
@@ -221,6 +248,11 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
     // Always open classification modal to link budget to funnel
     setPendingEnvioOrcamento(true);
     setClassificacaoModalOpen(true);
+  };
+
+  const handleTentarNovamente = () => {
+    setEnvioErro(null);
+    handleEnviarOrcamento();
   };
 
   const handleClassificacao = (tipo: "venda" | "apenas_contato", dados?: {
@@ -243,7 +275,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
         onSuccess: (lead) => {
           setClassificacaoModalOpen(false);
           if (pendingEnvioOrcamento) {
-            enviarOrcamentoDireto(lead?.id);
+            enviarOrcamentoDireto(lead?.id, false);
             setPendingEnvioOrcamento(false);
           }
         },
@@ -252,8 +284,8 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
     }
     setClassificacaoModalOpen(false);
     if (pendingEnvioOrcamento) {
-      // "Apenas contato" — save orcamento without lead
-      enviarOrcamentoDireto();
+      // "Apenas contato" — save orcamento without lead, mark as apenas contato
+      enviarOrcamentoDireto(undefined, true);
       setPendingEnvioOrcamento(false);
     }
   };
@@ -265,14 +297,15 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
       despesasAdicionais: "",
       valorDesconto: "",
     });
+    setEnvioErro(null);
   };
 
   const handleVoltarOrcamento = () => {
     setFluxo(fluxo.slice(0, -1));
+    setEnvioErro(null);
   };
 
   const currentNodeId = fluxo[fluxo.length - 1];
-  const isOrcamentoNode = currentNodeId === "no_template_orcamento";
 
   if (!open) return null;
 
@@ -388,20 +421,50 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
                         </pre>
                       </Card>
 
+                      {/* Error state */}
+                      {envioErro && (
+                        <Card className="p-3 border-destructive bg-destructive/5">
+                          <p className="text-xs text-destructive font-medium mb-2">
+                            Falha ao enviar orçamento ❌
+                          </p>
+                          <p className="text-[10px] text-destructive/80 mb-2">{envioErro}</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs border-destructive text-destructive hover:bg-destructive/10"
+                            onClick={handleTentarNovamente}
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            Tentar novamente
+                          </Button>
+                        </Card>
+                      )}
+
                       {/* Botões de ação */}
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           className="flex-1"
                           onClick={handleEnviarOrcamento}
+                          disabled={enviando}
                         >
-                          <Send className="h-3 w-3 mr-1" />
-                          Enviar
+                          {enviando ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Enviando...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="h-3 w-3 mr-1" />
+                              Confirmar e Enviar
+                            </>
+                          )}
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={handleLimparOrcamento}
+                          disabled={enviando}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Limpar
@@ -410,6 +473,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
                           variant="outline"
                           size="sm"
                           onClick={handleVoltarOrcamento}
+                          disabled={enviando}
                         >
                           <ArrowLeft className="h-3 w-3 mr-1" />
                           Voltar
