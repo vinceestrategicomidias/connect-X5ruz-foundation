@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAtendenteContext } from "@/contexts/AtendenteContext";
 import { usePacienteContext } from "@/contexts/PacienteContext";
 import { useConversaByPaciente } from "@/hooks/useConversas";
-import { useLeadAtivoPaciente, useCriarLead } from "@/hooks/useLeadsFunil";
+import { useLeadAtivoPaciente, useCriarLead, useAtualizarEtapaLead } from "@/hooks/useLeadsFunil";
 import { useEnviarMensagem } from "@/hooks/useMutations";
 import { useCriarOrcamento } from "@/hooks/useOrcamentos";
 import { FunilClassificacaoModal } from "./FunilClassificacaoModal";
@@ -115,6 +115,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const { data: leadAtivo } = useLeadAtivoPaciente(pacienteSelecionado?.id || null);
   const criarLead = useCriarLead();
   const criarOrcamento = useCriarOrcamento();
+  const atualizarEtapa = useAtualizarEtapaLead();
   const enviarMensagem = useEnviarMensagem();
   const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
   const [pendingEnvioOrcamento, setPendingEnvioOrcamento] = useState(false);
@@ -211,11 +212,18 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
         {
           onSuccess: () => {
             setEnviando(false);
+            // Reset form for next budget, stay on template node
+            setOrcamento({
+              descricao: "",
+              valorProduto: "",
+              despesasAdicionais: "",
+              valorDesconto: "",
+            });
             toast({
               title: "Orçamento enviado com sucesso ✅",
               description: isApenasContato
                 ? "Orçamento enviado (não caracterizado como venda)"
-                : "O orçamento foi enviado na conversa e registrado no histórico",
+                : "O orçamento foi enviado na conversa e registrado no histórico. Preencha um novo orçamento se necessário.",
             });
           },
           onError: (error) => {
@@ -260,7 +268,29 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
     valor_orcamento: number;
     origem_lead?: string;
     observacoes?: string;
+    etapa_lead?: "em_negociacao" | "vendido" | "perdido";
   }) => {
+    // Case 1: Lead already exists — link budget to existing lead
+    if (leadAtivo && tipo === "venda" && dados) {
+      // Update lead stage if changed
+      if (dados.etapa_lead && dados.etapa_lead !== leadAtivo.etapa) {
+        atualizarEtapa.mutate({
+          leadId: leadAtivo.id,
+          pacienteId: pacienteSelecionado!.id,
+          etapa: dados.etapa_lead,
+          ...(dados.etapa_lead === "vendido" ? { valor_final: dados.valor_orcamento, fechado_por_id: atendenteLogado?.id } : {}),
+          ...(dados.etapa_lead === "perdido" ? { perdido_por_id: atendenteLogado?.id } : {}),
+        });
+      }
+      setClassificacaoModalOpen(false);
+      if (pendingEnvioOrcamento) {
+        enviarOrcamentoDireto(leadAtivo.id, false);
+        setPendingEnvioOrcamento(false);
+      }
+      return;
+    }
+
+    // Case 2: No lead — create new lead (venda)
     if (tipo === "venda" && dados && pacienteSelecionado && atendenteLogado) {
       criarLead.mutate({
         paciente_id: pacienteSelecionado.id,
@@ -282,9 +312,10 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
       });
       return;
     }
+
+    // Case 3: Apenas contato
     setClassificacaoModalOpen(false);
     if (pendingEnvioOrcamento) {
-      // "Apenas contato" — save orcamento without lead, mark as apenas contato
       enviarOrcamentoDireto(undefined, true);
       setPendingEnvioOrcamento(false);
     }
@@ -530,8 +561,6 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
         open={classificacaoModalOpen}
         onOpenChange={(open) => {
           if (!open) {
-            // Only allow closing via explicit actions (X, Cancel, Confirm buttons)
-            // The modal prevents outside clicks via onInteractOutside
             setClassificacaoModalOpen(false);
             setPendingEnvioOrcamento(false);
           }
@@ -539,6 +568,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
         onClassificar={handleClassificacao}
         valorOrcamento={calcularTotal() || undefined}
         produtoServico={orcamento.descricao || undefined}
+        leadAtivo={leadAtivo}
       />
     </div>
   );
