@@ -330,6 +330,8 @@ const menuBlocks: MenuBlock[] = [
       { id: "thali_mensageria", label: "Thalí e Mensageria", icon: Bot },
       { id: "roteiros", label: "Roteiros", icon: BookOpen },
       { id: "etiquetas", label: "Etiquetas", icon: Tag },
+      { id: "motivos_transferencia", label: "Motivos Transferência", icon: ArrowRightLeft },
+      { id: "motivos_finalizacao", label: "Motivos Finalização", icon: CheckCircle },
     ],
   },
   {
