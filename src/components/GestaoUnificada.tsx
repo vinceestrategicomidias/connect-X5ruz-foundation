@@ -11,6 +11,7 @@ import {
   ShoppingCart, MapPin, Smile, AlertCircle, Timer, RotateCcw, UserX,
   DollarSign, Package, TrendingDown, Pause, Medal, Globe, Home, FileDown,
   Loader2, Trophy, CreditCard, Briefcase, ArrowUpRight, ArrowDownRight,
+  ArrowRightLeft, CheckCircle,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth, subMonths, startOfYear, parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -56,6 +57,8 @@ import { RelatoriosInteligentesPanel } from "./RelatoriosInteligentesPanel";
 import { CentralIdeiasPanel } from "./CentralIdeiasPanel";
 import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
+import { MotivosTransferenciaPanel } from "./MotivosTransferenciaPanel";
+import { MotivosFinalizacaoPanel } from "./MotivosFinalizacaoPanel";
 import DashboardMonitoramento from "@/pages/DashboardMonitoramento";
 // UI
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -328,6 +331,8 @@ const menuBlocks: MenuBlock[] = [
       { id: "thali_mensageria", label: "Thalí e Mensageria", icon: Bot },
       { id: "roteiros", label: "Roteiros", icon: BookOpen },
       { id: "etiquetas", label: "Etiquetas", icon: Tag },
+      { id: "motivos_transferencia", label: "Motivos Transferência", icon: ArrowRightLeft },
+      { id: "motivos_finalizacao", label: "Motivos Finalização", icon: CheckCircle },
     ],
   },
   {
@@ -1900,6 +1905,8 @@ export const GestaoUnificada = () => {
       case "thali_mensageria": return renderThaliMensageria();
       case "roteiros": return <EditorRoteirosPanel onClose={() => {}} />;
       case "etiquetas": return <EtiquetasManagementPanel />;
+      case "motivos_transferencia": return <MotivosTransferenciaPanel />;
+      case "motivos_finalizacao": return <MotivosFinalizacaoPanel />;
       // Controle
       case "alertas_config": return renderAlertasConfig();
       case "auditoria": return <AuditoriaAcoesPanel />;
