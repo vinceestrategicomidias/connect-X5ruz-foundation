@@ -1905,6 +1905,8 @@ export const GestaoUnificada = () => {
       case "thali_mensageria": return renderThaliMensageria();
       case "roteiros": return <EditorRoteirosPanel onClose={() => {}} />;
       case "etiquetas": return <EtiquetasManagementPanel />;
+      case "motivos_transferencia": return <MotivosTransferenciaPanel />;
+      case "motivos_finalizacao": return <MotivosFinalizacaoPanel />;
       // Controle
       case "alertas_config": return renderAlertasConfig();
       case "auditoria": return <AuditoriaAcoesPanel />;
