@@ -1285,6 +1285,192 @@ export type Database = {
           },
         ]
       }
+      motivos_finalizacao: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      motivos_finalizacao_setores: {
+        Row: {
+          id: string
+          motivo_id: string
+          setor_id: string
+        }
+        Insert: {
+          id?: string
+          motivo_id: string
+          setor_id: string
+        }
+        Update: {
+          id?: string
+          motivo_id?: string
+          setor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motivos_finalizacao_setores_motivo_id_fkey"
+            columns: ["motivo_id"]
+            isOneToOne: false
+            referencedRelation: "motivos_finalizacao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "motivos_finalizacao_setores_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      motivos_finalizacao_unidades: {
+        Row: {
+          id: string
+          motivo_id: string
+          unidade_id: string
+        }
+        Insert: {
+          id?: string
+          motivo_id: string
+          unidade_id: string
+        }
+        Update: {
+          id?: string
+          motivo_id?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motivos_finalizacao_unidades_motivo_id_fkey"
+            columns: ["motivo_id"]
+            isOneToOne: false
+            referencedRelation: "motivos_finalizacao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "motivos_finalizacao_unidades_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      motivos_transferencia: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      motivos_transferencia_setores: {
+        Row: {
+          id: string
+          motivo_id: string
+          setor_id: string
+        }
+        Insert: {
+          id?: string
+          motivo_id: string
+          setor_id: string
+        }
+        Update: {
+          id?: string
+          motivo_id?: string
+          setor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motivos_transferencia_setores_motivo_id_fkey"
+            columns: ["motivo_id"]
+            isOneToOne: false
+            referencedRelation: "motivos_transferencia"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "motivos_transferencia_setores_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      motivos_transferencia_unidades: {
+        Row: {
+          id: string
+          motivo_id: string
+          unidade_id: string
+        }
+        Insert: {
+          id?: string
+          motivo_id: string
+          unidade_id: string
+        }
+        Update: {
+          id?: string
+          motivo_id?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motivos_transferencia_unidades_motivo_id_fkey"
+            columns: ["motivo_id"]
+            isOneToOne: false
+            referencedRelation: "motivos_transferencia"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "motivos_transferencia_unidades_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notificacoes: {
         Row: {
           acao: string | null
