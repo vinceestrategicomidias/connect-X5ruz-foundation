@@ -11,6 +11,7 @@ import {
   ShoppingCart, MapPin, Smile, AlertCircle, Timer, RotateCcw, UserX,
   DollarSign, Package, TrendingDown, Pause, Medal, Globe, Home, FileDown,
   Loader2, Trophy, CreditCard, Briefcase, ArrowUpRight, ArrowDownRight,
+  ArrowRightLeft, CheckCircle,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth, subMonths, startOfYear, parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
