@@ -56,6 +56,8 @@ import { RelatoriosInteligentesPanel } from "./RelatoriosInteligentesPanel";
 import { CentralIdeiasPanel } from "./CentralIdeiasPanel";
 import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
+import { MotivosTransferenciaPanel } from "./MotivosTransferenciaPanel";
+import { MotivosFinalizacaoPanel } from "./MotivosFinalizacaoPanel";
 import DashboardMonitoramento from "@/pages/DashboardMonitoramento";
 // UI
 import { ScrollArea } from "@/components/ui/scroll-area";
