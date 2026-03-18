@@ -305,7 +305,6 @@ const menuBlocks: MenuBlock[] = [
     items: [
       { id: "dashboard", label: "Dashboard", icon: BarChart3 },
       { id: "relatorios", label: "Relatórios", icon: FileText },
-      { id: "relatorio_equipe", label: "Relatório de Equipe", icon: Users },
       { id: "preditiva_estrategica", label: "Thalí Preditiva", icon: Brain },
     ],
   },
@@ -1024,6 +1023,21 @@ export const GestaoUnificada = () => {
         { id: "clientes_cidade", nome: "Clientes por cidade", icon: MapPin },
         { id: "origem_lead", nome: "Origem do lead", icon: Target },
         { id: "unidade_maior_volume", nome: "Unidade com maior volume", icon: Home },
+      ],
+    },
+    {
+      id: "equipe", icon: Users, nome: "Relatório de Equipe", desc: "Produtividade individual com NPS, TMA, TME, conversão e visão da Thalí",
+      indicadores: [
+        { id: "nps", nome: "NPS", icon: Award },
+        { id: "tma", nome: "TMA", icon: Clock },
+        { id: "tme", nome: "TME", icon: Timer },
+        { id: "ciclo_venda", nome: "Ciclo de Venda", icon: Target },
+        { id: "conversao_comercial", nome: "Conversão Comercial", icon: ShoppingCart },
+        { id: "orcamentos_enviados", nome: "Orçamentos Enviados", icon: FileText },
+        { id: "historico", nome: "Histórico de Atendimentos", icon: BarChart3 },
+        { id: "ranking_radar", nome: "Ranking Radar", icon: Gauge },
+        { id: "ideias_estrelas", nome: "Ideias das Estrelas", icon: Lightbulb },
+        { id: "visao_thali", nome: "Visão da Thalí", icon: Brain },
       ],
     },
   ];
@@ -1750,6 +1764,9 @@ export const GestaoUnificada = () => {
             </>
           );
 
+        case "equipe":
+          return <RelatorioEquipePanel />;
+
         default: return null;
       }
     };
@@ -1773,22 +1790,28 @@ export const GestaoUnificada = () => {
           <h3 className="text-sm font-semibold">{cat.nome}</h3>
         </div>
 
-        {getFiltrosForReport(id)}
-
-        {gerandoRelatorio ? (
-          <Card className="p-12 border-border/60 flex flex-col items-center justify-center text-center">
-            <Loader2 className="h-6 w-6 text-primary animate-spin mb-3" />
-            <p className="text-xs text-muted-foreground">Gerando relatório...</p>
-          </Card>
-        ) : !filtrosAplicados ? (
-          <Card className="p-8 border-border/60 flex flex-col items-center justify-center text-center">
-            <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-3" />
-            <p className="text-xs text-muted-foreground">Selecione o período e filtros para gerar o relatório.</p>
-          </Card>
+        {id === "equipe" ? (
+          <RelatorioEquipePanel />
         ) : (
-          <div className="space-y-4">
-            {renderReportContent()}
-          </div>
+          <>
+            {getFiltrosForReport(id)}
+
+            {gerandoRelatorio ? (
+              <Card className="p-12 border-border/60 flex flex-col items-center justify-center text-center">
+                <Loader2 className="h-6 w-6 text-primary animate-spin mb-3" />
+                <p className="text-xs text-muted-foreground">Gerando relatório...</p>
+              </Card>
+            ) : !filtrosAplicados ? (
+              <Card className="p-8 border-border/60 flex flex-col items-center justify-center text-center">
+                <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-3" />
+                <p className="text-xs text-muted-foreground">Selecione o período e filtros para gerar o relatório.</p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {renderReportContent()}
+              </div>
+            )}
+          </>
         )}
       </div>
     );
@@ -1892,7 +1915,6 @@ export const GestaoUnificada = () => {
       // Visão Estratégica
       case "dashboard": return renderDashboard();
       case "relatorios": return renderRelatorios();
-      case "relatorio_equipe": return <RelatorioEquipePanel />;
       case "preditiva_estrategica": return renderPreditivaEstrategica();
       // Estrutura
       case "empresa": return renderEmpresa();
