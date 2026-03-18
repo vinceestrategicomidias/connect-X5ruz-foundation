@@ -1790,22 +1790,28 @@ export const GestaoUnificada = () => {
           <h3 className="text-sm font-semibold">{cat.nome}</h3>
         </div>
 
-        {getFiltrosForReport(id)}
-
-        {gerandoRelatorio ? (
-          <Card className="p-12 border-border/60 flex flex-col items-center justify-center text-center">
-            <Loader2 className="h-6 w-6 text-primary animate-spin mb-3" />
-            <p className="text-xs text-muted-foreground">Gerando relatório...</p>
-          </Card>
-        ) : !filtrosAplicados ? (
-          <Card className="p-8 border-border/60 flex flex-col items-center justify-center text-center">
-            <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-3" />
-            <p className="text-xs text-muted-foreground">Selecione o período e filtros para gerar o relatório.</p>
-          </Card>
+        {id === "equipe" ? (
+          <RelatorioEquipePanel />
         ) : (
-          <div className="space-y-4">
-            {renderReportContent()}
-          </div>
+          <>
+            {getFiltrosForReport(id)}
+
+            {gerandoRelatorio ? (
+              <Card className="p-12 border-border/60 flex flex-col items-center justify-center text-center">
+                <Loader2 className="h-6 w-6 text-primary animate-spin mb-3" />
+                <p className="text-xs text-muted-foreground">Gerando relatório...</p>
+              </Card>
+            ) : !filtrosAplicados ? (
+              <Card className="p-8 border-border/60 flex flex-col items-center justify-center text-center">
+                <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-3" />
+                <p className="text-xs text-muted-foreground">Selecione o período e filtros para gerar o relatório.</p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {renderReportContent()}
+              </div>
+            )}
+          </>
         )}
       </div>
     );
