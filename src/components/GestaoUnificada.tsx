@@ -59,6 +59,7 @@ import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
 import { MotivosTransferenciaPanel } from "./MotivosTransferenciaPanel";
 import { MotivosFinalizacaoPanel } from "./MotivosFinalizacaoPanel";
+import { RelatorioEquipePanel } from "./RelatorioEquipePanel";
 import DashboardMonitoramento from "@/pages/DashboardMonitoramento";
 // UI
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -304,6 +305,7 @@ const menuBlocks: MenuBlock[] = [
     items: [
       { id: "dashboard", label: "Dashboard", icon: BarChart3 },
       { id: "relatorios", label: "Relatórios", icon: FileText },
+      { id: "relatorio_equipe", label: "Relatório de Equipe", icon: Users },
       { id: "preditiva_estrategica", label: "Thalí Preditiva", icon: Brain },
     ],
   },
@@ -1890,6 +1892,7 @@ export const GestaoUnificada = () => {
       // Visão Estratégica
       case "dashboard": return renderDashboard();
       case "relatorios": return renderRelatorios();
+      case "relatorio_equipe": return <RelatorioEquipePanel />;
       case "preditiva_estrategica": return renderPreditivaEstrategica();
       // Estrutura
       case "empresa": return renderEmpresa();
