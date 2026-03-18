@@ -4,21 +4,38 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Clock, TrendingUp, Users, Star, MessageSquare, Phone,
-  Calendar, Award, Target, Timer, ShoppingCart, BarChart3,
-  Smile, Brain, Lightbulb, Medal, Trophy, Radar,
+  Clock, Users, Star, Target, Timer, ShoppingCart, BarChart3,
+  Smile, Brain, Lightbulb, Radar, Settings2, Calendar,
 } from "lucide-react";
 import {
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, Radar as RechartsRadar, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip,
 } from "recharts";
 import { useSetores } from "@/hooks/useSetores";
 import { useAtendentes } from "@/hooks/useAtendentes";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { DateRangeFilter } from "./DateRangeFilter";
+
+// ─── Indicator keys ───
+const INDICADORES = [
+  { key: "nps", label: "NPS" },
+  { key: "tma", label: "TMA" },
+  { key: "tme", label: "TME" },
+  { key: "ciclo_venda", label: "Ciclo de Venda" },
+  { key: "conversao_comercial", label: "Conversão Comercial" },
+  { key: "historico", label: "Histórico de Atendimentos" },
+  { key: "ranking_radar", label: "Ranking Radar vs Equipe" },
+  { key: "ideias_estrelas", label: "Ideias das Estrelas" },
+  { key: "visao_thali", label: "Visão da Thalí" },
+] as const;
+
+type IndicadorKey = typeof INDICADORES[number]["key"];
 
 // ─── Mock data generator per attendant ───
 const gerarDadosProdutividade = (nome: string) => {
@@ -72,6 +89,11 @@ export const RelatorioEquipePanel = () => {
   const [setorSelecionado, setSetorSelecionado] = useState<string>("");
   const { data: atendentes } = useAtendentes(setorSelecionado || undefined);
   const [atendenteSelecionado, setAtendenteSelecionado] = useState<string>("");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [visibleIndicators, setVisibleIndicators] = useState<Record<IndicadorKey, boolean>>(
+    () => Object.fromEntries(INDICADORES.map(i => [i.key, true])) as Record<IndicadorKey, boolean>
+  );
 
   const atendente = useMemo(
     () => atendentes?.find((a) => a.id === atendenteSelecionado),
@@ -93,32 +115,61 @@ export const RelatorioEquipePanel = () => {
   const npsColor = (nps: number) =>
     nps >= 80 ? "text-emerald-500" : nps >= 60 ? "text-amber-500" : "text-destructive";
 
+  const show = (key: IndicadorKey) => visibleIndicators[key];
+
+  const toggleIndicator = (key: IndicadorKey) => {
+    setVisibleIndicators(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Filtros */}
-      <div className="flex gap-4 items-end flex-wrap">
-        <div className="space-y-1.5 min-w-[200px]">
-          <label className="text-sm font-medium text-muted-foreground">Setor</label>
-          <Select value={setorSelecionado} onValueChange={(v) => { setSetorSelecionado(v); setAtendenteSelecionado(""); }}>
-            <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
-            <SelectContent>
-              {setores?.map((s) => (
-                <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+      <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+        <Calendar className="h-3 w-3 text-muted-foreground" />
+        <DateRangeFilter
+          startDate={startDate}
+          endDate={endDate}
+          onChangeStart={setStartDate}
+          onChangeEnd={setEndDate}
+          className="min-w-[185px]"
+        />
+        <Select value={setorSelecionado} onValueChange={(v) => { setSetorSelecionado(v); setAtendenteSelecionado(""); }}>
+          <SelectTrigger className="w-36 h-7 text-[10px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+          <SelectContent>
+            {setores?.map((s) => (
+              <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={atendenteSelecionado} onValueChange={setAtendenteSelecionado} disabled={!setorSelecionado}>
+          <SelectTrigger className="w-40 h-7 text-[10px]"><SelectValue placeholder="Atendente" /></SelectTrigger>
+          <SelectContent>
+            {atendentes?.filter(a => a.ativo).map((a) => (
+              <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-[10px]">
+              <Settings2 className="h-3 w-3 mr-1" /> Personalizar
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3" align="end">
+            <p className="text-xs font-semibold mb-2">Indicadores visíveis</p>
+            <div className="space-y-2">
+              {INDICADORES.map(ind => (
+                <label key={ind.key} className="flex items-center gap-2 text-[11px] cursor-pointer">
+                  <Checkbox
+                    checked={visibleIndicators[ind.key]}
+                    onCheckedChange={() => toggleIndicator(ind.key)}
+                  />
+                  {ind.label}
+                </label>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5 min-w-[200px]">
-          <label className="text-sm font-medium text-muted-foreground">Atendente</label>
-          <Select value={atendenteSelecionado} onValueChange={setAtendenteSelecionado} disabled={!setorSelecionado}>
-            <SelectTrigger><SelectValue placeholder="Selecione o atendente" /></SelectTrigger>
-            <SelectContent>
-              {atendentes?.filter(a => a.ativo).map((a) => (
-                <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {!atendente && (
@@ -130,7 +181,7 @@ export const RelatorioEquipePanel = () => {
       )}
 
       {atendente && dados && (
-        <ScrollArea className="h-[calc(100vh-220px)]">
+        <ScrollArea className="h-[calc(100vh-280px)]">
           <div className="space-y-6 pr-4">
             {/* Header do atendente */}
             <Card>
@@ -156,13 +207,13 @@ export const RelatorioEquipePanel = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className={`text-4xl font-black ${npsColor(dados.nps)}`}>{dados.nps}</div>
-                    <div className="text-sm text-muted-foreground font-medium">NPS Score</div>
-                  </div>
+                  {show("nps") && (
+                    <div className="text-right">
+                      <div className={`text-4xl font-black ${npsColor(dados.nps)}`}>{dados.nps}</div>
+                      <div className="text-sm text-muted-foreground font-medium">NPS Score</div>
+                    </div>
+                  )}
                 </div>
-
-                {/* Setores Histórico */}
                 <div className="mt-4 pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground mb-2 font-medium">Histórico de setores:</p>
                   <div className="flex gap-2 flex-wrap">
@@ -175,124 +226,136 @@ export const RelatorioEquipePanel = () => {
             </Card>
 
             {/* KPIs principais */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <MetricCard icon={Smile} label="NPS" value={`${dados.nps}`} color="text-emerald-500" bgColor="bg-emerald-500/10" />
-              <MetricCard icon={Clock} label="TMA" value={`${dados.tmaMinutos}m ${dados.tmaSegundos}s`} color="text-blue-500" bgColor="bg-blue-500/10" />
-              <MetricCard icon={Timer} label="TME" value={`${dados.tmeMinutos}m ${dados.tmeSegundos}s`} color="text-amber-500" bgColor="bg-amber-500/10" />
-              <MetricCard icon={Target} label="Ciclo de Venda" value={`${dados.cicloVendaDias} dias`} color="text-violet-500" bgColor="bg-violet-500/10" />
-            </div>
+            {(show("nps") || show("tma") || show("tme") || show("ciclo_venda")) && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {show("nps") && <MetricCard icon={Smile} label="NPS" value={`${dados.nps}`} color="text-emerald-500" bgColor="bg-emerald-500/10" />}
+                {show("tma") && <MetricCard icon={Clock} label="TMA" value={`${dados.tmaMinutos}m ${dados.tmaSegundos}s`} color="text-blue-500" bgColor="bg-blue-500/10" />}
+                {show("tme") && <MetricCard icon={Timer} label="TME" value={`${dados.tmeMinutos}m ${dados.tmeSegundos}s`} color="text-amber-500" bgColor="bg-amber-500/10" />}
+                {show("ciclo_venda") && <MetricCard icon={Target} label="Ciclo de Venda" value={`${dados.cicloVendaDias} dias`} color="text-violet-500" bgColor="bg-violet-500/10" />}
+              </div>
+            )}
 
             {/* Conversão Comercial */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4 text-primary" />
-                  Conversão Comercial
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-foreground">{dados.leadsTotal}</p>
-                    <p className="text-xs text-muted-foreground">Leads</p>
+            {show("conversao_comercial") && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4 text-primary" />
+                    Conversão Comercial
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-3 rounded-lg bg-muted/50">
+                      <p className="text-2xl font-bold text-foreground">{dados.leadsTotal}</p>
+                      <p className="text-xs text-muted-foreground">Leads</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-muted/50">
+                      <p className="text-2xl font-bold text-foreground">{dados.orcamentosEnviados}</p>
+                      <p className="text-xs text-muted-foreground">Orçamentos</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-muted/50">
+                      <p className="text-2xl font-bold text-foreground">{dados.vendasFechadas}</p>
+                      <p className="text-xs text-muted-foreground">Vendas</p>
+                    </div>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-foreground">{dados.orcamentosEnviados}</p>
-                    <p className="text-xs text-muted-foreground">Orçamentos</p>
+                  <div className="flex gap-4 text-sm flex-wrap">
+                    <span className="text-muted-foreground">Conv. Leads: <strong className="text-foreground">{dados.conversaoLeads}%</strong></span>
+                    <span className="text-muted-foreground">Conv. Orçamentos: <strong className="text-foreground">{dados.conversaoOrcamentos}%</strong></span>
+                    <span className="text-muted-foreground">Conv. Vendas: <strong className="text-foreground">{dados.conversaoVendas}%</strong></span>
+                    <span className="text-muted-foreground">Ticket Médio: <strong className="text-foreground">R$ {dados.ticketMedio.toLocaleString("pt-BR")}</strong></span>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-foreground">{dados.vendasFechadas}</p>
-                    <p className="text-xs text-muted-foreground">Vendas</p>
-                  </div>
-                </div>
-                <div className="flex gap-4 text-sm">
-                  <span className="text-muted-foreground">Conv. Leads: <strong className="text-foreground">{dados.conversaoLeads}%</strong></span>
-                  <span className="text-muted-foreground">Conv. Orçamentos: <strong className="text-foreground">{dados.conversaoOrcamentos}%</strong></span>
-                  <span className="text-muted-foreground">Conv. Vendas: <strong className="text-foreground">{dados.conversaoVendas}%</strong></span>
-                  <span className="text-muted-foreground">Ticket Médio: <strong className="text-foreground">R$ {dados.ticketMedio.toLocaleString("pt-BR")}</strong></span>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Histórico */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-primary" />
-                  Histórico de Atendimentos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[220px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dados.historicoMeses}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="mes" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip />
-                      <Bar dataKey="atendimentos" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Atendimentos" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+            {show("historico") && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    Histórico de Atendimentos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={dados.historicoMeses}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="mes" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip />
+                        <Bar dataKey="atendimentos" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Atendimentos" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Ranking Radar vs Equipe */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Radar className="h-4 w-4 text-primary" />
-                  Ranking Radar vs Equipe
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={dados.radarMetricas}>
-                      <PolarGrid stroke="hsl(var(--border))" />
-                      <PolarAngleAxis dataKey="metrica" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                      <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
-                      <RechartsRadar name={atendente.nome} dataKey="valor" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
-                      <RechartsRadar name="Média Equipe" dataKey="equipe" stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted-foreground))" fillOpacity={0.15} />
-                      <Tooltip />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+            {show("ranking_radar") && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Radar className="h-4 w-4 text-primary" />
+                    Ranking Radar vs Equipe
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={dados.radarMetricas}>
+                        <PolarGrid stroke="hsl(var(--border))" />
+                        <PolarAngleAxis dataKey="metrica" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
+                        <RechartsRadar name={atendente.nome} dataKey="valor" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
+                        <RechartsRadar name="Média Equipe" dataKey="equipe" stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted-foreground))" fillOpacity={0.15} />
+                        <Tooltip />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Ideias das Estrelas */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-amber-500" />
-                  Ideias das Estrelas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {dados.ideias.map((ideia, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <Star className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                      <span className="text-foreground">{ideia}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            {show("ideias_estrelas") && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-amber-500" />
+                    Ideias das Estrelas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {dados.ideias.map((ideia, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <Star className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                        <span className="text-foreground">{ideia}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Visão da Thalí */}
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-primary" />
-                  Visão da Thalí
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-foreground leading-relaxed">{dados.visaoThali}</p>
-              </CardContent>
-            </Card>
+            {show("visao_thali") && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Brain className="h-4 w-4 text-primary" />
+                    Visão da Thalí
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-foreground leading-relaxed">{dados.visaoThali}</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </ScrollArea>
       )}
