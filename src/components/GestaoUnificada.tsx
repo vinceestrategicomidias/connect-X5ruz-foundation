@@ -1764,6 +1764,9 @@ export const GestaoUnificada = () => {
             </>
           );
 
+        case "equipe":
+          return <RelatorioEquipePanel />;
+
         default: return null;
       }
     };
