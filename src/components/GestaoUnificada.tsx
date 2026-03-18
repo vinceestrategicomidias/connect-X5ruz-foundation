@@ -1026,6 +1026,21 @@ export const GestaoUnificada = () => {
         { id: "unidade_maior_volume", nome: "Unidade com maior volume", icon: Home },
       ],
     },
+    {
+      id: "equipe", icon: Users, nome: "Relatório de Equipe", desc: "Produtividade individual com NPS, TMA, TME, conversão e visão da Thalí",
+      indicadores: [
+        { id: "nps", nome: "NPS", icon: Award },
+        { id: "tma", nome: "TMA", icon: Clock },
+        { id: "tme", nome: "TME", icon: Timer },
+        { id: "ciclo_venda", nome: "Ciclo de Venda", icon: Target },
+        { id: "conversao_comercial", nome: "Conversão Comercial", icon: ShoppingCart },
+        { id: "orcamentos_enviados", nome: "Orçamentos Enviados", icon: FileText },
+        { id: "historico", nome: "Histórico de Atendimentos", icon: BarChart3 },
+        { id: "ranking_radar", nome: "Ranking Radar", icon: Gauge },
+        { id: "ideias_estrelas", nome: "Ideias das Estrelas", icon: Lightbulb },
+        { id: "visao_thali", nome: "Visão da Thalí", icon: Brain },
+      ],
+    },
   ];
 
   const handlePresetPeriodo = (preset: string) => {
