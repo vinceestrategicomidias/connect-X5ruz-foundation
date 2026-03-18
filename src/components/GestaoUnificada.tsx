@@ -1892,6 +1892,7 @@ export const GestaoUnificada = () => {
       // Visão Estratégica
       case "dashboard": return renderDashboard();
       case "relatorios": return renderRelatorios();
+      case "relatorio_equipe": return <RelatorioEquipePanel />;
       case "preditiva_estrategica": return renderPreditivaEstrategica();
       // Estrutura
       case "empresa": return renderEmpresa();
