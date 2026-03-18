@@ -13,6 +13,7 @@ export interface Atendente {
   unidade_id?: string | null;
   perfil_id?: string | null;
   ativo: boolean;
+  created_at?: string | null;
 }
 
 export const useAtendentes = (setorId?: string) => {

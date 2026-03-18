@@ -304,6 +304,7 @@ const menuBlocks: MenuBlock[] = [
     items: [
       { id: "dashboard", label: "Dashboard", icon: BarChart3 },
       { id: "relatorios", label: "Relatórios", icon: FileText },
+      { id: "relatorio_equipe", label: "Relatório de Equipe", icon: Users },
       { id: "preditiva_estrategica", label: "Thalí Preditiva", icon: Brain },
     ],
   },
