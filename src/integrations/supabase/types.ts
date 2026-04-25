@@ -1827,8 +1827,13 @@ export type Database = {
           categoria: string
           created_at: string
           descricao: string | null
+          duracao_minutos: number | null
+          estoque: number | null
           id: string
           nome: string
+          profissional: string | null
+          sku: string | null
+          tipo: string
           updated_at: string
           valor: number
         }
@@ -1837,8 +1842,13 @@ export type Database = {
           categoria: string
           created_at?: string
           descricao?: string | null
+          duracao_minutos?: number | null
+          estoque?: number | null
           id?: string
           nome: string
+          profissional?: string | null
+          sku?: string | null
+          tipo?: string
           updated_at?: string
           valor?: number
         }
@@ -1847,8 +1857,13 @@ export type Database = {
           categoria?: string
           created_at?: string
           descricao?: string | null
+          duracao_minutos?: number | null
+          estoque?: number | null
           id?: string
           nome?: string
+          profissional?: string | null
+          sku?: string | null
+          tipo?: string
           updated_at?: string
           valor?: number
         }
