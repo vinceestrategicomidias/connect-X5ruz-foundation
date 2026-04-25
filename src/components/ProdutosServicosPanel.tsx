@@ -305,7 +305,8 @@ export const ProdutosServicosPanel = () => {
             size="sm"
             onClick={() => {
               setEditando(null);
-              setForm({ categoria: "", nome: "", valor: "", descricao: "" });
+              resetForm();
+              setEscolhendoTipo(true);
               setNovoOpen(true);
             }}
           >
