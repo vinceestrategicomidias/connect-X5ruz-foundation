@@ -136,7 +136,11 @@ export const ProdutosServicosPanel = () => {
 
       const items = rows
         .map((r) => {
-          // Aceita variações de nome de coluna
+          const tipoRaw = String(
+            r["Tipo"] ?? r["tipo"] ?? r["TIPO"] ?? "produto"
+          ).toLowerCase().trim();
+          const tipo: TipoItem =
+            tipoRaw.startsWith("s") ? "servico" : "produto";
           const categoria =
             r["Categoria"] ?? r["categoria"] ?? r["CATEGORIA"] ?? r["Produto"] ?? r["produto"] ?? "";
           const nome =
@@ -153,6 +157,7 @@ export const ProdutosServicosPanel = () => {
               ) || 0;
 
           return {
+            tipo,
             categoria: String(categoria).trim(),
             nome: String(nome).trim(),
             valor,
@@ -163,7 +168,7 @@ export const ProdutosServicosPanel = () => {
 
       if (!items.length) {
         toast.error("Nenhuma linha válida encontrada", {
-          description: "Verifique se a planilha tem as colunas: Categoria, Nome, Valor.",
+          description: "Verifique se a planilha tem as colunas: Tipo, Categoria, Nome, Valor.",
         });
         return;
       }
@@ -182,12 +187,12 @@ export const ProdutosServicosPanel = () => {
 
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.json_to_sheet([
-      { Categoria: "Consulta", Nome: "Avaliação inicial", Valor: 250.0 },
-      { Categoria: "Procedimento", Nome: "Limpeza de pele", Valor: 180.0 },
+      { Tipo: "Serviço", Categoria: "Consulta", Nome: "Avaliação inicial", Valor: 250.0 },
+      { Tipo: "Produto", Categoria: "Cosmético", Nome: "Protetor solar", Valor: 180.0 },
     ]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Produtos");
-    XLSX.writeFile(wb, "modelo_produtos_servicos.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Catálogo");
+    XLSX.writeFile(wb, "modelo_servicos_produtos.xlsx");
   };
 
   // ─── CRUD ────────────────────────────────────
@@ -197,30 +202,37 @@ export const ProdutosServicosPanel = () => {
       return;
     }
     const valor = parseFloat(form.valor.replace(",", ".")) || 0;
+    const duracao = form.duracao_minutos
+      ? parseInt(form.duracao_minutos, 10) || null
+      : null;
+    const estoque = form.estoque ? parseInt(form.estoque, 10) || null : null;
+
+    const basePayload = {
+      tipo: form.tipo,
+      categoria: form.categoria.trim(),
+      nome: form.nome.trim(),
+      valor,
+      descricao: form.descricao.trim() || null,
+      duracao_minutos: form.tipo === "servico" ? duracao : null,
+      profissional: form.tipo === "servico" ? (form.profissional.trim() || null) : null,
+      sku: form.tipo === "produto" ? (form.sku.trim() || null) : null,
+      estoque: form.tipo === "produto" ? estoque : null,
+    };
+
     try {
       if (editando) {
         await atualizar.mutateAsync({
           id: editando.id,
-          updates: {
-            categoria: form.categoria.trim(),
-            nome: form.nome.trim(),
-            valor,
-            descricao: form.descricao.trim() || null,
-          },
+          updates: basePayload,
         });
-        toast.success("Produto atualizado");
+        toast.success(form.tipo === "servico" ? "Serviço atualizado" : "Produto atualizado");
       } else {
-        await criar.mutateAsync({
-          categoria: form.categoria.trim(),
-          nome: form.nome.trim(),
-          valor,
-          descricao: form.descricao.trim() || null,
-        });
-        toast.success("Produto cadastrado");
+        await criar.mutateAsync(basePayload);
+        toast.success(form.tipo === "servico" ? "Serviço cadastrado" : "Produto cadastrado");
       }
       setNovoOpen(false);
       setEditando(null);
-      setForm({ categoria: "", nome: "", valor: "", descricao: "" });
+      resetForm();
     } catch (err) {
       toast.error("Erro ao salvar", {
         description: err instanceof Error ? err.message : "Erro desconhecido",
@@ -231,11 +243,17 @@ export const ProdutosServicosPanel = () => {
   const handleEditar = (p: ProdutoServico) => {
     setEditando(p);
     setForm({
+      tipo: (p.tipo as TipoItem) || "produto",
       categoria: p.categoria,
       nome: p.nome,
       valor: String(p.valor),
       descricao: p.descricao || "",
+      duracao_minutos: p.duracao_minutos ? String(p.duracao_minutos) : "",
+      profissional: p.profissional || "",
+      sku: p.sku || "",
+      estoque: p.estoque !== null && p.estoque !== undefined ? String(p.estoque) : "",
     });
+    setEscolhendoTipo(false);
     setNovoOpen(true);
   };
 
