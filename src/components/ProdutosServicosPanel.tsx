@@ -349,6 +349,7 @@ export const ProdutosServicosPanel = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-24">Tipo</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
@@ -358,6 +359,11 @@ export const ProdutosServicosPanel = () => {
                 <TableBody>
                   {produtosFiltrados.map((p) => (
                     <TableRow key={p.id}>
+                      <TableCell>
+                        <Badge variant={p.tipo === "servico" ? "default" : "secondary"}>
+                          {p.tipo === "servico" ? "Serviço" : "Produto"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{p.categoria}</Badge>
                       </TableCell>
