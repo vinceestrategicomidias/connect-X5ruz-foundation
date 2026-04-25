@@ -46,7 +46,15 @@ import {
   renderTemplateOrcamento,
   type ProdutoServico,
   type OrcamentoTemplate,
+  type TipoItem,
 } from "@/hooks/useProdutosServicos";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formatCurrency = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -67,7 +75,43 @@ export const ProdutosServicosPanel = () => {
   const [orcamentoOpen, setOrcamentoOpen] = useState(false);
   const [editTemplateOpen, setEditTemplateOpen] = useState(false);
 
-  const [form, setForm] = useState({ categoria: "", nome: "", valor: "", descricao: "" });
+  const [form, setForm] = useState<{
+    tipo: TipoItem;
+    categoria: string;
+    nome: string;
+    valor: string;
+    descricao: string;
+    duracao_minutos: string;
+    profissional: string;
+    sku: string;
+    estoque: string;
+  }>({
+    tipo: "produto",
+    categoria: "",
+    nome: "",
+    valor: "",
+    descricao: "",
+    duracao_minutos: "",
+    profissional: "",
+    sku: "",
+    estoque: "",
+  });
+
+  // Etapa do modal: primeiro escolher se é produto ou serviço
+  const [escolhendoTipo, setEscolhendoTipo] = useState(false);
+
+  const resetForm = () =>
+    setForm({
+      tipo: "produto",
+      categoria: "",
+      nome: "",
+      valor: "",
+      descricao: "",
+      duracao_minutos: "",
+      profissional: "",
+      sku: "",
+      estoque: "",
+    });
 
   const produtosFiltrados = useMemo(() => {
     const q = busca.toLowerCase().trim();
@@ -92,7 +136,11 @@ export const ProdutosServicosPanel = () => {
 
       const items = rows
         .map((r) => {
-          // Aceita variações de nome de coluna
+          const tipoRaw = String(
+            r["Tipo"] ?? r["tipo"] ?? r["TIPO"] ?? "produto"
+          ).toLowerCase().trim();
+          const tipo: TipoItem =
+            tipoRaw.startsWith("s") ? "servico" : "produto";
           const categoria =
             r["Categoria"] ?? r["categoria"] ?? r["CATEGORIA"] ?? r["Produto"] ?? r["produto"] ?? "";
           const nome =
@@ -109,6 +157,7 @@ export const ProdutosServicosPanel = () => {
               ) || 0;
 
           return {
+            tipo,
             categoria: String(categoria).trim(),
             nome: String(nome).trim(),
             valor,
@@ -119,7 +168,7 @@ export const ProdutosServicosPanel = () => {
 
       if (!items.length) {
         toast.error("Nenhuma linha válida encontrada", {
-          description: "Verifique se a planilha tem as colunas: Categoria, Nome, Valor.",
+          description: "Verifique se a planilha tem as colunas: Tipo, Categoria, Nome, Valor.",
         });
         return;
       }
@@ -138,12 +187,12 @@ export const ProdutosServicosPanel = () => {
 
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.json_to_sheet([
-      { Categoria: "Consulta", Nome: "Avaliação inicial", Valor: 250.0 },
-      { Categoria: "Procedimento", Nome: "Limpeza de pele", Valor: 180.0 },
+      { Tipo: "Serviço", Categoria: "Consulta", Nome: "Avaliação inicial", Valor: 250.0 },
+      { Tipo: "Produto", Categoria: "Cosmético", Nome: "Protetor solar", Valor: 180.0 },
     ]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Produtos");
-    XLSX.writeFile(wb, "modelo_produtos_servicos.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Catálogo");
+    XLSX.writeFile(wb, "modelo_servicos_produtos.xlsx");
   };
 
   // ─── CRUD ────────────────────────────────────
@@ -153,30 +202,37 @@ export const ProdutosServicosPanel = () => {
       return;
     }
     const valor = parseFloat(form.valor.replace(",", ".")) || 0;
+    const duracao = form.duracao_minutos
+      ? parseInt(form.duracao_minutos, 10) || null
+      : null;
+    const estoque = form.estoque ? parseInt(form.estoque, 10) || null : null;
+
+    const basePayload = {
+      tipo: form.tipo,
+      categoria: form.categoria.trim(),
+      nome: form.nome.trim(),
+      valor,
+      descricao: form.descricao.trim() || null,
+      duracao_minutos: form.tipo === "servico" ? duracao : null,
+      profissional: form.tipo === "servico" ? (form.profissional.trim() || null) : null,
+      sku: form.tipo === "produto" ? (form.sku.trim() || null) : null,
+      estoque: form.tipo === "produto" ? estoque : null,
+    };
+
     try {
       if (editando) {
         await atualizar.mutateAsync({
           id: editando.id,
-          updates: {
-            categoria: form.categoria.trim(),
-            nome: form.nome.trim(),
-            valor,
-            descricao: form.descricao.trim() || null,
-          },
+          updates: basePayload,
         });
-        toast.success("Produto atualizado");
+        toast.success(form.tipo === "servico" ? "Serviço atualizado" : "Produto atualizado");
       } else {
-        await criar.mutateAsync({
-          categoria: form.categoria.trim(),
-          nome: form.nome.trim(),
-          valor,
-          descricao: form.descricao.trim() || null,
-        });
-        toast.success("Produto cadastrado");
+        await criar.mutateAsync(basePayload);
+        toast.success(form.tipo === "servico" ? "Serviço cadastrado" : "Produto cadastrado");
       }
       setNovoOpen(false);
       setEditando(null);
-      setForm({ categoria: "", nome: "", valor: "", descricao: "" });
+      resetForm();
     } catch (err) {
       toast.error("Erro ao salvar", {
         description: err instanceof Error ? err.message : "Erro desconhecido",
@@ -187,11 +243,17 @@ export const ProdutosServicosPanel = () => {
   const handleEditar = (p: ProdutoServico) => {
     setEditando(p);
     setForm({
+      tipo: (p.tipo as TipoItem) || "produto",
       categoria: p.categoria,
       nome: p.nome,
       valor: String(p.valor),
       descricao: p.descricao || "",
+      duracao_minutos: p.duracao_minutos ? String(p.duracao_minutos) : "",
+      profissional: p.profissional || "",
+      sku: p.sku || "",
+      estoque: p.estoque !== null && p.estoque !== undefined ? String(p.estoque) : "",
     });
+    setEscolhendoTipo(false);
     setNovoOpen(true);
   };
 
@@ -220,10 +282,10 @@ export const ProdutosServicosPanel = () => {
         <div>
           <h2 className="text-2xl font-semibold flex items-center gap-2">
             <Package className="h-6 w-6 text-primary" />
-            Produtos e Serviços
+            Serviços e Produtos
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Cadastre produtos e serviços e personalize o template de orçamento usado nos roteiros.
+            Cadastre serviços e produtos e personalize o template de orçamento usado nos roteiros.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -243,7 +305,8 @@ export const ProdutosServicosPanel = () => {
             size="sm"
             onClick={() => {
               setEditando(null);
-              setForm({ categoria: "", nome: "", valor: "", descricao: "" });
+              resetForm();
+              setEscolhendoTipo(true);
               setNovoOpen(true);
             }}
           >
@@ -286,6 +349,7 @@ export const ProdutosServicosPanel = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-24">Tipo</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
@@ -295,6 +359,11 @@ export const ProdutosServicosPanel = () => {
                 <TableBody>
                   {produtosFiltrados.map((p) => (
                     <TableRow key={p.id}>
+                      <TableCell>
+                        <Badge variant={p.tipo === "servico" ? "default" : "secondary"}>
+                          {p.tipo === "servico" ? "Serviço" : "Produto"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{p.categoria}</Badge>
                       </TableCell>
@@ -339,63 +408,210 @@ export const ProdutosServicosPanel = () => {
       </Card>
 
       {/* Modal Novo / Editar */}
-      <Dialog open={novoOpen} onOpenChange={(o) => { setNovoOpen(o); if (!o) setEditando(null); }}>
+      <Dialog
+        open={novoOpen}
+        onOpenChange={(o) => {
+          setNovoOpen(o);
+          if (!o) {
+            setEditando(null);
+            setEscolhendoTipo(false);
+          }
+        }}
+      >
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editando ? "Editar produto" : "Novo produto"}</DialogTitle>
-            <DialogDescription>
-              Preencha os dados do produto ou serviço.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="cat">Categoria (Produto)</Label>
-              <Input
-                id="cat"
-                placeholder="Ex: Consulta, Procedimento, Plano..."
-                value={form.categoria}
-                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="nome">Nome</Label>
-              <Input
-                id="nome"
-                placeholder="Ex: Avaliação inicial"
-                value={form.nome}
-                onChange={(e) => setForm({ ...form, nome: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="valor">Valor (R$)</Label>
-              <Input
-                id="valor"
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                value={form.valor}
-                onChange={(e) => setForm({ ...form, valor: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="desc">Descrição (opcional)</Label>
-              <Textarea
-                id="desc"
-                rows={2}
-                value={form.descricao}
-                onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNovoOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSalvar} disabled={criar.isPending || atualizar.isPending}>
-              <Save className="h-4 w-4 mr-1" />
-              Salvar
-            </Button>
-          </DialogFooter>
+          {escolhendoTipo && !editando ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>O que você quer cadastrar?</DialogTitle>
+                <DialogDescription>
+                  Escolha o tipo do item — os campos do formulário mudam conforme a opção.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-3 py-2">
+                <button
+                  type="button"
+                  className="border rounded-lg p-5 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, tipo: "servico" }));
+                    setEscolhendoTipo(false);
+                  }}
+                >
+                  <div className="text-2xl mb-1">🛎️</div>
+                  <div className="font-medium">Serviço</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Consultas, procedimentos, sessões
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="border rounded-lg p-5 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, tipo: "produto" }));
+                    setEscolhendoTipo(false);
+                  }}
+                >
+                  <div className="text-2xl mb-1">📦</div>
+                  <div className="font-medium">Produto</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Itens físicos, cosméticos, kits
+                  </div>
+                </button>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setNovoOpen(false)}>
+                  Cancelar
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {editando
+                    ? `Editar ${form.tipo === "servico" ? "serviço" : "produto"}`
+                    : `Novo ${form.tipo === "servico" ? "serviço" : "produto"}`}
+                </DialogTitle>
+                <DialogDescription>
+                  Preencha os dados do {form.tipo === "servico" ? "serviço" : "produto"}.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Tipo</Label>
+                  <Select
+                    value={form.tipo}
+                    onValueChange={(v: TipoItem) => setForm({ ...form, tipo: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="servico">Serviço</SelectItem>
+                      <SelectItem value="produto">Produto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="cat">Categoria</Label>
+                  <Input
+                    id="cat"
+                    placeholder={
+                      form.tipo === "servico"
+                        ? "Ex: Consulta, Procedimento, Sessão..."
+                        : "Ex: Cosmético, Kit, Suplemento..."
+                    }
+                    value={form.categoria}
+                    onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="nome">Nome</Label>
+                  <Input
+                    id="nome"
+                    placeholder={
+                      form.tipo === "servico"
+                        ? "Ex: Avaliação inicial"
+                        : "Ex: Protetor solar FPS 50"
+                    }
+                    value={form.nome}
+                    onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="valor">Valor (R$)</Label>
+                  <Input
+                    id="valor"
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={form.valor}
+                    onChange={(e) => setForm({ ...form, valor: e.target.value })}
+                  />
+                </div>
+
+                {/* Campos específicos de SERVIÇO */}
+                {form.tipo === "servico" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="dur">Duração (min)</Label>
+                      <Input
+                        id="dur"
+                        type="number"
+                        placeholder="60"
+                        value={form.duracao_minutos}
+                        onChange={(e) =>
+                          setForm({ ...form, duracao_minutos: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="prof">Profissional (opcional)</Label>
+                      <Input
+                        id="prof"
+                        placeholder="Ex: Dra. Ana"
+                        value={form.profissional}
+                        onChange={(e) =>
+                          setForm({ ...form, profissional: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Campos específicos de PRODUTO */}
+                {form.tipo === "produto" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="sku">SKU (opcional)</Label>
+                      <Input
+                        id="sku"
+                        placeholder="Ex: PRD-001"
+                        value={form.sku}
+                        onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="est">Estoque</Label>
+                      <Input
+                        id="est"
+                        type="number"
+                        placeholder="0"
+                        value={form.estoque}
+                        onChange={(e) => setForm({ ...form, estoque: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="desc">Descrição (opcional)</Label>
+                  <Textarea
+                    id="desc"
+                    rows={2}
+                    value={form.descricao}
+                    onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                {!editando && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => setEscolhendoTipo(true)}
+                  >
+                    Voltar
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => setNovoOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSalvar} disabled={criar.isPending || atualizar.isPending}>
+                  <Save className="h-4 w-4 mr-1" />
+                  Salvar
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 

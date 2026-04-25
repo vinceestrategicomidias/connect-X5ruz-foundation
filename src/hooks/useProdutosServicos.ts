@@ -1,13 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export type TipoItem = "produto" | "servico";
+
 export interface ProdutoServico {
   id: string;
+  tipo: TipoItem;
   categoria: string;
   nome: string;
   valor: number;
   descricao: string | null;
   ativo: boolean;
+  // Específicos de Serviço
+  duracao_minutos: number | null;
+  profissional: string | null;
+  // Específicos de Produto
+  sku: string | null;
+  estoque: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -43,7 +52,7 @@ export const useProdutosServicos = () => {
 export const useCriarProdutoServico = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (params: Omit<ProdutoServico, "id" | "created_at" | "updated_at" | "ativo"> & { ativo?: boolean }) => {
+    mutationFn: async (params: Partial<ProdutoServico> & { categoria: string; nome: string; valor: number; tipo: TipoItem }) => {
       const { data, error } = await (supabase
         .from("produtos_servicos" as any)
         .insert(params) as any)
@@ -59,7 +68,7 @@ export const useCriarProdutoServico = () => {
 export const useCriarProdutosServicosLote = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (items: Array<Omit<ProdutoServico, "id" | "created_at" | "updated_at" | "ativo">>) => {
+    mutationFn: async (items: Array<Partial<ProdutoServico> & { categoria: string; nome: string; valor: number; tipo: TipoItem }>) => {
       if (!items.length) return [];
       const { data, error } = await (supabase
         .from("produtos_servicos" as any)
