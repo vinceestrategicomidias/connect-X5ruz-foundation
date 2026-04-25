@@ -59,6 +59,7 @@ import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
 import { MotivosTransferenciaPanel } from "./MotivosTransferenciaPanel";
 import { MotivosFinalizacaoPanel } from "./MotivosFinalizacaoPanel";
+import { ProdutosServicosPanel } from "./ProdutosServicosPanel";
 import { RelatorioEquipePanel } from "./RelatorioEquipePanel";
 import DashboardMonitoramento from "@/pages/DashboardMonitoramento";
 // UI
