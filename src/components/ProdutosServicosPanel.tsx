@@ -408,63 +408,210 @@ export const ProdutosServicosPanel = () => {
       </Card>
 
       {/* Modal Novo / Editar */}
-      <Dialog open={novoOpen} onOpenChange={(o) => { setNovoOpen(o); if (!o) setEditando(null); }}>
+      <Dialog
+        open={novoOpen}
+        onOpenChange={(o) => {
+          setNovoOpen(o);
+          if (!o) {
+            setEditando(null);
+            setEscolhendoTipo(false);
+          }
+        }}
+      >
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editando ? "Editar produto" : "Novo produto"}</DialogTitle>
-            <DialogDescription>
-              Preencha os dados do produto ou serviço.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="cat">Categoria (Produto)</Label>
-              <Input
-                id="cat"
-                placeholder="Ex: Consulta, Procedimento, Plano..."
-                value={form.categoria}
-                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="nome">Nome</Label>
-              <Input
-                id="nome"
-                placeholder="Ex: Avaliação inicial"
-                value={form.nome}
-                onChange={(e) => setForm({ ...form, nome: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="valor">Valor (R$)</Label>
-              <Input
-                id="valor"
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                value={form.valor}
-                onChange={(e) => setForm({ ...form, valor: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="desc">Descrição (opcional)</Label>
-              <Textarea
-                id="desc"
-                rows={2}
-                value={form.descricao}
-                onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNovoOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSalvar} disabled={criar.isPending || atualizar.isPending}>
-              <Save className="h-4 w-4 mr-1" />
-              Salvar
-            </Button>
-          </DialogFooter>
+          {escolhendoTipo && !editando ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>O que você quer cadastrar?</DialogTitle>
+                <DialogDescription>
+                  Escolha o tipo do item — os campos do formulário mudam conforme a opção.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-3 py-2">
+                <button
+                  type="button"
+                  className="border rounded-lg p-5 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, tipo: "servico" }));
+                    setEscolhendoTipo(false);
+                  }}
+                >
+                  <div className="text-2xl mb-1">🛎️</div>
+                  <div className="font-medium">Serviço</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Consultas, procedimentos, sessões
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="border rounded-lg p-5 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, tipo: "produto" }));
+                    setEscolhendoTipo(false);
+                  }}
+                >
+                  <div className="text-2xl mb-1">📦</div>
+                  <div className="font-medium">Produto</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Itens físicos, cosméticos, kits
+                  </div>
+                </button>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setNovoOpen(false)}>
+                  Cancelar
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {editando
+                    ? `Editar ${form.tipo === "servico" ? "serviço" : "produto"}`
+                    : `Novo ${form.tipo === "servico" ? "serviço" : "produto"}`}
+                </DialogTitle>
+                <DialogDescription>
+                  Preencha os dados do {form.tipo === "servico" ? "serviço" : "produto"}.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Tipo</Label>
+                  <Select
+                    value={form.tipo}
+                    onValueChange={(v: TipoItem) => setForm({ ...form, tipo: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="servico">Serviço</SelectItem>
+                      <SelectItem value="produto">Produto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="cat">Categoria</Label>
+                  <Input
+                    id="cat"
+                    placeholder={
+                      form.tipo === "servico"
+                        ? "Ex: Consulta, Procedimento, Sessão..."
+                        : "Ex: Cosmético, Kit, Suplemento..."
+                    }
+                    value={form.categoria}
+                    onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="nome">Nome</Label>
+                  <Input
+                    id="nome"
+                    placeholder={
+                      form.tipo === "servico"
+                        ? "Ex: Avaliação inicial"
+                        : "Ex: Protetor solar FPS 50"
+                    }
+                    value={form.nome}
+                    onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="valor">Valor (R$)</Label>
+                  <Input
+                    id="valor"
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={form.valor}
+                    onChange={(e) => setForm({ ...form, valor: e.target.value })}
+                  />
+                </div>
+
+                {/* Campos específicos de SERVIÇO */}
+                {form.tipo === "servico" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="dur">Duração (min)</Label>
+                      <Input
+                        id="dur"
+                        type="number"
+                        placeholder="60"
+                        value={form.duracao_minutos}
+                        onChange={(e) =>
+                          setForm({ ...form, duracao_minutos: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="prof">Profissional (opcional)</Label>
+                      <Input
+                        id="prof"
+                        placeholder="Ex: Dra. Ana"
+                        value={form.profissional}
+                        onChange={(e) =>
+                          setForm({ ...form, profissional: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Campos específicos de PRODUTO */}
+                {form.tipo === "produto" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="sku">SKU (opcional)</Label>
+                      <Input
+                        id="sku"
+                        placeholder="Ex: PRD-001"
+                        value={form.sku}
+                        onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="est">Estoque</Label>
+                      <Input
+                        id="est"
+                        type="number"
+                        placeholder="0"
+                        value={form.estoque}
+                        onChange={(e) => setForm({ ...form, estoque: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="desc">Descrição (opcional)</Label>
+                  <Textarea
+                    id="desc"
+                    rows={2}
+                    value={form.descricao}
+                    onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                {!editando && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => setEscolhendoTipo(true)}
+                  >
+                    Voltar
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => setNovoOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSalvar} disabled={criar.isPending || atualizar.isPending}>
+                  <Save className="h-4 w-4 mr-1" />
+                  Salvar
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
