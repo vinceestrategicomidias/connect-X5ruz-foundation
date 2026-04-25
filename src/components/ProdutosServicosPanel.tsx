@@ -46,7 +46,15 @@ import {
   renderTemplateOrcamento,
   type ProdutoServico,
   type OrcamentoTemplate,
+  type TipoItem,
 } from "@/hooks/useProdutosServicos";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formatCurrency = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
