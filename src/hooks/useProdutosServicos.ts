@@ -1,13 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export type TipoItem = "produto" | "servico";
+
 export interface ProdutoServico {
   id: string;
+  tipo: TipoItem;
   categoria: string;
   nome: string;
   valor: number;
   descricao: string | null;
   ativo: boolean;
+  // Específicos de Serviço
+  duracao_minutos: number | null;
+  profissional: string | null;
+  // Específicos de Produto
+  sku: string | null;
+  estoque: number | null;
   created_at: string;
   updated_at: string;
 }
