@@ -116,6 +116,7 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const { data: leadAtivo } = useLeadAtivoPaciente(pacienteSelecionado?.id || null);
   const criarLead = useCriarLead();
   const criarOrcamento = useCriarOrcamento();
+  const { data: orcamentoTemplate } = useOrcamentoTemplate();
   const atualizarEtapa = useAtualizarEtapaLead();
   const enviarMensagem = useEnviarMensagem();
   const [classificacaoModalOpen, setClassificacaoModalOpen] = useState(false);
