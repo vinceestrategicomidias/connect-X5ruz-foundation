@@ -1938,6 +1938,7 @@ export const GestaoUnificada = () => {
       case "alertas_config": return renderAlertasConfig();
       case "auditoria": return <AuditoriaAcoesPanel />;
       case "ideias": return <CentralIdeiasPanel />;
+      case "produtos_servicos": return <ProdutosServicosPanel />;
       // Integrações
       case "api_webhooks": return renderApiWebhooks();
       case "configuracoes": return <ConfiguracoesFilaPanel />;
