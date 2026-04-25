@@ -75,7 +75,43 @@ export const ProdutosServicosPanel = () => {
   const [orcamentoOpen, setOrcamentoOpen] = useState(false);
   const [editTemplateOpen, setEditTemplateOpen] = useState(false);
 
-  const [form, setForm] = useState({ categoria: "", nome: "", valor: "", descricao: "" });
+  const [form, setForm] = useState<{
+    tipo: TipoItem;
+    categoria: string;
+    nome: string;
+    valor: string;
+    descricao: string;
+    duracao_minutos: string;
+    profissional: string;
+    sku: string;
+    estoque: string;
+  }>({
+    tipo: "produto",
+    categoria: "",
+    nome: "",
+    valor: "",
+    descricao: "",
+    duracao_minutos: "",
+    profissional: "",
+    sku: "",
+    estoque: "",
+  });
+
+  // Etapa do modal: primeiro escolher se é produto ou serviço
+  const [escolhendoTipo, setEscolhendoTipo] = useState(false);
+
+  const resetForm = () =>
+    setForm({
+      tipo: "produto",
+      categoria: "",
+      nome: "",
+      valor: "",
+      descricao: "",
+      duracao_minutos: "",
+      profissional: "",
+      sku: "",
+      estoque: "",
+    });
 
   const produtosFiltrados = useMemo(() => {
     const q = busca.toLowerCase().trim();
