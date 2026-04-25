@@ -343,7 +343,7 @@ const menuBlocks: MenuBlock[] = [
       { id: "alertas_config", label: "Config. Alertas", icon: Bell },
       { id: "auditoria", label: "Auditoria", icon: ClipboardList },
       { id: "ideias", label: "Ideias das Estrelas", icon: Sparkles },
-      { id: "produtos_servicos", label: "Produtos e Serviços", icon: Package },
+      { id: "produtos_servicos", label: "Serviços e Produtos", icon: Package },
     ],
   },
   {
