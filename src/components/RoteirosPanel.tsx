@@ -12,6 +12,7 @@ import { useConversaByPaciente } from "@/hooks/useConversas";
 import { useLeadAtivoPaciente, useCriarLead, useAtualizarEtapaLead } from "@/hooks/useLeadsFunil";
 import { useEnviarMensagem } from "@/hooks/useMutations";
 import { useCriarOrcamento } from "@/hooks/useOrcamentos";
+import { useOrcamentoTemplate, renderTemplateOrcamento } from "@/hooks/useProdutosServicos";
 import { FunilClassificacaoModal } from "./FunilClassificacaoModal";
 
 interface RoteirosNode {
