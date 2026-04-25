@@ -162,20 +162,13 @@ export const RoteirosPanel = ({ open, onClose }: RoteirosPanelProps) => {
   const gerarMensagemOrcamento = (): string => {
     const total = calcularTotal();
     const desconto = parseFloat(orcamento.valorDesconto) || 0;
-    
-    let mensagem = `📋 *ORÇAMENTO – ${orcamento.descricao}*\n\n`;
-    mensagem += `💰 Valor do produto: ${formatCurrency(orcamento.valorProduto)}\n`;
-    mensagem += `📦 Despesas adicionais: ${formatCurrency(orcamento.despesasAdicionais)}\n`;
-    mensagem += `━━━━━━━━━━━━━━━━━━━━\n`;
-    mensagem += `*Total: ${formatCurrency(total.toString())}*\n`;
-    
-    if (desconto > 0) {
-      mensagem += `🎁 Com desconto: ${formatCurrency(orcamento.valorDesconto)}\n`;
-    }
-    
-    mensagem += `\nCaso deseje, posso te enviar as opções de pagamento. 😊`;
-    
-    return mensagem;
+    return renderTemplateOrcamento(orcamentoTemplate ?? null, {
+      descricao: orcamento.descricao,
+      valor_produto: formatCurrency(orcamento.valorProduto),
+      despesas: formatCurrency(orcamento.despesasAdicionais),
+      total: formatCurrency(total.toString()),
+      desconto: desconto > 0 ? formatCurrency(orcamento.valorDesconto) : "",
+    });
   };
 
   const salvarOrcamentoNoBanco = (leadId?: string) => {
