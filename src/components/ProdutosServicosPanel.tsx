@@ -282,10 +282,10 @@ export const ProdutosServicosPanel = () => {
         <div>
           <h2 className="text-2xl font-semibold flex items-center gap-2">
             <Package className="h-6 w-6 text-primary" />
-            Produtos e Serviços
+            Serviços e Produtos
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Cadastre produtos e serviços e personalize o template de orçamento usado nos roteiros.
+            Cadastre serviços e produtos e personalize o template de orçamento usado nos roteiros.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
