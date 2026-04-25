@@ -1518,6 +1518,45 @@ export type Database = {
           },
         ]
       }
+      orcamento_template: {
+        Row: {
+          created_at: string
+          id: string
+          linha_desconto: string
+          linha_despesas: string
+          linha_total: string
+          linha_valor_produto: string
+          rodape: string
+          separador: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linha_desconto?: string
+          linha_despesas?: string
+          linha_total?: string
+          linha_valor_produto?: string
+          rodape?: string
+          separador?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linha_desconto?: string
+          linha_despesas?: string
+          linha_total?: string
+          linha_valor_produto?: string
+          rodape?: string
+          separador?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orcamentos: {
         Row: {
           atendente_id: string | null
@@ -1779,6 +1818,39 @@ export type Database = {
           nome?: string
           permissoes?: Json | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      produtos_servicos: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean
+          categoria: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+          valor?: number
         }
         Relationships: []
       }
