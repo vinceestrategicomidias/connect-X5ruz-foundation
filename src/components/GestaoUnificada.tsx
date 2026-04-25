@@ -59,6 +59,7 @@ import { AuditoriaAcoesPanel } from "./AuditoriaAcoesPanel";
 import { EtiquetasManagementPanel } from "./EtiquetasManagementPanel";
 import { MotivosTransferenciaPanel } from "./MotivosTransferenciaPanel";
 import { MotivosFinalizacaoPanel } from "./MotivosFinalizacaoPanel";
+import { ProdutosServicosPanel } from "./ProdutosServicosPanel";
 import { RelatorioEquipePanel } from "./RelatorioEquipePanel";
 import DashboardMonitoramento from "@/pages/DashboardMonitoramento";
 // UI
@@ -342,6 +343,7 @@ const menuBlocks: MenuBlock[] = [
       { id: "alertas_config", label: "Config. Alertas", icon: Bell },
       { id: "auditoria", label: "Auditoria", icon: ClipboardList },
       { id: "ideias", label: "Ideias das Estrelas", icon: Sparkles },
+      { id: "produtos_servicos", label: "Produtos e Serviços", icon: Package },
     ],
   },
   {
@@ -1936,6 +1938,7 @@ export const GestaoUnificada = () => {
       case "alertas_config": return renderAlertasConfig();
       case "auditoria": return <AuditoriaAcoesPanel />;
       case "ideias": return <CentralIdeiasPanel />;
+      case "produtos_servicos": return <ProdutosServicosPanel />;
       // Integrações
       case "api_webhooks": return renderApiWebhooks();
       case "configuracoes": return <ConfiguracoesFilaPanel />;
