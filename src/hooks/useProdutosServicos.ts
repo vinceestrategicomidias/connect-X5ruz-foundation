@@ -52,7 +52,7 @@ export const useProdutosServicos = () => {
 export const useCriarProdutoServico = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (params: Omit<ProdutoServico, "id" | "created_at" | "updated_at" | "ativo"> & { ativo?: boolean }) => {
+    mutationFn: async (params: Partial<ProdutoServico> & { categoria: string; nome: string; valor: number; tipo: TipoItem }) => {
       const { data, error } = await (supabase
         .from("produtos_servicos" as any)
         .insert(params) as any)
